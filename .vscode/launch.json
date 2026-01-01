@@ -4,7 +4,7 @@
             "name": "(Windows) Launch",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${fileDirname}/${fileBasenameNoExtension}",
+            "program": "${fileDirname}/Hex++Compiler",
             "args": ["../test.hxpp", "../text.txt"],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",

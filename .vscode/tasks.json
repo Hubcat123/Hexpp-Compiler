@@ -9,7 +9,7 @@
                 "/EHsc",
                 "/std:c++20",
                 "/nologo",
-                "/Fe${fileDirname}\\${fileBasenameNoExtension}.exe",
+                "/Fe${fileDirname}\\Hex++Compiler.exe",
                 "${workspaceFolder}/src/*.cpp"
             ],
             "options": {
