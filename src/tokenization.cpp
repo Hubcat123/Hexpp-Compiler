@@ -43,8 +43,49 @@ std::vector<Token> Tokenizer::tokenize()
     std::string buf {};
     while (peek().has_value())
     {
+        // Check if single line comment
+        if (peek().value() == '/' &&
+            peek(1).has_value() && peek(1).value() == '/')
+        {
+            consume(2);
+            while (peek().has_value() && peek().value() != '\n')
+            {
+                consume();
+            }
+
+            if (peek().has_value())
+            {
+                consume();
+            }
+        }
+        // Check if multi line comment
+        else if (
+            peek().value() == '/' &&
+            peek(1).has_value() && peek(1).value() == '*')
+        {
+            consume(2);
+
+            do
+            {
+                while (peek().has_value() && peek().value() != '*')
+                {
+                    consume();
+                }
+
+                if (peek().has_value())
+                {
+                    consume();
+                }
+            }
+            while (peek().has_value() && peek().value() != '/');
+
+            if (peek().has_value())
+            {
+                consume();
+            }
+        }
         // Check if identifier
-        if (std::isalpha(peek().value()))
+        else if (std::isalpha(peek().value()))
         {
             buf.push_back(consume());
             // Add full identifier to buffer
@@ -70,8 +111,14 @@ std::vector<Token> Tokenizer::tokenize()
         else if (std::isdigit(peek().value()))
         {
             buf.push_back(consume());
-            while (peek().has_value() && (std::isdigit(peek().value()) || peek().value() == '.'))
+            bool foundDecimal = false;
+            while (peek().has_value() && (std::isdigit(peek().value()) || (!foundDecimal && peek().value() == '.')))
             {
+                if (peek().value() == '.')
+                {
+                    foundDecimal = true;
+                }
+
                 buf.push_back(consume());
             }
 

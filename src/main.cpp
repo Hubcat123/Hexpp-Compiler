@@ -59,10 +59,10 @@ int main(int argc, char** argv)
         code = generator.generate();
     }
 
-    // Print out hex code
+    // Print out hex patterns
     std::cout << code << std::endl;
 
-    // Write code to file
+    // Write patterns to file
     {
         std::fstream output(argv[2], std::ios::out);
         output << code;
