@@ -20,10 +20,12 @@ public:
     void pop(int amount = 1);
 
     void additive_distilation();
+    void division_distilation();
     void fishermans_gambit_II();
     void multiplicative_distilation();
     void numerical_reflection(std::string value);
     void reveal();
+    void subtractive_distilation();
 private:
 
     struct Var {

@@ -16,7 +16,16 @@ struct NodeTermIdent {
     Token ident;
 };
 
+struct NodeTermParen {
+    NodeExpr* expr;
+};
+
 struct NodeExprAdd {
+    NodeExpr* lhs;
+    NodeExpr* rhs;
+};
+
+struct NodeExprSub {
     NodeExpr* lhs;
     NodeExpr* rhs;
 };
@@ -26,12 +35,17 @@ struct NodeExprMulti {
     NodeExpr* rhs;
 };
 
+struct NodeExprDiv {
+    NodeExpr* lhs;
+    NodeExpr* rhs;
+};
+
 struct NodeExprBin {
-    std::variant<NodeExprAdd*, NodeExprMulti*> var;
+    std::variant<NodeExprAdd*, NodeExprSub*, NodeExprMulti*, NodeExprDiv*> var;
 };
 
 struct NodeTerm {
-    std::variant<NodeTermNumLit*, NodeTermIdent*> var;
+    std::variant<NodeTermNumLit*, NodeTermIdent*, NodeTermParen*> var;
 };
 
 struct NodeExpr {
@@ -76,6 +90,22 @@ private:
     std::optional<Token> peek(int ahead = 0) const;
     Token consume();
     void consume(int amount);
+
+    template<typename T>
+    bool parse_bin_op(TokenType op_type, TokenType parse_type, NodeExprBin*& expr_bin, NodeExpr* lhs_expr, NodeExpr* rhs_expr)
+    {
+        if (op_type == parse_type)
+        {
+            T* expr_op = m_allocator.alloc<T>();
+            expr_op->lhs = lhs_expr;
+            expr_op->rhs = rhs_expr;
+            expr_bin->var = expr_op;
+
+            return true;
+        }
+
+        return false;
+    }
 
     const std::vector<Token> m_tokens;
     size_t m_index = 0;

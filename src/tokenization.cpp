@@ -19,6 +19,8 @@ std::vector<Token> Tokenizer::tokenize()
         {'=', TokenType::eq},
         {'+', TokenType::plus},
         {'*', TokenType::star},
+        {'-', TokenType::dash},
+        {'/', TokenType::slash_forward},
     };
 
     const std::map<std::string, TokenType> identifierTokenMap {
@@ -91,8 +93,10 @@ std::optional<int> Tokenizer::bin_prec(TokenType type)
     switch (type)
     {
     case TokenType::plus:
+    case TokenType::dash:
         return 0;
     case TokenType::star:
+    case TokenType::slash_forward:
         return 1;
     default:
         return {};

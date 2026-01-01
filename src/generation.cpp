@@ -28,11 +28,25 @@ void Generator::gen_bin_expr(const NodeExprBin* expr_bin)
             gen.additive_distilation();
         }
 
+        void operator()(const NodeExprSub* expr_sub)
+        {
+            gen.gen_expr(expr_sub->lhs);
+            gen.gen_expr(expr_sub->rhs);
+            gen.subtractive_distilation();
+        }
+
         void operator()(const NodeExprMulti* expr_multi)
         {
             gen.gen_expr(expr_multi->lhs);
             gen.gen_expr(expr_multi->rhs);
             gen.multiplicative_distilation();
+        }
+
+        void operator()(const NodeExprDiv* expr_div)
+        {
+            gen.gen_expr(expr_div->lhs);
+            gen.gen_expr(expr_div->rhs);
+            gen.division_distilation();
         }
     };
 
@@ -46,21 +60,26 @@ void Generator::gen_term(const NodeTerm* term)
         Generator& gen;
         TermVisitor (Generator& _gen) :gen(_gen) {}
         
-        void operator()(const NodeTermNumLit* expr_int_lit)
+        void operator()(const NodeTermNumLit* term_int_lit)
         {
-            gen.numerical_reflection(expr_int_lit->num_lit.value.value());
+            gen.numerical_reflection(term_int_lit->num_lit.value.value());
         }
 
-        void operator()(const NodeTermIdent* expr_ident)
+        void operator()(const NodeTermIdent* term_ident)
         {
-            if (!gen.m_vars.contains(expr_ident->ident.value.value()))
+            if (!gen.m_vars.contains(term_ident->ident.value.value()))
             {
-                compilation_error(std::string("Undeclared identifier: ") + expr_ident->ident.value.value());
+                compilation_error(std::string("Undeclared identifier: ") + term_ident->ident.value.value());
             }
 
-            Var& var = gen.m_vars.at(expr_ident->ident.value.value());
+            Var& var = gen.m_vars.at(term_ident->ident.value.value());
             gen.numerical_reflection(std::to_string(gen.m_stack_size - var.stack_loc - 1));
             gen.fishermans_gambit_II();
+        }
+
+        void operator()(const NodeTermParen* term_paren)
+        {
+            gen.gen_expr(term_paren->expr);
         }
     };
 
@@ -155,6 +174,12 @@ void Generator::additive_distilation()
     --m_stack_size;
 }
 
+void Generator::division_distilation()
+{
+    m_output << "Division Distillation\n";
+    --m_stack_size;
+}
+
 void Generator::fishermans_gambit_II()
 {
     m_output << "Fisherman's Gambit II\n";
@@ -175,4 +200,10 @@ void Generator::numerical_reflection(std::string value)
 void Generator::reveal()
 {
     m_output << "Reveal" << '\n';
+}
+
+void Generator::subtractive_distilation()
+{
+    m_output << "Subtractive Distillation\n";
+    --m_stack_size;
 }

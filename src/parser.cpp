@@ -15,7 +15,7 @@ std::optional<NodeTerm*> Parser::parse_term()
 {
     if (peek().has_value())
     {
-        // Check if expresion is a num literal
+        // Check if term is a num literal
         if (peek().value().type == TokenType::num_lit)
         {
             NodeTermNumLit* node_term_num_lit = m_allocator.alloc<NodeTermNumLit>();
@@ -24,7 +24,7 @@ std::optional<NodeTerm*> Parser::parse_term()
             node_term->var = node_term_num_lit;
             return node_term;
         }
-        // Check if expresion is an identifier
+        // Check if term is an identifier
         else if (peek().value().type == TokenType::ident)
         {
             NodeTermIdent* node_term_ident = m_allocator.alloc<NodeTermIdent>();
@@ -32,6 +32,24 @@ std::optional<NodeTerm*> Parser::parse_term()
             NodeTerm* node_term = m_allocator.alloc<NodeTerm>();
             node_term->var = node_term_ident;
             return node_term;
+        }
+        // Check if term is a parentheses enclosed expression
+        else if (peek().value().type == TokenType::paren_open)
+        {
+            consume();
+            NodeTermParen* node_term_paren = m_allocator.alloc<NodeTermParen>();
+            if (std::optional<NodeExpr*> expr = parse_expr())
+            {
+                try_consume(TokenType::paren_close, ')');
+                node_term_paren->expr = expr.value();
+                NodeTerm* term = m_allocator.alloc<NodeTerm>();
+                term->var = node_term_paren;
+                return term;
+            }
+            else
+            {
+                compilation_error("Expected expression");
+            }
         }
     }
 
@@ -74,21 +92,11 @@ std::optional<NodeExpr*> Parser::parse_expr(int min_prec)
         }
 
         NodeExprBin* expr_bin = m_allocator.alloc<NodeExprBin>();
-        if (op_type == TokenType::plus)
-        {
-            NodeExprAdd* expr_add = m_allocator.alloc<NodeExprAdd>();
-            expr_add->lhs = lhs_expr;
-            expr_add->rhs = rhs_expr.value();
-            expr_bin->var = expr_add;
-        }
-        else if (op_type == TokenType::star)
-        {
-            NodeExprMulti* expr_multi = m_allocator.alloc<NodeExprMulti>();
-            expr_multi->lhs = lhs_expr;
-            expr_multi->rhs = rhs_expr.value();
-            expr_bin->var = expr_multi;
-        }
-        else
+        bool is_op = parse_bin_op<NodeExprAdd>(op_type, TokenType::plus, expr_bin, lhs_expr, rhs_expr.value());
+        is_op = is_op || parse_bin_op<NodeExprSub>(op_type, TokenType::dash, expr_bin, lhs_expr, rhs_expr.value());
+        is_op = is_op || parse_bin_op<NodeExprMulti>(op_type, TokenType::star, expr_bin, lhs_expr, rhs_expr.value());
+        is_op = is_op || parse_bin_op<NodeExprDiv>(op_type, TokenType::slash_forward, expr_bin, lhs_expr, rhs_expr.value());
+        if (!is_op)
         {
             compilation_error("Unknown binary operator");
         }
