@@ -5,7 +5,7 @@
 #include <optional>
 
 enum class TokenType {
-    print, num_lit, paren_open, paren_close, semi
+    print, num_lit, paren_open, paren_close, semi, ident, let, eq, plus, star
 };
 
 struct Token {
@@ -22,6 +22,7 @@ public:
 private:
     std::optional<char> peek(int ahead = 0) const;
     char consume();
+    void consume(int amount);
 
     const std::string m_src;
     size_t m_index = 0;

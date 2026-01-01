@@ -40,24 +40,22 @@ int main(int argc, char** argv)
     }
 
     // Parse tokens
-    NodePrint root;
+    NodeProg* prog;
+    Parser parser(tokens);
+    std::optional<NodeProg*> opt_prog = parser.parse();
+    if (opt_prog.has_value())
     {
-        Parser parser(tokens);
-        std::optional<NodePrint> opt_root = parser.parse();
-        if (opt_root.has_value())
-        {
-            root = opt_root.value();
-        }
-        else
-        {
-            compilation_error("Failed to parse tokens");
-        }
+        prog = opt_prog.value();
+    }
+    else
+    {
+        compilation_error("Failed to parse tokens");
     }
 
     // Generate hexes
     std::string code;
     {
-        Generator generator(root);
+        Generator generator(prog);
         code = generator.generate();
     }
 

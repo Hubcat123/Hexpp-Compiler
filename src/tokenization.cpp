@@ -16,10 +16,14 @@ std::vector<Token> Tokenizer::tokenize()
         {';', TokenType::semi},
         {'(', TokenType::paren_open},
         {')', TokenType::paren_close},
+        {'=', TokenType::eq},
+        {'+', TokenType::plus},
+        {'*', TokenType::star},
     };
 
     const std::map<std::string, TokenType> identifierTokenMap {
         {"print", TokenType::print},
+        {"let", TokenType::let},
     };
 
     // Loop through all characters in string
@@ -43,7 +47,7 @@ std::vector<Token> Tokenizer::tokenize()
             }
             else
             {
-                compilation_error(std::string("Invalid token \"") + buf + "\"");
+                tokens.push_back({.type = TokenType::ident, .value = buf});
             }
 
             // Reset buffer
@@ -53,7 +57,7 @@ std::vector<Token> Tokenizer::tokenize()
         else if (std::isdigit(peek().value()))
         {
             buf.push_back(consume());
-            while (peek().has_value() && std::isdigit(peek().value()))
+            while (peek().has_value() && (std::isdigit(peek().value()) || peek().value() == '.'))
             {
                 buf.push_back(consume());
             }
@@ -95,4 +99,9 @@ std::optional<char> Tokenizer::peek(int ahead) const
 char Tokenizer::consume()
 {
     return m_src.at(m_index++);
+}
+
+void Tokenizer::consume(int amount)
+{
+    m_index += amount;
 }
