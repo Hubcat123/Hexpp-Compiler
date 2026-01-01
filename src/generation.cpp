@@ -28,6 +28,22 @@ void Generator::gen_func(const NodeFunc* func)
         try_gen_x_exprs(func->exprs, 2);
         power_distilation();
         break;
+    case TokenType::vec:
+        try_gen_x_exprs(func->exprs, 3);
+        vector_exaltation();
+        break;
+    case TokenType::self:
+        try_gen_x_exprs(func->exprs, 0);
+        minds_reflection();
+        break;
+    case TokenType::pos:
+        try_gen_x_exprs(func->exprs, 1);
+        compass_purification_II();
+        break;
+    case TokenType::mine:
+        try_gen_x_exprs(func->exprs, 1);
+        break_block();
+        break;
     }
 }
 
@@ -246,6 +262,17 @@ void Generator::augurs_purification()
     m_output << "Augur's Purification\n";
 }
 
+void Generator::break_block()
+{
+    m_output << "Break Block\n";
+    --m_stack_size;
+}
+
+void Generator::compass_purification_II()
+{
+    m_output << "Compass' Purification II\n";
+}
+
 void Generator::division_distilation()
 {
     m_output << "Division Distillation\n";
@@ -267,6 +294,12 @@ void Generator::maximus_distilation()
 {
     m_output << "Maximus Distillation\n";
     --m_stack_size;
+}
+
+void Generator::minds_reflection()
+{
+    m_output << "Mind's Reflection\n";
+    ++m_stack_size;
 }
 
 void Generator::minimus_distilation()
@@ -302,4 +335,10 @@ void Generator::subtractive_distilation()
 {
     m_output << "Subtractive Distillation\n";
     --m_stack_size;
+}
+
+void Generator::vector_exaltation()
+{
+    m_output << "Vector Exaltation\n";
+    m_stack_size -= 2;
 }

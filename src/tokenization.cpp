@@ -33,6 +33,10 @@ std::vector<Token> Tokenizer::tokenize()
         {"let", TokenType::let},
         {"if", TokenType::if_},
         {"pow", TokenType::pow},
+        {"vec", TokenType::vec},
+        {"self", TokenType::self},
+        {"pos", TokenType::pos},
+        {"mine", TokenType::mine},
     };
 
     // Loop through all characters in string

@@ -88,7 +88,8 @@ std::optional<NodeTerm*> Parser::parse_term()
                 compilation_error("Expected expression");
             }
         }
-        else if (std::optional<NodeFunc*> func = parse_func({ TokenType::pow }))
+        else if (std::optional<NodeFunc*> func = parse_func(
+            { TokenType::pow, TokenType::vec, TokenType::self, TokenType::pos }))
         {
             NodeTermFunc* node_term_func = m_allocator.alloc<NodeTermFunc>();
             node_term_func->func = func.value();
@@ -177,7 +178,7 @@ std::optional<NodeStmt*> Parser::parse_stmt()
     {
         // Check if statement is function
         if (std::optional<NodeFunc*> func = parse_func(
-            { TokenType::print }))
+            { TokenType::print, TokenType::mine }))
         {
             try_consume(TokenType::semi, ';');
 
@@ -244,7 +245,7 @@ std::optional<NodeStmt*> Parser::parse_stmt()
                 }
                 else
                 {
-                    compilation_error("Expected scope");
+                    compilation_error("Expected statement");
                 }
             }
             else

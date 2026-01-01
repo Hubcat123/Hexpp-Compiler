@@ -25,16 +25,20 @@ public:
 
     void additive_distilation();
     void augurs_purification();
+    void break_block();
+    void compass_purification_II();
     void division_distilation();
     void fishermans_gambit_II();
     void flocks_reflection();
     void maximus_distilation();
+    void minds_reflection();
     void minimus_distilation();
     void multiplicative_distilation();
     void numerical_reflection(std::string value);
     void power_distilation();
     void reveal();
     void subtractive_distilation();
+    void vector_exaltation();
 private:
 
     struct Var {

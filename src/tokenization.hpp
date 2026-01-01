@@ -5,7 +5,7 @@
 #include <optional>
 
 enum class TokenType {
-    print, num_lit, paren_open, paren_close, semi, ident, let, eq, plus, star, dash, slash_forward, curly_open, curly_close, if_, angle_open, angle_close, pow, comma
+    print, num_lit, paren_open, paren_close, semi, ident, let, eq, plus, star, dash, slash_forward, curly_open, curly_close, if_, angle_open, angle_close, pow, comma, vec, self, pos, mine
 };
 
 struct Token {
