@@ -15,43 +15,48 @@ std::string Generator::generate()
     return m_output.str();
 }
 
+void Generator::gen_func(const NodeFunc* func)
+{
+    switch (func->func_type)
+    {
+    case TokenType::print:
+        try_gen_x_exprs(func->exprs, 1);
+        reveal();
+        pop();
+        break;
+    case TokenType::pow:
+        try_gen_x_exprs(func->exprs, 2);
+        power_distilation();
+        break;
+    }
+}
+
 void Generator::gen_bin_expr(const NodeExprBin* expr_bin)
 {
-    struct ExprBinVisitor {
-        Generator& gen;
-        ExprBinVisitor (Generator& _gen) :gen(_gen) {}
-        
-        void operator()(const NodeExprAdd* expr_add)
-        {
-            gen.gen_expr(expr_add->lhs);
-            gen.gen_expr(expr_add->rhs);
-            gen.additive_distilation();
-        }
+    gen_expr(expr_bin->lhs);
+    gen_expr(expr_bin->rhs);
 
-        void operator()(const NodeExprSub* expr_sub)
-        {
-            gen.gen_expr(expr_sub->lhs);
-            gen.gen_expr(expr_sub->rhs);
-            gen.subtractive_distilation();
-        }
-
-        void operator()(const NodeExprMulti* expr_multi)
-        {
-            gen.gen_expr(expr_multi->lhs);
-            gen.gen_expr(expr_multi->rhs);
-            gen.multiplicative_distilation();
-        }
-
-        void operator()(const NodeExprDiv* expr_div)
-        {
-            gen.gen_expr(expr_div->lhs);
-            gen.gen_expr(expr_div->rhs);
-            gen.division_distilation();
-        }
-    };
-
-    ExprBinVisitor visitor(*this);
-    std::visit(visitor, expr_bin->var);
+    switch(expr_bin->op_type)
+    {
+    case TokenType::angle_open:
+        minimus_distilation();
+        break;
+    case TokenType::angle_close:
+        maximus_distilation();
+        break;
+    case TokenType::plus:
+        additive_distilation();
+        break;
+    case TokenType::dash:
+        subtractive_distilation(); 
+        break;
+    case TokenType::star:
+        multiplicative_distilation();
+        break;
+    case TokenType::slash_forward:
+        division_distilation();
+        break;
+    }
 }
 
 void Generator::gen_term(const NodeTerm* term)
@@ -76,13 +81,20 @@ void Generator::gen_term(const NodeTerm* term)
             }
 
             Var& var = *iter;
-            gen.numerical_reflection(std::to_string(gen.m_stack_size - var.stack_loc - 1));
+            gen.flocks_reflection();
+            gen.numerical_reflection(std::to_string(var.stack_loc + 1));
+            gen.subtractive_distilation();
             gen.fishermans_gambit_II();
         }
 
         void operator()(const NodeTermParen* term_paren)
         {
             gen.gen_expr(term_paren->expr);
+        }
+
+        void operator()(const NodeTermFunc* term_func)
+        {
+            gen.gen_func(term_func->func);
         }
     };
 
@@ -117,11 +129,14 @@ void Generator::gen_stmt(const NodeStmt* stmt)
         Generator& gen;
         StmtVisitor(Generator& _gen) :gen(_gen) {}
 
-        void operator()(const NodeStmtPrint* stmt_print)
+        void operator()(const NodeStmtFunc* stmt_func)
         {
-            gen.gen_expr(stmt_print->expr);
-            gen.reveal();
-            gen.pop();
+            gen.gen_func(stmt_func->func);
+        }
+
+        void operator()(const NodeExpr* stmt_expr)
+        {
+            gen.gen_expr(stmt_expr);
         }
 
         void operator()(const NodeStmtLet* stmt_let)
@@ -135,7 +150,24 @@ void Generator::gen_stmt(const NodeStmt* stmt)
             gen.m_vars.push_back(Var{.name = stmt_let->ident.value.value(), .stack_loc = gen.m_stack_size - 1});
         }
 
-        void operator()(const NodeStmtScope* stmt_scope)
+        void operator()(const NodeStmtIf* stmt_if)
+        {
+            // Evaluate expression
+            gen.gen_expr(stmt_if->expr);
+            gen.augurs_purification();
+
+            // Generate statement
+            gen.m_output << "{\n";
+            gen.gen_stmt(stmt_if->stmt);
+            gen.m_output << "}\n";
+            
+            // Perform bool comparison and execute
+            gen.m_output << "Vacant Reflection\n";
+            gen.m_output << "Augur's Exaltation\n";
+            gen.m_output << "Hermes' Gambit\n";
+        }
+
+        void operator()(const NodeScope* stmt_scope)
         {
             gen.begin_scope();
 
@@ -161,6 +193,19 @@ void Generator::gen_prog()
 }
 
 
+
+void Generator::try_gen_x_exprs(std::vector<NodeExpr*> exprs, int correct_amount)
+{
+    if (exprs.size() != correct_amount)
+    {
+        compilation_error("Incorrect number of arguments passed into function");
+    }
+
+    for (NodeExpr* expr : exprs)
+    {
+        gen_expr(expr);
+    }
+}
 
 void Generator::pop(int amount)
 {
@@ -196,6 +241,11 @@ void Generator::additive_distilation()
     --m_stack_size;
 }
 
+void Generator::augurs_purification()
+{
+    m_output << "Augur's Purification\n";
+}
+
 void Generator::division_distilation()
 {
     m_output << "Division Distillation\n";
@@ -205,6 +255,24 @@ void Generator::division_distilation()
 void Generator::fishermans_gambit_II()
 {
     m_output << "Fisherman's Gambit II\n";
+}
+
+void Generator::flocks_reflection()
+{
+    m_output << "Flock's Reflection\n";
+    ++m_stack_size;
+}
+
+void Generator::maximus_distilation()
+{
+    m_output << "Maximus Distillation\n";
+    --m_stack_size;
+}
+
+void Generator::minimus_distilation()
+{
+    m_output << "Minimus Distillation\n";
+    --m_stack_size;
 }
 
 void Generator::multiplicative_distilation()
@@ -217,6 +285,12 @@ void Generator::numerical_reflection(std::string value)
 {
     m_output << "Numerical Reflection: " << value << '\n';
     ++m_stack_size;
+}
+
+void Generator::power_distilation()
+{
+    m_output << "Power Distillation\n";
+    --m_stack_size;
 }
 
 void Generator::reveal()

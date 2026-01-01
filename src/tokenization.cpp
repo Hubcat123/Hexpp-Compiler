@@ -23,11 +23,16 @@ std::vector<Token> Tokenizer::tokenize()
         {'/', TokenType::slash_forward},
         {'{', TokenType::curly_open},
         {'}', TokenType::curly_close},
+        {'<', TokenType::angle_open},
+        {'>', TokenType::angle_close},
+        {',', TokenType::comma},
     };
 
     const std::map<std::string, TokenType> identifierTokenMap {
         {"print", TokenType::print},
         {"let", TokenType::let},
+        {"if", TokenType::if_},
+        {"pow", TokenType::pow},
     };
 
     // Loop through all characters in string
@@ -94,12 +99,15 @@ std::optional<int> Tokenizer::bin_prec(TokenType type)
 {
     switch (type)
     {
+    case TokenType::angle_open:
+    case TokenType::angle_close:
+        return 0;
     case TokenType::plus:
     case TokenType::dash:
-        return 0;
+        return 1;
     case TokenType::star:
     case TokenType::slash_forward:
-        return 1;
+        return 2;
     default:
         return {};
     }

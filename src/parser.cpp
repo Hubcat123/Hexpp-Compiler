@@ -11,6 +11,43 @@ std::optional<NodeProg*> Parser::parse()
     return parse_prog();
 }
 
+std::optional<NodeFunc*> Parser::parse_func(std::vector<TokenType> valid_types)
+{
+    // Check if statement is print
+    if (peek().has_value() && std::find(valid_types.cbegin(), valid_types.cend(), peek().value().type) != valid_types.cend() &&
+        peek(1).has_value() && peek(1).value().type == TokenType::paren_open)
+    {
+        // Consume starting tokens
+        TokenType func_type = consume().type;
+        consume();
+
+        std::vector<NodeExpr*> exprs{};
+
+        // Parse expresion
+        while (std::optional<NodeExpr*> node_expr = parse_expr())
+        {
+            exprs.push_back(node_expr.value());
+
+            if (!peek().has_value() || peek().value().type != TokenType::comma)
+            {
+                break;
+            }
+
+            consume();
+        }
+
+        // Check for closing tokens
+        try_consume(TokenType::paren_close, ')');
+
+        NodeFunc* stmt_func = m_allocator.alloc<NodeFunc>();
+        stmt_func->func_type = func_type;
+        stmt_func->exprs = exprs;
+        return stmt_func;
+    }
+
+    return {};
+}
+
 std::optional<NodeTerm*> Parser::parse_term()
 {
     if (peek().has_value())
@@ -50,6 +87,14 @@ std::optional<NodeTerm*> Parser::parse_term()
             {
                 compilation_error("Expected expression");
             }
+        }
+        else if (std::optional<NodeFunc*> func = parse_func({ TokenType::pow }))
+        {
+            NodeTermFunc* node_term_func = m_allocator.alloc<NodeTermFunc>();
+            node_term_func->func = func.value();
+            NodeTerm* term = m_allocator.alloc<NodeTerm>();
+            term->var = node_term_func;
+            return term;
         }
     }
 
@@ -92,14 +137,9 @@ std::optional<NodeExpr*> Parser::parse_expr(int min_prec)
         }
 
         NodeExprBin* expr_bin = m_allocator.alloc<NodeExprBin>();
-        bool is_op = parse_bin_op<NodeExprAdd>(op_type, TokenType::plus, expr_bin, lhs_expr, rhs_expr.value());
-        is_op = is_op || parse_bin_op<NodeExprSub>(op_type, TokenType::dash, expr_bin, lhs_expr, rhs_expr.value());
-        is_op = is_op || parse_bin_op<NodeExprMulti>(op_type, TokenType::star, expr_bin, lhs_expr, rhs_expr.value());
-        is_op = is_op || parse_bin_op<NodeExprDiv>(op_type, TokenType::slash_forward, expr_bin, lhs_expr, rhs_expr.value());
-        if (!is_op)
-        {
-            compilation_error("Unknown binary operator");
-        }
+        expr_bin->op_type = op_type;
+        expr_bin->lhs = lhs_expr;
+        expr_bin->rhs = rhs_expr.value();
 
         lhs_expr = m_allocator.alloc<NodeExpr>();
         lhs_expr->var = expr_bin;
@@ -108,37 +148,53 @@ std::optional<NodeExpr*> Parser::parse_expr(int min_prec)
     return lhs_expr;
 }
 
+std::optional<NodeScope*> Parser::parse_scope()
+{
+    if (peek().has_value() && peek().value().type == TokenType::curly_open)
+    {
+        consume();
+
+        std::vector<NodeStmt*> stmts{};
+        while (std::optional<NodeStmt*> stmt = parse_stmt())
+        {
+            stmts.push_back(stmt.value());
+        }
+
+        try_consume(TokenType::curly_close, '}');
+
+        NodeScope* stmt_scope = m_allocator.alloc<NodeScope>();
+        stmt_scope->stmts = stmts;
+
+        return stmt_scope;
+    }
+
+    return {};
+}
+
 std::optional<NodeStmt*> Parser::parse_stmt()
 {
     if (peek().has_value())
     {
-        // Check if statement is print
-        if (peek().value().type == TokenType::print &&
-            peek(1).has_value() && peek(1).value().type == TokenType::paren_open)
+        // Check if statement is function
+        if (std::optional<NodeFunc*> func = parse_func(
+            { TokenType::print }))
         {
-            // Consume starting tokens
-            consume(2);
-
-            NodeStmtPrint* stmt_print;
-
-            // Parse expresion
-            if (std::optional<NodeExpr*> node_expr = parse_expr())
-            {
-                stmt_print = m_allocator.alloc<NodeStmtPrint>();
-                stmt_print->expr = node_expr.value();
-            }
-            else
-            {
-                compilation_error("Invalid expression");
-            }
-
-            // Check for closing tokens
-            try_consume(TokenType::paren_close, ')');
             try_consume(TokenType::semi, ';');
 
+            NodeStmtFunc* node_stmt_func = m_allocator.alloc<NodeStmtFunc>();
+            node_stmt_func->func = func.value();
             NodeStmt* node_stmt = m_allocator.alloc<NodeStmt>();
-            node_stmt->var = stmt_print;
+            node_stmt->var = node_stmt_func;
             return node_stmt;
+        }
+        // Check if expression
+        else if (std::optional<NodeExpr*> expr = parse_expr())
+        {
+            try_consume(TokenType::semi, ';');
+
+            NodeStmt* stmt = m_allocator.alloc<NodeStmt>();
+            stmt->var = expr.value();
+            return stmt;
         }
         // Check if num var
         else if (
@@ -169,22 +225,37 @@ std::optional<NodeStmt*> Parser::parse_stmt()
             node_stmt->var = stmt_let;
             return node_stmt;
         }
-        else if (peek().value().type == TokenType::curly_open)
+        else if (peek().value().type == TokenType::if_)
         {
             consume();
-            
-            std::vector<NodeStmt*> stmts{};
-            while (std::optional<NodeStmt*> stmt = parse_stmt())
+            try_consume(TokenType::paren_open, '(');
+
+            if (std::optional<NodeExpr*> expr = parse_expr())
             {
-                stmts.push_back(stmt.value());
+                try_consume(TokenType::paren_close, ')');
+                if (std::optional<NodeStmt*> if_stmt = parse_stmt())
+                {
+                    NodeStmtIf* stmt_if = m_allocator.alloc<NodeStmtIf>();
+                    stmt_if->expr = expr.value();
+                    stmt_if->stmt = if_stmt.value();
+                    NodeStmt* stmt = m_allocator.alloc<NodeStmt>();
+                    stmt->var = stmt_if;
+                    return stmt;
+                }
+                else
+                {
+                    compilation_error("Expected scope");
+                }
             }
-
-            try_consume(TokenType::curly_close, '}');
-
-            NodeStmtScope* stmt_scope = m_allocator.alloc<NodeStmtScope>();
-            stmt_scope->stmts = stmts;
+            else
+            {
+                compilation_error("Expected expression");
+            }
+        }
+        else if (std::optional<NodeScope*> scope = parse_scope())
+        {
             NodeStmt* stmt = m_allocator.alloc<NodeStmt>();
-            stmt->var = stmt_scope;
+            stmt->var = scope.value();
             return stmt;
         }
     }

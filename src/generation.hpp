@@ -11,21 +11,28 @@ public:
 
     std::string generate();
 
+    void gen_func(const NodeFunc* func);
     void gen_bin_expr(const NodeExprBin* expr_bin);
     void gen_term(const NodeTerm* term);
     void gen_expr(const NodeExpr* expr);
     void gen_stmt(const NodeStmt* stmt);
     void gen_prog();
     
+    void try_gen_x_exprs(std::vector<NodeExpr*> exprs, int correct_amount);
     void pop(int amount = 1);
     void begin_scope();
     void end_scope();
 
     void additive_distilation();
+    void augurs_purification();
     void division_distilation();
     void fishermans_gambit_II();
+    void flocks_reflection();
+    void maximus_distilation();
+    void minimus_distilation();
     void multiplicative_distilation();
     void numerical_reflection(std::string value);
+    void power_distilation();
     void reveal();
     void subtractive_distilation();
 private:
@@ -37,7 +44,7 @@ private:
 
     const NodeProg* m_prog;
     std::stringstream m_output;
-    size_t m_stack_size;
+    size_t m_stack_size = 0;
     std::vector<Var> m_vars {};
     std::stack<size_t> m_scopes {};
 };
