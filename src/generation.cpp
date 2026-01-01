@@ -67,12 +67,15 @@ void Generator::gen_term(const NodeTerm* term)
 
         void operator()(const NodeTermIdent* term_ident)
         {
-            if (!gen.m_vars.contains(term_ident->ident.value.value()))
+            const std::vector<Var>::iterator iter = std::find_if(gen.m_vars.begin(), gen.m_vars.end(),
+                [&](const Var& var){ return var.name == term_ident->ident.value.value(); });
+            
+            if (iter == gen.m_vars.end())
             {
                 compilation_error(std::string("Undeclared identifier: ") + term_ident->ident.value.value());
             }
 
-            Var& var = gen.m_vars.at(term_ident->ident.value.value());
+            Var& var = *iter;
             gen.numerical_reflection(std::to_string(gen.m_stack_size - var.stack_loc - 1));
             gen.fishermans_gambit_II();
         }
@@ -93,23 +96,6 @@ void Generator::gen_expr(const NodeExpr* expr)
         Generator& gen;
         ExprVisitor (Generator& _gen) :gen(_gen) {}
         
-        void operator()(const NodeTermNumLit* expr_int_lit)
-        {
-            gen.numerical_reflection(expr_int_lit->num_lit.value.value());
-        }
-
-        void operator()(const NodeTermIdent* expr_ident)
-        {
-            if (!gen.m_vars.contains(expr_ident->ident.value.value()))
-            {
-                compilation_error(std::string("Undeclared identifier: ") + expr_ident->ident.value.value());
-            }
-
-            Var& var = gen.m_vars.at(expr_ident->ident.value.value());
-            gen.numerical_reflection(std::to_string(gen.m_stack_size - var.stack_loc - 1));
-            gen.fishermans_gambit_II();
-        }
-
         void operator()(const NodeTerm* term)
         {
             gen.gen_term(term);
@@ -140,13 +126,25 @@ void Generator::gen_stmt(const NodeStmt* stmt)
 
         void operator()(const NodeStmtLet* stmt_let)
         {
-            if (gen.m_vars.contains(stmt_let->ident.value.value()))
+            if (std::find_if(gen.m_vars.cbegin(), gen.m_vars.cend(), [&](const Var& var){return var.name == stmt_let->ident.value.value();}) != gen.m_vars.cend())
             {
                 compilation_error(std::string("Identifier already used: ") + stmt_let->ident.value.value());
             }
 
             gen.gen_expr(stmt_let->expr);
-            gen.m_vars.insert({stmt_let->ident.value.value(), Var{.stack_loc = gen.m_stack_size - 1}});
+            gen.m_vars.push_back(Var{.name = stmt_let->ident.value.value(), .stack_loc = gen.m_stack_size - 1});
+        }
+
+        void operator()(const NodeStmtScope* stmt_scope)
+        {
+            gen.begin_scope();
+
+            for (NodeStmt* stmt : stmt_scope->stmts)
+            {
+                gen.gen_stmt(stmt);
+            }
+
+            gen.end_scope();
         }
     };
 
@@ -162,11 +160,35 @@ void Generator::gen_prog()
     }
 }
 
+
+
 void Generator::pop(int amount)
 {
+    if (amount <= 0)
+    {
+        return;
+    }
+
     m_output << "Bookkeeper's Gambit: " << std::string(amount, 'v') << '\n';
     m_stack_size -= amount;
 }
+
+void Generator::begin_scope()
+{
+    m_scopes.push(m_vars.size());
+}
+
+void Generator::end_scope()
+{
+    size_t pop_count = m_vars.size() - m_scopes.top();
+    pop(pop_count);
+
+    m_vars.resize(m_scopes.top());
+
+    m_scopes.pop();
+}
+
+
 
 void Generator::additive_distilation()
 {

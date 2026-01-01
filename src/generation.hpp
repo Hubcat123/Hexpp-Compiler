@@ -3,7 +3,7 @@
 #include "parser.hpp"
 
 #include <sstream>
-#include <unordered_map>
+#include <stack>
 
 class Generator {
 public:
@@ -18,6 +18,8 @@ public:
     void gen_prog();
     
     void pop(int amount = 1);
+    void begin_scope();
+    void end_scope();
 
     void additive_distilation();
     void division_distilation();
@@ -29,11 +31,13 @@ public:
 private:
 
     struct Var {
+        std::string name;
         size_t stack_loc;
     };
 
     const NodeProg* m_prog;
     std::stringstream m_output;
     size_t m_stack_size;
-    std::unordered_map<std::string, Var> m_vars {};
+    std::vector<Var> m_vars {};
+    std::stack<size_t> m_scopes {};
 };

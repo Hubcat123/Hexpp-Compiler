@@ -7,6 +7,7 @@
 #include "arena.hpp"
 
 struct NodeExpr;
+struct NodeStmt;
 
 struct NodeTermNumLit {
     Token num_lit;
@@ -65,8 +66,12 @@ struct NodeStmtLet {
     NodeExpr* expr;
 };
 
+struct NodeStmtScope {
+    std::vector<NodeStmt*> stmts;
+};
+
 struct NodeStmt {
-    std::variant<NodeStmtPrint*, NodeStmtLet*> var;
+    std::variant<NodeStmtPrint*, NodeStmtLet*, NodeStmtScope*> var;
 };
 
 struct NodeProg {

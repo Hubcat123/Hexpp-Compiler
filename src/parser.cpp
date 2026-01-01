@@ -169,6 +169,24 @@ std::optional<NodeStmt*> Parser::parse_stmt()
             node_stmt->var = stmt_let;
             return node_stmt;
         }
+        else if (peek().value().type == TokenType::curly_open)
+        {
+            consume();
+            
+            std::vector<NodeStmt*> stmts{};
+            while (std::optional<NodeStmt*> stmt = parse_stmt())
+            {
+                stmts.push_back(stmt.value());
+            }
+
+            try_consume(TokenType::curly_close, '}');
+
+            NodeStmtScope* stmt_scope = m_allocator.alloc<NodeStmtScope>();
+            stmt_scope->stmts = stmts;
+            NodeStmt* stmt = m_allocator.alloc<NodeStmt>();
+            stmt->var = stmt_scope;
+            return stmt;
+        }
     }
 
     return {};

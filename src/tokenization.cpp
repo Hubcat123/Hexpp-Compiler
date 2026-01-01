@@ -21,6 +21,8 @@ std::vector<Token> Tokenizer::tokenize()
         {'*', TokenType::star},
         {'-', TokenType::dash},
         {'/', TokenType::slash_forward},
+        {'{', TokenType::curly_open},
+        {'}', TokenType::curly_close},
     };
 
     const std::map<std::string, TokenType> identifierTokenMap {
