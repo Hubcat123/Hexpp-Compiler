@@ -86,6 +86,19 @@ std::vector<Token> Tokenizer::tokenize()
     return tokens;
 }
 
+std::optional<int> Tokenizer::bin_prec(TokenType type)
+{
+    switch (type)
+    {
+    case TokenType::plus:
+        return 0;
+    case TokenType::star:
+        return 1;
+    default:
+        return {};
+    }
+}
+
 std::optional<char> Tokenizer::peek(int ahead) const
 {
     if (m_index + ahead >= m_src.length())

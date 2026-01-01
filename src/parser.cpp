@@ -38,113 +38,66 @@ std::optional<NodeTerm*> Parser::parse_term()
     return {};
 }
 
-std::optional<NodeExprBin*> Parser::parse_expr_bin()
+std::optional<NodeExpr*> Parser::parse_expr(int min_prec)
 {
-    if (std::optional<NodeExpr*> lhs = parse_expr())
+    std::optional<NodeTerm*> term_lhs = parse_term();
+    if (!term_lhs.has_value())
     {
-        if (peek().has_value())
-        {
-            if (peek().value().type == TokenType::plus)
-            {
-                consume();
-                if (std::optional<NodeExpr*> rhs = parse_expr())
-                {
-                    NodeExprAdd* node_expr_add = m_allocator.alloc<NodeExprAdd>();
-                    node_expr_add->lhs = lhs.value();
-                    node_expr_add->rhs = rhs.value();
-                    NodeExprBin* node_expr_bin = m_allocator.alloc<NodeExprBin>();
-                    node_expr_bin->var = node_expr_add;
-                    return node_expr_bin;
-                }
-                else
-                {
-                    compilation_error("Expected expression");
-                }
-            }
-            else if (peek().value().type == TokenType::star)
-            {
-                consume();
-                if (std::optional<NodeExpr*> rhs = parse_expr())
-                {
-                    NodeExprMulti* node_expr_multi = m_allocator.alloc<NodeExprMulti>();
-                    node_expr_multi->lhs = lhs.value();
-                    node_expr_multi->rhs = rhs.value();
-                    NodeExprBin* node_expr_bin = m_allocator.alloc<NodeExprBin>();
-                    node_expr_bin->var = node_expr_multi;
-                    return node_expr_bin;
-                }
-                else
-                {
-                    compilation_error("Expected expression");
-                }
-            }
-        }
+        return {};
     }
 
-    return {};
-}
-
-std::optional<NodeExpr*> Parser::parse_expr()
-{
-    if (std::optional<NodeTerm*> node_term = parse_term())
+    NodeExpr* lhs_expr = m_allocator.alloc<NodeExpr>();
+    lhs_expr->var = term_lhs.value();
+    while (true)
     {
-        if (peek().has_value() && peek().value().type == TokenType::plus)
+        // Break if no next token
+        std::optional<Token> curr_tok = peek();
+        if (!curr_tok.has_value())
         {
-            consume();
-            if (std::optional<NodeExpr*> rhs = parse_expr())
-            {
-                NodeExprAdd* node_expr_add = m_allocator.alloc<NodeExprAdd>();
-                NodeExpr* lhs_expr = m_allocator.alloc<NodeExpr>();
-                lhs_expr->var = node_term.value();
-                node_expr_add->lhs = lhs_expr;
-                node_expr_add->rhs = rhs.value();
-                NodeExprBin* node_expr_bin = m_allocator.alloc<NodeExprBin>();
-                node_expr_bin->var = node_expr_add;
-                NodeExpr* node_expr = m_allocator.alloc<NodeExpr>();
-                node_expr->var = node_expr_bin;
-                return node_expr;
-            }
-            else
-            {
-                compilation_error("Expected expression");
-            }
+            break;
         }
-        else if (peek().has_value() && peek().value().type == TokenType::star)
+
+        // Break if next token not an operator or has lower precedance
+        std::optional<int> prec = Tokenizer::bin_prec(curr_tok.value().type);
+        if (!prec.has_value() || prec.value() < min_prec)
         {
-            consume();
-            if (std::optional<NodeExpr*> rhs = parse_expr())
-            {
-                NodeExprMulti* node_expr_multi = m_allocator.alloc<NodeExprMulti>();
-                NodeExpr* lhs_expr = m_allocator.alloc<NodeExpr>();
-                lhs_expr->var = node_term.value();
-                node_expr_multi->lhs = lhs_expr;
-                node_expr_multi->rhs = rhs.value();
-                NodeExprBin* node_expr_bin = m_allocator.alloc<NodeExprBin>();
-                node_expr_bin->var = node_expr_multi;
-                NodeExpr* node_expr = m_allocator.alloc<NodeExpr>();
-                node_expr->var = node_expr_bin;
-                return node_expr;
-            }
-            else
-            {
-                compilation_error("Expected expression");
-            }
+            break;
+        }
+
+        TokenType op_type = consume().type;
+
+        int next_min_prec = prec.value() + 1;
+        std::optional<NodeExpr*> rhs_expr = parse_expr(next_min_prec);
+        if (!rhs_expr.has_value())
+        {
+            compilation_error("Expected expression");
+        }
+
+        NodeExprBin* expr_bin = m_allocator.alloc<NodeExprBin>();
+        if (op_type == TokenType::plus)
+        {
+            NodeExprAdd* expr_add = m_allocator.alloc<NodeExprAdd>();
+            expr_add->lhs = lhs_expr;
+            expr_add->rhs = rhs_expr.value();
+            expr_bin->var = expr_add;
+        }
+        else if (op_type == TokenType::star)
+        {
+            NodeExprMulti* expr_multi = m_allocator.alloc<NodeExprMulti>();
+            expr_multi->lhs = lhs_expr;
+            expr_multi->rhs = rhs_expr.value();
+            expr_bin->var = expr_multi;
         }
         else
         {
-            NodeExpr* node_expr = m_allocator.alloc<NodeExpr>();
-            node_expr->var = node_term.value();
-            return node_expr;
+            compilation_error("Unknown binary operator");
         }
-    }
-    else if (std::optional<NodeExprBin*> node_expr_bin = parse_expr_bin())
-    {
-        NodeExpr* node_expr = m_allocator.alloc<NodeExpr>();
-        node_expr->var = node_expr_bin.value();
-        return node_expr;
+
+        lhs_expr = m_allocator.alloc<NodeExpr>();
+        lhs_expr->var = expr_bin;
     }
 
-    return {};
+    return lhs_expr;
 }
 
 std::optional<NodeStmt*> Parser::parse_stmt()

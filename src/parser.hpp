@@ -67,8 +67,7 @@ public:
     std::optional<NodeProg*> parse();
 private:
     std::optional<NodeTerm*> parse_term();
-    std::optional<NodeExprBin*> parse_expr_bin();
-    std::optional<NodeExpr*> parse_expr();
+    std::optional<NodeExpr*> parse_expr(int min_prec = 0);
     std::optional<NodeStmt*> parse_stmt();
     std::optional<NodeProg*> parse_prog();
 

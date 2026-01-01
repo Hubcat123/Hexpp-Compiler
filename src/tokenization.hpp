@@ -19,6 +19,8 @@ public:
     Tokenizer(const std::string& src);
 
     std::vector<Token> tokenize();
+
+    static std::optional<int> bin_prec(TokenType type);
 private:
     std::optional<char> peek(int ahead = 0) const;
     char consume();
