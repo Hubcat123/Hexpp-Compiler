@@ -17,6 +17,8 @@ std::optional<NodeFunc*> Parser::parse_func(std::vector<TokenType> valid_types)
     if (peek().has_value() && std::find(valid_types.cbegin(), valid_types.cend(), peek().value().type) != valid_types.cend() &&
         peek(1).has_value() && peek(1).value().type == TokenType::paren_open)
     {
+        size_t line = peek().value().line;
+
         // Consume starting tokens
         TokenType func_type = consume().type;
         consume();
@@ -42,6 +44,7 @@ std::optional<NodeFunc*> Parser::parse_func(std::vector<TokenType> valid_types)
         NodeFunc* stmt_func = m_allocator.alloc<NodeFunc>();
         stmt_func->func_type = func_type;
         stmt_func->exprs = exprs;
+        stmt_func->line = line;
         return stmt_func;
     }
 
@@ -52,13 +55,16 @@ std::optional<NodeTerm*> Parser::parse_term()
 {
     if (peek().has_value())
     {
+        size_t line = peek().value().line;
         // Check if term is a num literal
         if (peek().value().type == TokenType::num_lit)
         {
             NodeTermNumLit* node_term_num_lit = m_allocator.alloc<NodeTermNumLit>();
             node_term_num_lit->num_lit = consume();
+            node_term_num_lit->line = line;
             NodeTerm* node_term = m_allocator.alloc<NodeTerm>();
             node_term->var = node_term_num_lit;
+            node_term->line = line;
             return node_term;
         }
         // Check if term is an identifier
@@ -73,21 +79,25 @@ std::optional<NodeTerm*> Parser::parse_term()
                     NodeTermAssign* term_assign = m_allocator.alloc<NodeTermAssign>();
                     term_assign->ident = ident;
                     term_assign->expr = expr.value();
+                    term_assign->line = line;
                     NodeTerm* term = m_allocator.alloc<NodeTerm>();
                     term->var = term_assign;
+                    term->line = line;
                     return term;
                 }
                 else
                 {
-                    compilation_error("Expected expression");
+                    compilation_error("Expected expression", peek(-1).has_value() ? peek(-1).value().line : 1);
                 }
             }
             else
             {
                 NodeTermIdent* node_term_ident = m_allocator.alloc<NodeTermIdent>();
                 node_term_ident->ident = consume();
+                node_term_ident->line = line;
                 NodeTerm* node_term = m_allocator.alloc<NodeTerm>();
                 node_term->var = node_term_ident;
+                node_term->line = line;
                 return node_term;
             }
         }
@@ -95,27 +105,32 @@ std::optional<NodeTerm*> Parser::parse_term()
         else if (peek().value().type == TokenType::paren_open)
         {
             consume();
-            NodeTermParen* node_term_paren = m_allocator.alloc<NodeTermParen>();
             if (std::optional<NodeExpr*> expr = parse_expr())
             {
                 try_consume(TokenType::paren_close, ')');
+                NodeTermParen* node_term_paren = m_allocator.alloc<NodeTermParen>();
                 node_term_paren->expr = expr.value();
+                node_term_paren->line = line;
                 NodeTerm* term = m_allocator.alloc<NodeTerm>();
                 term->var = node_term_paren;
+                term->line = line;
                 return term;
             }
             else
             {
-                compilation_error("Expected expression");
+                compilation_error("Expected expression", peek(-1).has_value() ? peek(-1).value().line : 1);
             }
         }
+        // Check if term is a function
         else if (std::optional<NodeFunc*> func = parse_func(
             { TokenType::pow, TokenType::vec, TokenType::self, TokenType::pos, TokenType::forward, TokenType::eye_pos, TokenType::block_raycast, TokenType::block_normal_raycast }))
         {
             NodeTermFunc* node_term_func = m_allocator.alloc<NodeTermFunc>();
             node_term_func->func = func.value();
+            node_term_func->line = line;
             NodeTerm* term = m_allocator.alloc<NodeTerm>();
             term->var = node_term_func;
+            term->line = line;
             return term;
         }
     }
@@ -125,6 +140,12 @@ std::optional<NodeTerm*> Parser::parse_term()
 
 std::optional<NodeExpr*> Parser::parse_expr(int min_prec)
 {
+    size_t line;
+    if (peek().has_value())
+    {
+        line = peek().value().line;
+    }
+
     std::optional<NodeTerm*> term_lhs = parse_term();
     if (!term_lhs.has_value())
     {
@@ -133,6 +154,7 @@ std::optional<NodeExpr*> Parser::parse_expr(int min_prec)
 
     NodeExpr* lhs_expr = m_allocator.alloc<NodeExpr>();
     lhs_expr->var = term_lhs.value();
+    lhs_expr->line = line;
     while (true)
     {
         // Break if no next token
@@ -155,16 +177,18 @@ std::optional<NodeExpr*> Parser::parse_expr(int min_prec)
         std::optional<NodeExpr*> rhs_expr = parse_expr(next_min_prec);
         if (!rhs_expr.has_value())
         {
-            compilation_error("Expected expression");
+            compilation_error("Expected expression", peek(-1).has_value() ? peek(-1).value().line : 1);
         }
 
         NodeExprBin* expr_bin = m_allocator.alloc<NodeExprBin>();
         expr_bin->op_type = op_type;
         expr_bin->lhs = lhs_expr;
         expr_bin->rhs = rhs_expr.value();
+        expr_bin->line = line;
 
         lhs_expr = m_allocator.alloc<NodeExpr>();
         lhs_expr->var = expr_bin;
+        lhs_expr->line = line;
     }
 
     return lhs_expr;
@@ -174,7 +198,7 @@ std::optional<NodeScope*> Parser::parse_scope()
 {
     if (peek().has_value() && peek().value().type == TokenType::curly_open)
     {
-        consume();
+        size_t line = consume().line;
 
         std::vector<NodeStmt*> stmts{};
         while (std::optional<NodeStmt*> stmt = parse_stmt())
@@ -186,7 +210,7 @@ std::optional<NodeScope*> Parser::parse_scope()
 
         NodeScope* stmt_scope = m_allocator.alloc<NodeScope>();
         stmt_scope->stmts = stmts;
-
+        stmt_scope->line = line;
         return stmt_scope;
     }
 
@@ -197,6 +221,8 @@ std::optional<NodeStmt*> Parser::parse_stmt()
 {
     if (peek().has_value())
     {
+        size_t line = peek().value().line;
+
         // Check if statement is function
         if (std::optional<NodeFunc*> func = parse_func(
             { TokenType::print, TokenType::mine }))
@@ -205,8 +231,10 @@ std::optional<NodeStmt*> Parser::parse_stmt()
 
             NodeStmtFunc* node_stmt_func = m_allocator.alloc<NodeStmtFunc>();
             node_stmt_func->func = func.value();
+            node_stmt_func->line = line;
             NodeStmt* node_stmt = m_allocator.alloc<NodeStmt>();
             node_stmt->var = node_stmt_func;
+            node_stmt->line = line;
             return node_stmt;
         }
         // Check if expression
@@ -216,6 +244,7 @@ std::optional<NodeStmt*> Parser::parse_stmt()
 
             NodeStmt* stmt = m_allocator.alloc<NodeStmt>();
             stmt->var = expr.value();
+            stmt->line = line;
             return stmt;
         }
         // Check if num var
@@ -228,6 +257,7 @@ std::optional<NodeStmt*> Parser::parse_stmt()
             consume();
             NodeStmtLet* stmt_let = m_allocator.alloc<NodeStmtLet>();
             stmt_let->ident = consume();
+            stmt_let->line = line;
             consume();
 
             // Parse expression
@@ -237,7 +267,7 @@ std::optional<NodeStmt*> Parser::parse_stmt()
             }
             else
             {
-                compilation_error("Invalid expression");
+                compilation_error("Invalid expression", peek(-1).has_value() ? peek(-1).value().line : 1);
             }
 
             // Check for closing token
@@ -245,6 +275,7 @@ std::optional<NodeStmt*> Parser::parse_stmt()
 
             NodeStmt* node_stmt = m_allocator.alloc<NodeStmt>();
             node_stmt->var = stmt_let;
+            node_stmt->line = line;
             return node_stmt;
         }
         // Check if if
@@ -262,6 +293,7 @@ std::optional<NodeStmt*> Parser::parse_stmt()
                     stmt_if->expr = expr.value();
                     stmt_if->stmt = if_stmt.value();
                     stmt_if->else_stmt = nullptr;
+                    stmt_if->line = line;
 
                     // Check for potential else
                     if (peek().has_value() && peek().value().type == TokenType::else_)
@@ -274,22 +306,23 @@ std::optional<NodeStmt*> Parser::parse_stmt()
                         }
                         else
                         {
-                            compilation_error("Expected statement");
+                            compilation_error("Expected statement", peek(-1).has_value() ? peek(-1).value().line : 1);
                         }
                     }
 
                     NodeStmt* stmt = m_allocator.alloc<NodeStmt>();
                     stmt->var = stmt_if;
+                    stmt->line = line;
                     return stmt;
                 }
                 else
                 {
-                    compilation_error("Expected statement");
+                    compilation_error("Expected statement", peek(-1).has_value() ? peek(-1).value().line : 1);
                 }
             }
             else
             {
-                compilation_error("Expected expression");
+                compilation_error("Expected expression", peek(-1).has_value() ? peek(-1).value().line : 1);
             }
         }
         // Check if scope
@@ -297,6 +330,7 @@ std::optional<NodeStmt*> Parser::parse_stmt()
         {
             NodeStmt* stmt = m_allocator.alloc<NodeStmt>();
             stmt->var = scope.value();
+            stmt->line = line;
             return stmt;
         }
     }
@@ -307,6 +341,7 @@ std::optional<NodeStmt*> Parser::parse_stmt()
 std::optional<NodeProg*> Parser::parse_prog()
 {
     NodeProg* prog = m_allocator.alloc<NodeProg>();
+    prog->line = 1;
 
     // Keep looping looking for statements until all found
     while (peek().has_value())
@@ -317,7 +352,7 @@ std::optional<NodeProg*> Parser::parse_prog()
         }
         else
         {
-            compilation_error("Invalid statement");
+            compilation_error("Invalid statement", peek(-1).has_value() ? peek(-1).value().line : 1);
         }
     }
 
@@ -332,7 +367,7 @@ void Parser::try_consume(TokenType type, char tokenChar)
     }
     else
     {
-        compilation_error(std::string("Expected '") + tokenChar + '\'');
+        compilation_error(std::string("Expected '") + tokenChar + '\'', peek(-1).has_value() ? peek(-1).value().line : 1);
     }
 }
 

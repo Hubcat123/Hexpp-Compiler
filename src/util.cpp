@@ -2,8 +2,15 @@
 
 #include <iostream>
 
-void compilation_error(const std::string message)
+void compilation_error(const std::string message, size_t line)
 {
-    std::cout << "Hex++ Compilation Error: " << message << std::endl;
+    if (line > 0)
+    {
+        std::cout << "Hex++ Compilation Error: " << message << " on line " << line << std::endl;
+    }
+    else
+    {
+        std::cout << "Hex++ Compilation Error: " << message << std::endl;
+    }
     exit(EXIT_FAILURE);
 }

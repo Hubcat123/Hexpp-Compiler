@@ -6,73 +6,77 @@
 
 #include "arena.hpp"
 
+struct Node {
+    size_t line;
+};
+
 struct NodeExpr;
 struct NodeStmt;
 
-struct NodeTermNumLit {
+struct NodeTermNumLit : Node {
     Token num_lit;
 };
 
-struct NodeTermIdent {
+struct NodeTermIdent : Node {
     Token ident;
 };
 
-struct NodeTermParen {
+struct NodeTermParen : Node {
     NodeExpr* expr;
 };
 
-struct NodeExprBin {
+struct NodeExprBin : Node {
     TokenType op_type;
     NodeExpr* lhs;
     NodeExpr* rhs;
 };
 
-struct NodeFunc {
+struct NodeFunc : Node {
     TokenType func_type;
     std::vector<NodeExpr*> exprs;
 };
 
-struct NodeTermFunc {
+struct NodeTermFunc : Node {
     NodeFunc* func;
 };
 
-struct NodeTermAssign {
+struct NodeTermAssign : Node {
     Token ident;
     NodeExpr* expr;
 };
 
-struct NodeTerm {
+struct NodeTerm : Node {
     std::variant<NodeTermNumLit*, NodeTermIdent*, NodeTermAssign*, NodeTermParen*, NodeTermFunc*> var;
 };
 
-struct NodeExpr {
+struct NodeExpr : Node {
     std::variant<NodeTerm*, NodeExprBin*> var;
 };
 
-struct NodeStmtLet {
+struct NodeStmtLet : Node {
     Token ident;
     NodeExpr* expr;
 };
 
-struct NodeScope {
+struct NodeScope : Node {
     std::vector<NodeStmt*> stmts;
 };
 
-struct NodeStmtIf {
+struct NodeStmtIf : Node {
     NodeExpr* expr;
     NodeStmt* stmt;
     NodeStmt* else_stmt;
 };
 
-struct NodeStmtFunc {
+struct NodeStmtFunc : Node {
     NodeFunc* func;
 };
 
-struct NodeStmt {
+struct NodeStmt : Node {
     std::variant<NodeStmtFunc*, NodeExpr*, NodeStmtLet*, NodeStmtIf*, NodeScope*> var;
 };
 
-struct NodeProg {
+struct NodeProg : Node {
     std::vector<NodeStmt*> stmts;
 };
 

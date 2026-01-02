@@ -20,44 +20,44 @@ void Generator::gen_func(const NodeFunc* func)
     switch (func->func_type)
     {
     case TokenType::print:
-        try_gen_x_exprs(func->exprs, 1);
+        try_gen_x_exprs(func->exprs, 1, func->line);
         reveal();
         pop();
         break;
     case TokenType::pow:
-        try_gen_x_exprs(func->exprs, 2);
+        try_gen_x_exprs(func->exprs, 2, func->line);
         power_distilation();
         break;
     case TokenType::vec:
-        try_gen_x_exprs(func->exprs, 3);
+        try_gen_x_exprs(func->exprs, 3, func->line);
         vector_exaltation();
         break;
     case TokenType::self:
-        try_gen_x_exprs(func->exprs, 0);
+        try_gen_x_exprs(func->exprs, 0, func->line);
         minds_reflection();
         break;
     case TokenType::pos:
-        try_gen_x_exprs(func->exprs, 1);
+        try_gen_x_exprs(func->exprs, 1, func->line);
         compass_purification_II();
         break;
     case TokenType::mine:
-        try_gen_x_exprs(func->exprs, 1);
+        try_gen_x_exprs(func->exprs, 1, func->line);
         break_block();
         break;
     case TokenType::forward:
-        try_gen_x_exprs(func->exprs, 1);
+        try_gen_x_exprs(func->exprs, 1, func->line);
         alidades_purification();
         break;
     case TokenType::eye_pos:
-        try_gen_x_exprs(func->exprs, 1);
+        try_gen_x_exprs(func->exprs, 1, func->line);
         compass_purification();
         break;
     case TokenType::block_raycast:
-        try_gen_x_exprs(func->exprs, 2);
+        try_gen_x_exprs(func->exprs, 2, func->line);
         archers_distilation();
         break;
     case TokenType::block_normal_raycast:
-        try_gen_x_exprs(func->exprs, 2);
+        try_gen_x_exprs(func->exprs, 2, func->line);
         architects_distilation();
         break;
     }
@@ -109,7 +109,7 @@ void Generator::gen_term(const NodeTerm* term)
             
             if (iter == gen.m_vars.end())
             {
-                compilation_error(std::string("Undeclared identifier: ") + term_ident->ident.value.value());
+                compilation_error(std::string("Undeclared identifier: ") + term_ident->ident.value.value(), term_ident->line);
             }
 
             Var& var = *iter;
@@ -124,7 +124,7 @@ void Generator::gen_term(const NodeTerm* term)
             
             if (iter == gen.m_vars.end())
             {
-                compilation_error(std::string("Undeclared identifier: ") + term_assign->ident.value.value());
+                compilation_error(std::string("Undeclared identifier: ") + term_assign->ident.value.value(), term_assign->line);
             }
 
             Var& var = *iter;
@@ -194,7 +194,7 @@ void Generator::gen_stmt(const NodeStmt* stmt)
         {
             if (std::find_if(gen.m_vars.cbegin(), gen.m_vars.cend(), [&](const Var& var){return var.name == stmt_let->ident.value.value();}) != gen.m_vars.cend())
             {
-                compilation_error(std::string("Identifier already used: ") + stmt_let->ident.value.value());
+                compilation_error(std::string("Identifier already used: ") + stmt_let->ident.value.value(), stmt_let->line);
             }
 
             gen.gen_expr(stmt_let->expr);
@@ -261,11 +261,11 @@ void Generator::gen_prog()
 
 
 
-void Generator::try_gen_x_exprs(std::vector<NodeExpr*> exprs, int correct_amount)
+void Generator::try_gen_x_exprs(std::vector<NodeExpr*> exprs, int correct_amount, size_t line)
 {
     if (exprs.size() != correct_amount)
     {
-        compilation_error("Incorrect number of arguments passed into function");
+        compilation_error("Incorrect number of arguments passed into function", line);
     }
 
     for (NodeExpr* expr : exprs)

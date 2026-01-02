@@ -12,6 +12,7 @@ enum class TokenType {
 struct Token {
     TokenType type;
     std::optional<std::string> value {};
+    size_t line;
 };
 
 class Tokenizer
@@ -29,4 +30,5 @@ private:
 
     const std::string m_src;
     size_t m_index = 0;
+    size_t m_curr_line = 1;
 };

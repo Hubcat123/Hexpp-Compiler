@@ -102,11 +102,11 @@ std::vector<Token> Tokenizer::tokenize()
             // Find correct identifier and add to token vector
             if (identifierTokenMap.contains(buf))
             {
-                tokens.push_back({.type = identifierTokenMap.at(buf)});
+                tokens.push_back({.type = identifierTokenMap.at(buf), .line = m_curr_line});
             }
             else
             {
-                tokens.push_back({.type = TokenType::ident, .value = buf});
+                tokens.push_back({.type = TokenType::ident, .value = buf, .line = m_curr_line});
             }
 
             // Reset buffer
@@ -127,7 +127,7 @@ std::vector<Token> Tokenizer::tokenize()
                 buf.push_back(consume());
             }
 
-            tokens.push_back({.type = TokenType::num_lit, .value = buf});
+            tokens.push_back({.type = TokenType::num_lit, .value = buf, .line = m_curr_line});
             buf.clear();
         }
         // Skip white space
@@ -138,12 +138,12 @@ std::vector<Token> Tokenizer::tokenize()
         // Check for single character non-alpha tokens
         else if (nonAlphaTokenMap.contains(peek().value()))
         {
-            tokens.push_back({.type = nonAlphaTokenMap.at(consume())});
+            tokens.push_back({.type = nonAlphaTokenMap.at(consume()), .line = m_curr_line});
         }
         // Invalid character
         else
         {
-            compilation_error(std::string("Invalid character '") + peek().value() + '\'');
+            compilation_error(std::string("Invalid character '") + peek().value() + '\'', m_curr_line);
         }
     }
 
@@ -181,10 +181,18 @@ std::optional<char> Tokenizer::peek(int ahead) const
 
 char Tokenizer::consume()
 {
+    if (m_src.at(m_index) == '\n')
+    {
+        ++m_curr_line;
+    }
+
     return m_src.at(m_index++);
 }
 
 void Tokenizer::consume(int amount)
 {
-    m_index += amount;
+    for (int i = 0; i < amount; ++i)
+    {
+        consume();
+    }
 }

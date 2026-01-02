@@ -18,7 +18,7 @@ public:
     void gen_stmt(const NodeStmt* stmt);
     void gen_prog();
     
-    void try_gen_x_exprs(std::vector<NodeExpr*> exprs, int correct_amount);
+    void try_gen_x_exprs(std::vector<NodeExpr*> exprs, int correct_amount, size_t line);
     void pop(int amount = 1);
     void begin_scope();
     void end_scope();

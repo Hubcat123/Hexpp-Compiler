@@ -50,7 +50,7 @@ int main(int argc, char** argv)
     }
     else
     {
-        compilation_error("Failed to parse tokens");
+        compilation_error("Failed to parse tokens", 0);
     }
 
     // Generate hexes
