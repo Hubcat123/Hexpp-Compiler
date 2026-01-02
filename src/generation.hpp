@@ -32,6 +32,7 @@ public:
     void compass_purification();
     void compass_purification_II();
     void division_distilation();
+    void fishermans_gambit();
     void fishermans_gambit_II();
     void flocks_reflection();
     void maximus_distilation();
@@ -50,9 +51,14 @@ private:
         size_t stack_loc;
     };
 
+    struct Scope {
+        size_t stack_size;
+        size_t var_num;
+    };
+
     const NodeProg* m_prog;
     std::stringstream m_output;
     size_t m_stack_size = 0;
     std::vector<Var> m_vars {};
-    std::stack<size_t> m_scopes {};
+    std::stack<Scope> m_scopes {};
 };

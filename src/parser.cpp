@@ -188,6 +188,30 @@ std::optional<NodeStmt*> Parser::parse_stmt()
             node_stmt->var = node_stmt_func;
             return node_stmt;
         }
+        // Check if re-assignment
+        else if (
+            peek().value().type == TokenType::ident && peek(1).has_value() &&
+            peek(1).value().type == TokenType::eq)
+        {
+            Token ident = consume();
+            consume();
+
+            if (std::optional<NodeExpr*> expr = parse_expr())
+            {
+                try_consume(TokenType::semi, ';');
+
+                NodeStmtAssign* stmt_assign = m_allocator.alloc<NodeStmtAssign>();
+                stmt_assign->ident = ident;
+                stmt_assign->expr = expr.value();
+                NodeStmt* stmt = m_allocator.alloc<NodeStmt>();
+                stmt->var = stmt_assign;
+                return stmt;
+            }
+            else
+            {
+                compilation_error("Expected expression");
+            }
+        }
         // Check if expression
         else if (std::optional<NodeExpr*> expr = parse_expr())
         {

@@ -113,9 +113,7 @@ void Generator::gen_term(const NodeTerm* term)
             }
 
             Var& var = *iter;
-            gen.flocks_reflection();
-            gen.numerical_reflection(std::to_string(var.stack_loc + 1));
-            gen.subtractive_distilation();
+            gen.numerical_reflection(std::to_string(gen.m_stack_size - 1 - var.stack_loc));
             gen.fishermans_gambit_II();
         }
 
@@ -187,6 +185,7 @@ void Generator::gen_stmt(const NodeStmt* stmt)
             // Evaluate expression
             gen.gen_expr(stmt_if->expr);
             gen.augurs_purification();
+            --gen.m_stack_size;
 
             // Generate statement
             gen.begin_scope();
@@ -224,6 +223,26 @@ void Generator::gen_stmt(const NodeStmt* stmt)
             }
 
             gen.end_scope();
+        }
+
+        void operator()(const NodeStmtAssign* stmt_assign)
+        {
+            const std::vector<Var>::iterator iter = std::find_if(gen.m_vars.begin(), gen.m_vars.end(),
+                [&](const Var& var){ return var.name == stmt_assign->ident.value.value(); });
+            
+            if (iter == gen.m_vars.end())
+            {
+                compilation_error(std::string("Undeclared identifier: ") + stmt_assign->ident.value.value());
+            }
+
+            Var& var = *iter;
+            gen.gen_expr(stmt_assign->expr);
+            int varDepth = gen.m_stack_size - 1 - var.stack_loc;
+            gen.numerical_reflection(std::to_string(varDepth));
+            gen.fishermans_gambit();
+            gen.pop();
+            gen.numerical_reflection(std::to_string(-varDepth + 1));
+            gen.fishermans_gambit();
         }
     };
 
@@ -267,15 +286,15 @@ void Generator::pop(int amount)
 
 void Generator::begin_scope()
 {
-    m_scopes.push(m_vars.size());
+    m_scopes.push(Scope{.stack_size = m_stack_size, .var_num = m_vars.size()});
 }
 
 void Generator::end_scope()
 {
-    size_t pop_count = m_vars.size() - m_scopes.top();
+    size_t pop_count = m_vars.size() - m_scopes.top().stack_size;
     pop(pop_count);
 
-    m_vars.resize(m_scopes.top());
+    m_vars.resize(m_scopes.top().var_num);
 
     m_scopes.pop();
 }
@@ -329,6 +348,12 @@ void Generator::compass_purification_II()
 void Generator::division_distilation()
 {
     m_output << "Division Distillation\n";
+    --m_stack_size;
+}
+
+void Generator::fishermans_gambit()
+{
+    m_output << "Fisherman's Gambit\n";
     --m_stack_size;
 }
 
