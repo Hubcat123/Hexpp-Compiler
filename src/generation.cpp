@@ -44,6 +44,22 @@ void Generator::gen_func(const NodeFunc* func)
         try_gen_x_exprs(func->exprs, 1);
         break_block();
         break;
+    case TokenType::forward:
+        try_gen_x_exprs(func->exprs, 1);
+        alidades_purification();
+        break;
+    case TokenType::eye_pos:
+        try_gen_x_exprs(func->exprs, 1);
+        compass_purification();
+        break;
+    case TokenType::block_raycast:
+        try_gen_x_exprs(func->exprs, 2);
+        archers_distilation();
+        break;
+    case TokenType::block_normal_raycast:
+        try_gen_x_exprs(func->exprs, 2);
+        architects_distilation();
+        break;
     }
 }
 
@@ -173,12 +189,27 @@ void Generator::gen_stmt(const NodeStmt* stmt)
             gen.augurs_purification();
 
             // Generate statement
+            gen.begin_scope();
             gen.m_output << "{\n";
             gen.gen_stmt(stmt_if->stmt);
             gen.m_output << "}\n";
+            gen.end_scope();
+
+            // Potentially generate else statement
+            if (stmt_if->else_stmt == nullptr)
+            {
+                gen.m_output << "Vacant Reflection\n";
+            }
+            else
+            {
+                gen.begin_scope();
+                gen.m_output << "{\n";
+                gen.gen_stmt(stmt_if->else_stmt);
+                gen.m_output << "}\n";
+                gen.end_scope();
+            }
             
             // Perform bool comparison and execute
-            gen.m_output << "Vacant Reflection\n";
             gen.m_output << "Augur's Exaltation\n";
             gen.m_output << "Hermes' Gambit\n";
         }
@@ -257,6 +288,23 @@ void Generator::additive_distilation()
     --m_stack_size;
 }
 
+void Generator::alidades_purification()
+{
+    m_output << "Alidade's Purification\n";
+}
+
+void Generator::archers_distilation()
+{
+    m_output << "Archer's Distillation\n";
+    --m_stack_size;
+}
+
+void Generator::architects_distilation()
+{
+    m_output << "Architect's Distillation\n";
+    --m_stack_size;
+}
+
 void Generator::augurs_purification()
 {
     m_output << "Augur's Purification\n";
@@ -266,6 +314,11 @@ void Generator::break_block()
 {
     m_output << "Break Block\n";
     --m_stack_size;
+}
+
+void Generator::compass_purification()
+{
+    m_output << "Compass' Purification\n";
 }
 
 void Generator::compass_purification_II()

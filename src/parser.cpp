@@ -89,7 +89,7 @@ std::optional<NodeTerm*> Parser::parse_term()
             }
         }
         else if (std::optional<NodeFunc*> func = parse_func(
-            { TokenType::pow, TokenType::vec, TokenType::self, TokenType::pos }))
+            { TokenType::pow, TokenType::vec, TokenType::self, TokenType::pos, TokenType::forward, TokenType::eye_pos, TokenType::block_raycast, TokenType::block_normal_raycast }))
         {
             NodeTermFunc* node_term_func = m_allocator.alloc<NodeTermFunc>();
             node_term_func->func = func.value();
@@ -226,6 +226,7 @@ std::optional<NodeStmt*> Parser::parse_stmt()
             node_stmt->var = stmt_let;
             return node_stmt;
         }
+        // Check if if
         else if (peek().value().type == TokenType::if_)
         {
             consume();
@@ -239,6 +240,23 @@ std::optional<NodeStmt*> Parser::parse_stmt()
                     NodeStmtIf* stmt_if = m_allocator.alloc<NodeStmtIf>();
                     stmt_if->expr = expr.value();
                     stmt_if->stmt = if_stmt.value();
+                    stmt_if->else_stmt = nullptr;
+
+                    // Check for potential else
+                    if (peek().has_value() && peek().value().type == TokenType::else_)
+                    {
+                        consume();
+
+                        if (std::optional<NodeStmt*> else_stmt = parse_stmt())
+                        {
+                            stmt_if->else_stmt = else_stmt.value();
+                        }
+                        else
+                        {
+                            compilation_error("Expected statement");
+                        }
+                    }
+
                     NodeStmt* stmt = m_allocator.alloc<NodeStmt>();
                     stmt->var = stmt_if;
                     return stmt;
@@ -253,6 +271,7 @@ std::optional<NodeStmt*> Parser::parse_stmt()
                 compilation_error("Expected expression");
             }
         }
+        // Check if scope
         else if (std::optional<NodeScope*> scope = parse_scope())
         {
             NodeStmt* stmt = m_allocator.alloc<NodeStmt>();

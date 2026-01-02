@@ -24,8 +24,12 @@ public:
     void end_scope();
 
     void additive_distilation();
+    void alidades_purification();
+    void archers_distilation();
+    void architects_distilation();
     void augurs_purification();
     void break_block();
+    void compass_purification();
     void compass_purification_II();
     void division_distilation();
     void fishermans_gambit_II();

@@ -32,11 +32,16 @@ std::vector<Token> Tokenizer::tokenize()
         {"print", TokenType::print},
         {"let", TokenType::let},
         {"if", TokenType::if_},
+        {"else", TokenType::else_},
         {"pow", TokenType::pow},
         {"vec", TokenType::vec},
         {"self", TokenType::self},
         {"pos", TokenType::pos},
         {"mine", TokenType::mine},
+        {"forward", TokenType::forward},
+        {"eyePos", TokenType::eye_pos},
+        {"blockRaycast", TokenType::block_raycast},
+        {"blockNormalRaycast", TokenType::block_normal_raycast},
     };
 
     // Loop through all characters in string

@@ -56,6 +56,7 @@ struct NodeScope {
 struct NodeStmtIf {
     NodeExpr* expr;
     NodeStmt* stmt;
+    NodeStmt* else_stmt;
 };
 
 struct NodeStmtFunc {
