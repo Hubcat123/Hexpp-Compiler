@@ -64,11 +64,32 @@ std::optional<NodeTerm*> Parser::parse_term()
         // Check if term is an identifier
         else if (peek().value().type == TokenType::ident)
         {
-            NodeTermIdent* node_term_ident = m_allocator.alloc<NodeTermIdent>();
-            node_term_ident->ident = consume();
-            NodeTerm* node_term = m_allocator.alloc<NodeTerm>();
-            node_term->var = node_term_ident;
-            return node_term;
+            if (peek(1).has_value() && peek(1).value().type == TokenType::eq)
+            {
+                Token ident = consume();
+                consume();
+                if (std::optional<NodeExpr*> expr = parse_expr())
+                {
+                    NodeTermAssign* term_assign = m_allocator.alloc<NodeTermAssign>();
+                    term_assign->ident = ident;
+                    term_assign->expr = expr.value();
+                    NodeTerm* term = m_allocator.alloc<NodeTerm>();
+                    term->var = term_assign;
+                    return term;
+                }
+                else
+                {
+                    compilation_error("Expected expression");
+                }
+            }
+            else
+            {
+                NodeTermIdent* node_term_ident = m_allocator.alloc<NodeTermIdent>();
+                node_term_ident->ident = consume();
+                NodeTerm* node_term = m_allocator.alloc<NodeTerm>();
+                node_term->var = node_term_ident;
+                return node_term;
+            }
         }
         // Check if term is a parentheses enclosed expression
         else if (peek().value().type == TokenType::paren_open)
@@ -187,30 +208,6 @@ std::optional<NodeStmt*> Parser::parse_stmt()
             NodeStmt* node_stmt = m_allocator.alloc<NodeStmt>();
             node_stmt->var = node_stmt_func;
             return node_stmt;
-        }
-        // Check if re-assignment
-        else if (
-            peek().value().type == TokenType::ident && peek(1).has_value() &&
-            peek(1).value().type == TokenType::eq)
-        {
-            Token ident = consume();
-            consume();
-
-            if (std::optional<NodeExpr*> expr = parse_expr())
-            {
-                try_consume(TokenType::semi, ';');
-
-                NodeStmtAssign* stmt_assign = m_allocator.alloc<NodeStmtAssign>();
-                stmt_assign->ident = ident;
-                stmt_assign->expr = expr.value();
-                NodeStmt* stmt = m_allocator.alloc<NodeStmt>();
-                stmt->var = stmt_assign;
-                return stmt;
-            }
-            else
-            {
-                compilation_error("Expected expression");
-            }
         }
         // Check if expression
         else if (std::optional<NodeExpr*> expr = parse_expr())

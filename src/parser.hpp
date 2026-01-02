@@ -36,8 +36,13 @@ struct NodeTermFunc {
     NodeFunc* func;
 };
 
+struct NodeTermAssign {
+    Token ident;
+    NodeExpr* expr;
+};
+
 struct NodeTerm {
-    std::variant<NodeTermNumLit*, NodeTermIdent*, NodeTermParen*, NodeTermFunc*> var;
+    std::variant<NodeTermNumLit*, NodeTermIdent*, NodeTermAssign*, NodeTermParen*, NodeTermFunc*> var;
 };
 
 struct NodeExpr {
@@ -63,13 +68,8 @@ struct NodeStmtFunc {
     NodeFunc* func;
 };
 
-struct NodeStmtAssign {
-    Token ident;
-    NodeExpr* expr;
-};
-
 struct NodeStmt {
-    std::variant<NodeStmtFunc*, NodeExpr*, NodeStmtLet*, NodeStmtIf*, NodeScope*, NodeStmtAssign*> var;
+    std::variant<NodeStmtFunc*, NodeExpr*, NodeStmtLet*, NodeStmtIf*, NodeScope*> var;
 };
 
 struct NodeProg {

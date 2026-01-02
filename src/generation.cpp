@@ -117,6 +117,26 @@ void Generator::gen_term(const NodeTerm* term)
             gen.fishermans_gambit_II();
         }
 
+        void operator()(const NodeTermAssign* term_assign)
+        {
+            const std::vector<Var>::iterator iter = std::find_if(gen.m_vars.begin(), gen.m_vars.end(),
+                [&](const Var& var){ return var.name == term_assign->ident.value.value(); });
+            
+            if (iter == gen.m_vars.end())
+            {
+                compilation_error(std::string("Undeclared identifier: ") + term_assign->ident.value.value());
+            }
+
+            Var& var = *iter;
+            gen.gen_expr(term_assign->expr);
+            int varDepth = gen.m_stack_size - 1 - var.stack_loc;
+            gen.numerical_reflection(std::to_string(varDepth));
+            gen.fishermans_gambit();
+            gen.pop();
+            gen.numerical_reflection(std::to_string(-varDepth + 1));
+            gen.fishermans_gambit_II();
+        }
+
         void operator()(const NodeTermParen* term_paren)
         {
             gen.gen_expr(term_paren->expr);
@@ -167,6 +187,7 @@ void Generator::gen_stmt(const NodeStmt* stmt)
         void operator()(const NodeExpr* stmt_expr)
         {
             gen.gen_expr(stmt_expr);
+            gen.pop();
         }
 
         void operator()(const NodeStmtLet* stmt_let)
@@ -223,26 +244,6 @@ void Generator::gen_stmt(const NodeStmt* stmt)
             }
 
             gen.end_scope();
-        }
-
-        void operator()(const NodeStmtAssign* stmt_assign)
-        {
-            const std::vector<Var>::iterator iter = std::find_if(gen.m_vars.begin(), gen.m_vars.end(),
-                [&](const Var& var){ return var.name == stmt_assign->ident.value.value(); });
-            
-            if (iter == gen.m_vars.end())
-            {
-                compilation_error(std::string("Undeclared identifier: ") + stmt_assign->ident.value.value());
-            }
-
-            Var& var = *iter;
-            gen.gen_expr(stmt_assign->expr);
-            int varDepth = gen.m_stack_size - 1 - var.stack_loc;
-            gen.numerical_reflection(std::to_string(varDepth));
-            gen.fishermans_gambit();
-            gen.pop();
-            gen.numerical_reflection(std::to_string(-varDepth + 1));
-            gen.fishermans_gambit();
         }
     };
 
