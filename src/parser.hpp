@@ -68,12 +68,17 @@ struct NodeStmtIf : Node {
     NodeStmt* else_stmt;
 };
 
+struct NodeStmtWhile : Node {
+    NodeExpr* expr;
+    NodeStmt* stmt;
+};
+
 struct NodeStmtFunc : Node {
     NodeFunc* func;
 };
 
 struct NodeStmt : Node {
-    std::variant<NodeStmtFunc*, NodeExpr*, NodeStmtLet*, NodeStmtIf*, NodeScope*> var;
+    std::variant<NodeStmtFunc*, NodeExpr*, NodeStmtLet*, NodeStmtIf*, NodeStmtWhile*, NodeScope*> var;
 };
 
 struct NodeProg : Node {

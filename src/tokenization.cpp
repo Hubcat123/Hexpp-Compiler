@@ -33,6 +33,7 @@ std::vector<Token> Tokenizer::tokenize()
         {"let", TokenType::let},
         {"if", TokenType::if_},
         {"else", TokenType::else_},
+        {"while", TokenType::while_},
         {"pow", TokenType::pow},
         {"vec", TokenType::vec},
         {"self", TokenType::self},

@@ -222,16 +222,48 @@ void Generator::gen_stmt(const NodeStmt* stmt)
             }
             else
             {
-                gen.begin_scope();
                 gen.m_output << "{\n";
+                gen.begin_scope();
                 gen.gen_stmt(stmt_if->else_stmt);
+                gen.end_scope(); 
                 gen.m_output << "}\n";
-                gen.end_scope();
             }
             
             // Perform bool comparison and execute
             gen.m_output << "Augur's Exaltation\n";
             gen.m_output << "Hermes' Gambit\n";
+        }
+
+        void operator()(const NodeStmtWhile* stmt_while)
+        {
+            gen.m_output << "{\n";
+            ++gen.m_stack_size;
+            gen.gen_expr(stmt_while->expr);
+
+            // Exit loop if false
+            gen.augurs_purification();
+            gen.m_output << "Vacant Reflection\n";
+            gen.m_output << "{\n";
+            gen.m_output << "Charon's Gambit\n";
+            gen.m_output << "}\n";
+            gen.m_output << "Flock's Disintegration\n";
+            gen.m_output << "Augur's Exaltation\n";
+            gen.m_output << "Hermes' Gambit\n";
+            
+            // Generate statement
+            --gen.m_stack_size;
+            gen.begin_scope();
+            gen.gen_stmt(stmt_while->stmt);
+            gen.end_scope();
+
+            // Execute next loop
+            gen.m_output << "Gemini Decomposition\n";
+            gen.m_output << "Hermes' Gambit\n";
+            gen.m_output << "}\n";
+
+            gen.m_output << "Gemini Decomposition\n";
+            gen.m_output << "Hermes' Gambit\n";
+            gen.pop();
         }
 
         void operator()(const NodeScope* stmt_scope)
@@ -292,7 +324,7 @@ void Generator::begin_scope()
 
 void Generator::end_scope()
 {
-    size_t pop_count = m_vars.size() - m_scopes.top().stack_size;
+    size_t pop_count = m_stack_size - m_scopes.top().stack_size;
     pop(pop_count);
 
     m_vars.resize(m_scopes.top().var_num);
@@ -366,6 +398,12 @@ void Generator::fishermans_gambit_II()
 void Generator::flocks_reflection()
 {
     m_output << "Flock's Reflection\n";
+    ++m_stack_size;
+}
+
+void Generator::gemini_decomposition()
+{
+    m_output << "Gemini Decomposition\n";
     ++m_stack_size;
 }
 

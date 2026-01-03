@@ -35,6 +35,7 @@ public:
     void fishermans_gambit();
     void fishermans_gambit_II();
     void flocks_reflection();
+    void gemini_decomposition();
     void maximus_distilation();
     void minds_reflection();
     void minimus_distilation();

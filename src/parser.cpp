@@ -279,10 +279,11 @@ std::optional<NodeStmt*> Parser::parse_stmt()
             return node_stmt;
         }
         // Check if if
-        else if (peek().value().type == TokenType::if_)
+        else if (
+            peek().value().type == TokenType::if_ && peek(1).has_value() &&
+            peek(1).value().type == TokenType::paren_open)
         {
-            consume();
-            try_consume(TokenType::paren_open, '(');
+            consume(2);
 
             if (std::optional<NodeExpr*> expr = parse_expr())
             {
@@ -312,6 +313,38 @@ std::optional<NodeStmt*> Parser::parse_stmt()
 
                     NodeStmt* stmt = m_allocator.alloc<NodeStmt>();
                     stmt->var = stmt_if;
+                    stmt->line = line;
+                    return stmt;
+                }
+                else
+                {
+                    compilation_error("Expected statement", peek(-1).has_value() ? peek(-1).value().line : 1);
+                }
+            }
+            else
+            {
+                compilation_error("Expected expression", peek(-1).has_value() ? peek(-1).value().line : 1);
+            }
+        }
+        // Check if while
+        else if (
+            peek().value().type == TokenType::while_ && peek(1).has_value() &&
+            peek(1).value().type == TokenType::paren_open)
+        {
+            consume(2);
+
+            if (std::optional<NodeExpr*> expr = parse_expr())
+            {
+                try_consume(TokenType::paren_close, ')');
+
+                if (std::optional<NodeStmt*> while_stmt = parse_stmt())
+                {
+                    NodeStmtWhile* stmt_while = m_allocator.alloc<NodeStmtWhile>();
+                    stmt_while->expr = expr.value();
+                    stmt_while->stmt = while_stmt.value();
+                    stmt_while->line = line;
+                    NodeStmt* stmt = m_allocator.alloc<NodeStmt>();
+                    stmt->var = stmt_while;
                     stmt->line = line;
                     return stmt;
                 }
