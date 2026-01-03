@@ -37,7 +37,7 @@ void Generator::gen_func(const NodeFunc* func)
         minds_reflection();
         break;
     case TokenType::pos:
-        try_gen_x_exprs(func->exprs, 1, func->line);
+        try_gen_x_exprs(func->exprs, 0, func->line);
         compass_purification_II();
         break;
     case TokenType::mine:
@@ -45,11 +45,11 @@ void Generator::gen_func(const NodeFunc* func)
         break_block();
         break;
     case TokenType::forward:
-        try_gen_x_exprs(func->exprs, 1, func->line);
+        try_gen_x_exprs(func->exprs, 0, func->line);
         alidades_purification();
         break;
     case TokenType::eye_pos:
-        try_gen_x_exprs(func->exprs, 1, func->line);
+        try_gen_x_exprs(func->exprs, 0, func->line);
         compass_purification();
         break;
     case TokenType::block_raycast:
@@ -97,6 +97,19 @@ void Generator::gen_term(const NodeTerm* term)
         Generator& gen;
         TermVisitor (Generator& _gen) :gen(_gen) {}
         
+        void operator()(const NodeTermUn* term_un)
+        {
+            gen.gen_term(term_un->term);
+
+            switch (term_un->op_type)
+            {
+            case TokenType::dash:
+                gen.numerical_reflection("-1");
+                gen.multiplicative_distilation();
+                break;
+            }
+        }
+
         void operator()(const NodeTermNumLit* term_int_lit)
         {
             gen.numerical_reflection(term_int_lit->num_lit.value.value());
@@ -166,6 +179,12 @@ void Generator::gen_expr(const NodeExpr* expr)
         void operator()(const NodeExprBin* expr_bin)
         {
             gen.gen_bin_expr(expr_bin);
+        }
+
+        void operator()(const NodeExprFunc* expr_func)
+        {
+            gen.gen_expr(expr_func->expr);
+            gen.gen_func(expr_func->func);
         }
     };
 

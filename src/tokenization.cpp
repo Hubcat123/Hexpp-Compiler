@@ -26,6 +26,7 @@ std::vector<Token> Tokenizer::tokenize()
         {'<', TokenType::angle_open},
         {'>', TokenType::angle_close},
         {',', TokenType::comma},
+        {'.', TokenType::dot},
     };
 
     const std::map<std::string, TokenType> identifierTokenMap {
@@ -40,9 +41,9 @@ std::vector<Token> Tokenizer::tokenize()
         {"pos", TokenType::pos},
         {"mine", TokenType::mine},
         {"forward", TokenType::forward},
-        {"eyePos", TokenType::eye_pos},
-        {"blockRaycast", TokenType::block_raycast},
-        {"blockNormalRaycast", TokenType::block_normal_raycast},
+        {"eye_pos", TokenType::eye_pos},
+        {"block_raycast", TokenType::block_raycast},
+        {"block_normal_raycast", TokenType::block_normal_raycast},
     };
 
     // Loop through all characters in string
@@ -95,7 +96,7 @@ std::vector<Token> Tokenizer::tokenize()
         {
             buf.push_back(consume());
             // Add full identifier to buffer
-            while (peek().has_value() && std::isalnum(peek().value()))
+            while (peek().has_value() && (std::isalnum(peek().value()) || peek().value() == '_'))
             {
                 buf.push_back(consume());
             }

@@ -12,6 +12,7 @@ struct Node {
 
 struct NodeExpr;
 struct NodeStmt;
+struct NodeTerm;
 
 struct NodeTermNumLit : Node {
     Token num_lit;
@@ -45,12 +46,22 @@ struct NodeTermAssign : Node {
     NodeExpr* expr;
 };
 
+struct NodeTermUn : Node {
+    TokenType op_type;
+    NodeTerm* term;
+};
+
 struct NodeTerm : Node {
-    std::variant<NodeTermNumLit*, NodeTermIdent*, NodeTermAssign*, NodeTermParen*, NodeTermFunc*> var;
+    std::variant<NodeTermUn*, NodeTermNumLit*, NodeTermIdent*, NodeTermAssign*, NodeTermParen*, NodeTermFunc*> var;
+};
+
+struct NodeExprFunc : Node {
+    NodeExpr* expr;
+    NodeFunc* func;
 };
 
 struct NodeExpr : Node {
-    std::variant<NodeTerm*, NodeExprBin*> var;
+    std::variant<NodeTerm*, NodeExprBin*, NodeExprFunc*> var;
 };
 
 struct NodeStmtLet : Node {

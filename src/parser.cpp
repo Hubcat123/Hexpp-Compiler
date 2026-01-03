@@ -56,8 +56,31 @@ std::optional<NodeTerm*> Parser::parse_term()
     if (peek().has_value())
     {
         size_t line = peek().value().line;
+        
+        const std::vector<TokenType> unaryOperandTypes = { TokenType::dash };
+        // Check if term is unary operator
+        if (std::find(unaryOperandTypes.cbegin(), unaryOperandTypes.cend(), peek().value().type) != unaryOperandTypes.end())
+        {
+            TokenType op_type = consume().type;
+
+            if (std::optional<NodeTerm*> un_term = parse_term())
+            {
+                NodeTermUn* term_un = m_allocator.alloc<NodeTermUn>();
+                term_un->op_type = op_type;
+                term_un->term = un_term.value();
+                term_un->line = line;
+                NodeTerm* term = m_allocator.alloc<NodeTerm>();
+                term->var = term_un;
+                term->line = line;
+                return term;
+            }
+            else
+            {
+                compilation_error("Expected term", peek(-1).value().line);
+            }
+        }
         // Check if term is a num literal
-        if (peek().value().type == TokenType::num_lit)
+        else if (peek().value().type == TokenType::num_lit)
         {
             NodeTermNumLit* node_term_num_lit = m_allocator.alloc<NodeTermNumLit>();
             node_term_num_lit->num_lit = consume();
@@ -123,7 +146,7 @@ std::optional<NodeTerm*> Parser::parse_term()
         }
         // Check if term is a function
         else if (std::optional<NodeFunc*> func = parse_func(
-            { TokenType::pow, TokenType::vec, TokenType::self, TokenType::pos, TokenType::forward, TokenType::eye_pos, TokenType::block_raycast, TokenType::block_normal_raycast }))
+            { TokenType::pow, TokenType::vec, TokenType::self, TokenType::block_raycast, TokenType::block_normal_raycast }))
         {
             NodeTermFunc* node_term_func = m_allocator.alloc<NodeTermFunc>();
             node_term_func->func = func.value();
@@ -157,16 +180,60 @@ std::optional<NodeExpr*> Parser::parse_expr(int min_prec)
     lhs_expr->line = line;
     while (true)
     {
-        // Break if no next token
-        std::optional<Token> curr_tok = peek();
-        if (!curr_tok.has_value())
+        std::optional<Token> curr_tok;
+        std::optional<int> prec;
+
+        // Loop until end of expression found
+        bool expression_end = false;
+        while (true)
         {
+            // Break if no next token
+            curr_tok = peek();
+            if (!curr_tok.has_value())
+            {
+                expression_end = true;
+                break;
+            }
+
+            // Break if next token not an operator or has lower precedance
+            prec = Tokenizer::bin_prec(curr_tok.value().type);
+            if (!prec.has_value() || prec.value() < min_prec)
+            {
+                // See if expression has function
+                if (peek().has_value() && peek().value().type == TokenType::dot)
+                {
+                    consume();
+
+                    if (std::optional<NodeFunc*> func = parse_func(
+                        { TokenType::pos, TokenType::forward, TokenType::eye_pos }))
+                    {
+                        NodeExprFunc* expr_func = m_allocator.alloc<NodeExprFunc>();
+                        expr_func->expr = lhs_expr;
+                        expr_func->func = func.value();
+                        expr_func->line = line;
+                        NodeExpr* expr = m_allocator.alloc<NodeExpr>();
+                        expr->var = expr_func;
+                        expr->line = line;
+                        lhs_expr = expr;
+
+                        continue;
+                    }
+                    else
+                    {
+                        compilation_error("Expected function", peek(-1).value().line);
+                    }
+                }
+                else
+                {
+                    expression_end = true;
+                    break;
+                }
+            }
+
             break;
         }
 
-        // Break if next token not an operator or has lower precedance
-        std::optional<int> prec = Tokenizer::bin_prec(curr_tok.value().type);
-        if (!prec.has_value() || prec.value() < min_prec)
+        if (expression_end)
         {
             break;
         }
