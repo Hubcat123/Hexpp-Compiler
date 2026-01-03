@@ -44,6 +44,7 @@ std::vector<Token> Tokenizer::tokenize()
         {"eye_pos", TokenType::eye_pos},
         {"block_raycast", TokenType::block_raycast},
         {"block_normal_raycast", TokenType::block_normal_raycast},
+        {"summon_light", TokenType::summon_light},
     };
 
     // Loop through all characters in string

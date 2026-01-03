@@ -6,7 +6,7 @@
 
 enum class TokenType {
     num_lit, paren_open, paren_close, semi, ident, let, eq, plus, star, dash, slash_forward, curly_open, curly_close, if_, angle_open, angle_close, comma, else_, while_, dot,
-    vec, self, pos, mine, print, pow, eye_pos, forward, block_raycast, block_normal_raycast
+    vec, self, pos, mine, print, pow, eye_pos, forward, block_raycast, block_normal_raycast, summon_light
 };
 
 struct Token {

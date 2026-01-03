@@ -292,7 +292,7 @@ std::optional<NodeStmt*> Parser::parse_stmt()
 
         // Check if statement is function
         if (std::optional<NodeFunc*> func = parse_func(
-            { TokenType::print, TokenType::mine }))
+            { TokenType::print, TokenType::mine, TokenType::summon_light }))
         {
             try_consume(TokenType::semi, ';');
 

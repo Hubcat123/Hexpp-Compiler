@@ -60,6 +60,10 @@ void Generator::gen_func(const NodeFunc* func)
         try_gen_x_exprs(func->exprs, 2, func->line);
         architects_distilation();
         break;
+    case TokenType::summon_light:
+        try_gen_x_exprs(func->exprs, 1, func->line);
+        conjure_light();
+        break;
     }
 }
 
@@ -395,6 +399,12 @@ void Generator::compass_purification()
 void Generator::compass_purification_II()
 {
     m_output << "Compass' Purification II\n";
+}
+
+void Generator::conjure_light()
+{
+    m_output << "Conjure Light\n";
+    --m_stack_size;
 }
 
 void Generator::division_distilation()
