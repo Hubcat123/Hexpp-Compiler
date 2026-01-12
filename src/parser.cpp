@@ -93,6 +93,28 @@ std::optional<NodeTerm*> Parser::parse_term()
             node_term->line = line;
             return node_term;
         }
+        // Check if term is bool lit
+        else if (peek().value().type == TokenType::bool_lit)
+        {
+            NodeTermBoolLit* bool_lit = m_allocator.alloc<NodeTermBoolLit>();
+            bool_lit->bool_ = consume();
+            bool_lit->line = line;
+            NodeTerm* node_term = m_allocator.alloc<NodeTerm>();
+            node_term->var = bool_lit;
+            node_term->line = line;
+            return node_term;
+        }
+        // Check if term is null lit
+        else if (peek().value().type == TokenType::null_lit)
+        {
+            consume();
+            NodeTermNullLit* null_lit = m_allocator.alloc<NodeTermNullLit>();
+            null_lit->line = line;
+            NodeTerm* node_term = m_allocator.alloc<NodeTerm>();
+            node_term->var = null_lit;
+            node_term->line = line;
+            return node_term;
+        }
         // Check if term is an identifier
         else if (peek().value().type == TokenType::ident)
         {

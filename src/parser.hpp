@@ -14,27 +14,17 @@ struct NodeExpr;
 struct NodeStmt;
 struct NodeTerm;
 
+struct NodeFunc : Node {
+    TokenType func_type;
+    std::vector<NodeExpr*> exprs;
+};
+
 struct NodeTermNumLit : Node {
     Token num_lit;
 };
 
 struct NodeTermIdent : Node {
     Token ident;
-};
-
-struct NodeTermParen : Node {
-    NodeExpr* expr;
-};
-
-struct NodeExprBin : Node {
-    TokenType op_type;
-    NodeExpr* lhs;
-    NodeExpr* rhs;
-};
-
-struct NodeFunc : Node {
-    TokenType func_type;
-    std::vector<NodeExpr*> exprs;
 };
 
 struct NodeTermFunc : Node {
@@ -53,8 +43,25 @@ struct NodeTermUnPost : Node {
     Token ident;
 };
 
+struct NodeTermParen : Node {
+    NodeExpr* expr;
+};
+
+struct NodeTermBoolLit : Node {
+    Token bool_;
+};
+
+struct NodeTermNullLit : Node {
+};
+
 struct NodeTerm : Node {
-    std::variant<NodeTermUn*, NodeTermUnPost*, NodeTermNumLit*, NodeTermIdent*, NodeTermParen*, NodeTermFunc*> var;
+    std::variant<NodeTermUn*, NodeTermUnPost*, NodeTermNumLit*, NodeTermBoolLit*, NodeTermNullLit*, NodeTermIdent*, NodeTermParen*, NodeTermFunc*> var;
+};
+
+struct NodeExprBin : Node {
+    TokenType op_type;
+    NodeExpr* lhs;
+    NodeExpr* rhs;
 };
 
 struct NodeExpr : Node {

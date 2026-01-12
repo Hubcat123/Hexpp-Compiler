@@ -53,6 +53,7 @@ std::vector<Token> Tokenizer::tokenize()
         {"if", TokenType::if_},
         {"else", TokenType::else_},
         {"while", TokenType::while_},
+        {"null", TokenType::null_lit},
         {"pow", TokenType::pow},
         {"vec", TokenType::vec},
         {"self", TokenType::self},
@@ -121,7 +122,11 @@ std::vector<Token> Tokenizer::tokenize()
             }
 
             // Find correct identifier and add to token vector
-            if (identifierTokenMap.contains(buf))
+            if (buf == "true" || buf == "false")
+            {
+                tokens.push_back({.type = TokenType::bool_lit, .value = buf, .line = m_curr_line});
+            }
+            else if (identifierTokenMap.contains(buf))
             {
                 tokens.push_back({.type = identifierTokenMap.at(buf), .line = m_curr_line});
             }

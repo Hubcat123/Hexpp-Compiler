@@ -306,6 +306,23 @@ void Generator::gen_term(const NodeTerm* term)
             gen.numerical_reflection(term_int_lit->num_lit.value.value());
         }
 
+        void operator()(const NodeTermBoolLit* term_bool_lit)
+        {
+            if (term_bool_lit->bool_.value == "true")
+            {
+                gen.true_reflection();
+            }
+            else
+            {
+                gen.false_reflection();
+            }
+        }
+
+        void operator()(const NodeTermNullLit* term_null_lit)
+        {
+            gen.nullary_reflection();
+        }
+
         void operator()(const NodeTermIdent* term_ident)
         {
             const std::vector<Var>::iterator iter = std::find_if(gen.m_vars.begin(), gen.m_vars.end(),
@@ -597,6 +614,12 @@ void Generator::equality_distilation()
     --m_stack_size;
 }
 
+void Generator::false_reflection()
+{
+    m_output << "False Reflection\n";
+    ++m_stack_size;
+}
+
 void Generator::fishermans_gambit()
 {
     m_output << "Fisherman's Gambit\n";
@@ -678,6 +701,12 @@ void Generator::negation_purification()
     m_output << "Negation Purification\n";
 }
 
+void Generator::nullary_reflection()
+{
+    m_output << "Nullary Reflection\n";
+    ++m_stack_size;
+}
+
 void Generator::numerical_reflection(std::string value)
 {
     m_output << "Numerical Reflection: " << value << '\n';
@@ -699,6 +728,12 @@ void Generator::subtractive_distilation()
 {
     m_output << "Subtractive Distillation\n";
     --m_stack_size;
+}
+
+void Generator::true_reflection()
+{
+    m_output << "True Reflection\n";
+    ++m_stack_size;
 }
 
 void Generator::vector_exaltation()

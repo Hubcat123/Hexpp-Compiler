@@ -38,6 +38,7 @@ public:
     void disjunction_distilation();
     void division_distilation();
     void equality_distilation();
+    void false_reflection();
     void fishermans_gambit();
     void fishermans_gambit_II();
     void flocks_reflection();
@@ -52,10 +53,12 @@ public:
     void modulus_distilation();
     void multiplicative_distilation();
     void negation_purification();
+    void nullary_reflection();
     void numerical_reflection(std::string value);
     void power_distilation();
     void reveal();
     void subtractive_distilation();
+    void true_reflection();
     void vector_exaltation();
 private:
 
