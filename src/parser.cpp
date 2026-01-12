@@ -57,15 +57,18 @@ std::optional<NodeTerm*> Parser::parse_term()
     {
         size_t line = peek().value().line;
         
-        const std::vector<TokenType> unaryOperandTypes = { TokenType::dash };
+        const std::vector<TokenType> unaryOperandTypes = { TokenType::dash, TokenType::not_, TokenType::double_dash, TokenType::double_plus };
         // Check if term is unary operator
         if (std::find(unaryOperandTypes.cbegin(), unaryOperandTypes.cend(), peek().value().type) != unaryOperandTypes.end())
         {
             TokenType op_type = consume().type;
 
+            // Grab ident, if there is one
+            std::optional<Token> ident = (peek().has_value() && peek().value().type == TokenType::ident) ? peek().value() : std::optional<Token>{};
             if (std::optional<NodeTerm*> un_term = parse_term())
             {
                 NodeTermUn* term_un = m_allocator.alloc<NodeTermUn>();
+                term_un->ident = ident;
                 term_un->op_type = op_type;
                 term_un->term = un_term.value();
                 term_un->line = line;
@@ -93,36 +96,13 @@ std::optional<NodeTerm*> Parser::parse_term()
         // Check if term is an identifier
         else if (peek().value().type == TokenType::ident)
         {
-            if (peek(1).has_value() && peek(1).value().type == TokenType::eq)
-            {
-                Token ident = consume();
-                consume();
-                if (std::optional<NodeExpr*> expr = parse_expr())
-                {
-                    NodeTermAssign* term_assign = m_allocator.alloc<NodeTermAssign>();
-                    term_assign->ident = ident;
-                    term_assign->expr = expr.value();
-                    term_assign->line = line;
-                    NodeTerm* term = m_allocator.alloc<NodeTerm>();
-                    term->var = term_assign;
-                    term->line = line;
-                    return term;
-                }
-                else
-                {
-                    compilation_error("Expected expression", peek(-1).has_value() ? peek(-1).value().line : 1);
-                }
-            }
-            else
-            {
-                NodeTermIdent* node_term_ident = m_allocator.alloc<NodeTermIdent>();
-                node_term_ident->ident = consume();
-                node_term_ident->line = line;
-                NodeTerm* node_term = m_allocator.alloc<NodeTerm>();
-                node_term->var = node_term_ident;
-                node_term->line = line;
-                return node_term;
-            }
+            NodeTermIdent* node_term_ident = m_allocator.alloc<NodeTermIdent>();
+            node_term_ident->ident = consume();
+            node_term_ident->line = line;
+            NodeTerm* node_term = m_allocator.alloc<NodeTerm>();
+            node_term->var = node_term_ident;
+            node_term->line = line;
+            return node_term;
         }
         // Check if term is a parentheses enclosed expression
         else if (peek().value().type == TokenType::paren_open)
@@ -169,6 +149,8 @@ std::optional<NodeExpr*> Parser::parse_expr(int min_prec)
         line = peek().value().line;
     }
 
+    // Grab identifier, if it is one
+    std::optional<Token> ident = (peek().has_value() && peek().value().type == TokenType::ident) ? peek().value() : std::optional<Token>{};
     std::optional<NodeTerm*> term_lhs = parse_term();
     if (!term_lhs.has_value())
     {
@@ -199,7 +181,7 @@ std::optional<NodeExpr*> Parser::parse_expr(int min_prec)
             prec = Tokenizer::bin_prec(curr_tok.value().type);
             if (!prec.has_value() || prec.value() < min_prec)
             {
-                // See if expression has function
+                // See if expression calling member function
                 if (peek().has_value() && peek().value().type == TokenType::dot)
                 {
                     consume();
@@ -248,6 +230,8 @@ std::optional<NodeExpr*> Parser::parse_expr(int min_prec)
         }
 
         NodeExprBin* expr_bin = m_allocator.alloc<NodeExprBin>();
+        expr_bin->ident = ident;
+        ident = {};
         expr_bin->op_type = op_type;
         expr_bin->lhs = lhs_expr;
         expr_bin->rhs = rhs_expr.value();

@@ -31,16 +31,27 @@ public:
     void break_block();
     void compass_purification();
     void compass_purification_II();
+    // AND
+    void conjunction_distilation();
     void conjure_light();
+    // OR
+    void disjunction_distilation();
     void division_distilation();
+    void equality_distilation();
     void fishermans_gambit();
     void fishermans_gambit_II();
     void flocks_reflection();
     void gemini_decomposition();
+    void inequality_distilation();
+    void jesters_gambit();
     void maximus_distilation();
+    void maximus_distilation_II();
     void minds_reflection();
     void minimus_distilation();
+    void minimus_distilation_II();
+    void modulus_distilation();
     void multiplicative_distilation();
+    void negation_purification();
     void numerical_reflection(std::string value);
     void power_distilation();
     void reveal();

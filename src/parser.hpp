@@ -27,6 +27,7 @@ struct NodeTermParen : Node {
 };
 
 struct NodeExprBin : Node {
+    std::optional<Token> ident;
     TokenType op_type;
     NodeExpr* lhs;
     NodeExpr* rhs;
@@ -41,18 +42,14 @@ struct NodeTermFunc : Node {
     NodeFunc* func;
 };
 
-struct NodeTermAssign : Node {
-    Token ident;
-    NodeExpr* expr;
-};
-
 struct NodeTermUn : Node {
     TokenType op_type;
+    std::optional<Token> ident;
     NodeTerm* term;
 };
 
 struct NodeTerm : Node {
-    std::variant<NodeTermUn*, NodeTermNumLit*, NodeTermIdent*, NodeTermAssign*, NodeTermParen*, NodeTermFunc*> var;
+    std::variant<NodeTermUn*, NodeTermNumLit*, NodeTermIdent*, NodeTermParen*, NodeTermFunc*> var;
 };
 
 struct NodeExprFunc : Node {

@@ -12,7 +12,7 @@ std::vector<Token> Tokenizer::tokenize()
 {
     std::vector<Token> tokens {};
 
-    const std::map<char, TokenType> nonAlphaTokenMap {
+    const std::map<char, TokenType> singleNonAlphaTokenMap {
         {';', TokenType::semi},
         {'(', TokenType::paren_open},
         {')', TokenType::paren_close},
@@ -27,6 +27,24 @@ std::vector<Token> Tokenizer::tokenize()
         {'>', TokenType::angle_close},
         {',', TokenType::comma},
         {'.', TokenType::dot},
+        {'!', TokenType::not_},
+        {'%', TokenType::modulus},
+    };
+
+    const std::map<std::string, TokenType> doubleNonAlphaTokenMap {
+        {"==", TokenType::double_eq},
+        {"--", TokenType::double_dash},
+        {"++", TokenType::double_plus},
+        {"+=", TokenType::plus_eq},
+        {"-=", TokenType::dash_eq},
+        {"*=", TokenType::star_eq},
+        {"/=", TokenType::fslash_eq},
+        {"&&", TokenType::double_amp},
+        {"||", TokenType::double_bar},
+        {"!=", TokenType::not_eq_},
+        {"<=", TokenType::oangle_eq},
+        {">=", TokenType::cangle_eq},
+        {"%=", TokenType::mod_eq},
     };
 
     const std::map<std::string, TokenType> identifierTokenMap {
@@ -93,7 +111,7 @@ std::vector<Token> Tokenizer::tokenize()
             }
         }
         // Check if identifier
-        else if (std::isalpha(peek().value()))
+        else if (std::isalpha(peek().value()) || peek().value() == '_')
         {
             buf.push_back(consume());
             // Add full identifier to buffer
@@ -138,10 +156,16 @@ std::vector<Token> Tokenizer::tokenize()
         {
             consume();
         }
-        // Check for single character non-alpha tokens
-        else if (nonAlphaTokenMap.contains(peek().value()))
+        // Check for two character non-letter tokens
+        else if (peek(1).has_value() && doubleNonAlphaTokenMap.contains(std::string(1, peek().value()) + peek(1).value()))
         {
-            tokens.push_back({.type = nonAlphaTokenMap.at(consume()), .line = m_curr_line});
+            tokens.push_back({.type = doubleNonAlphaTokenMap.at(std::string(1, peek().value()) + peek(1).value()), .line = m_curr_line});
+            consume(2);
+        }
+        // Check for single character non-letter tokens
+        else if (singleNonAlphaTokenMap.contains(peek().value()))
+        {
+            tokens.push_back({.type = singleNonAlphaTokenMap.at(consume()), .line = m_curr_line});
         }
         // Invalid character
         else
@@ -158,15 +182,32 @@ std::optional<int> Tokenizer::bin_prec(TokenType type)
 {
     switch (type)
     {
+    case TokenType::plus_eq:
+    case TokenType::dash_eq:
+    case TokenType::star_eq:
+    case TokenType::fslash_eq:
+    case TokenType::mod_eq:
+    case TokenType::eq:
+        return 0;
+    case TokenType::double_bar:
+        return 1;
+    case TokenType::double_amp:
+        return 2;
+    case TokenType::double_eq:
+    case TokenType::not_eq_:
+        return 3;
     case TokenType::angle_open:
     case TokenType::angle_close:
-        return 0;
+    case TokenType::oangle_eq:
+    case TokenType::cangle_eq:
+        return 4;
     case TokenType::plus:
     case TokenType::dash:
-        return 1;
+        return 5;
     case TokenType::star:
     case TokenType::slash_forward:
-        return 2;
+    case TokenType::modulus:
+        return 6;
     default:
         return {};
     }

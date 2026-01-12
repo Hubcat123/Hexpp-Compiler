@@ -69,16 +69,81 @@ void Generator::gen_func(const NodeFunc* func)
 
 void Generator::gen_bin_expr(const NodeExprBin* expr_bin)
 {
+    // If binary expression is a type of assignment
+    if (expr_bin->op_type == TokenType::eq || expr_bin->op_type == TokenType::plus_eq || expr_bin->op_type == TokenType::dash_eq || expr_bin->op_type == TokenType::star_eq
+         || expr_bin->op_type == TokenType::fslash_eq || expr_bin->op_type == TokenType::mod_eq)
+    {
+        if (!expr_bin->ident.has_value())
+        {
+            compilation_error("Expected identifier", expr_bin->line);
+        }
+
+        const std::vector<Var>::iterator iter = std::find_if(m_vars.begin(), m_vars.end(),
+            [&](const Var& var){ return var.name == expr_bin->ident.value().value.value(); });
+        
+        if (iter == m_vars.end())
+        {
+            compilation_error(std::string("Undeclared identifier: ") + expr_bin->ident.value().value.value(), expr_bin->line);
+        }
+
+        gen_expr(expr_bin->rhs);
+        Var& var = *iter;
+        int varDepth = m_stack_size - 1 - var.stack_loc;
+        numerical_reflection(std::to_string(varDepth));
+        fishermans_gambit();
+
+        switch (expr_bin->op_type)
+        {
+        case TokenType::eq:
+            pop();
+            break;
+        case TokenType::plus_eq:
+            additive_distilation();
+            break;
+        case TokenType::dash_eq:
+            jesters_gambit();
+            subtractive_distilation();
+            break;
+        case TokenType::star_eq:
+            multiplicative_distilation();
+            break;
+        case TokenType::fslash_eq:
+            jesters_gambit();
+            division_distilation();
+            break;
+        case TokenType::mod_eq:
+            jesters_gambit();
+            modulus_distilation();
+            break;
+        }
+        
+        numerical_reflection(std::to_string(-varDepth + 1));
+        fishermans_gambit_II();
+        return;
+    }
+
     gen_expr(expr_bin->lhs);
     gen_expr(expr_bin->rhs);
 
     switch(expr_bin->op_type)
     {
+    case TokenType::double_eq:
+        equality_distilation();
+        break;
+    case TokenType::not_eq_:
+        inequality_distilation();
+        break;
     case TokenType::angle_open:
         minimus_distilation();
         break;
+    case TokenType::oangle_eq:
+        minimus_distilation_II();
+        break;
     case TokenType::angle_close:
         maximus_distilation();
+        break;
+    case TokenType::cangle_eq:
+        maximus_distilation_II();
         break;
     case TokenType::plus:
         additive_distilation();
@@ -92,6 +157,15 @@ void Generator::gen_bin_expr(const NodeExprBin* expr_bin)
     case TokenType::slash_forward:
         division_distilation();
         break;
+    case TokenType::modulus:
+        modulus_distilation();
+        break;
+    case TokenType::double_amp:
+        conjunction_distilation();
+        break;
+    case TokenType::double_bar:
+        disjunction_distilation();
+        break;
     }
 }
 
@@ -103,6 +177,44 @@ void Generator::gen_term(const NodeTerm* term)
         
         void operator()(const NodeTermUn* term_un)
         {
+            // If unary expression is a type of assignment
+            if (term_un->op_type == TokenType::double_plus || term_un->op_type == TokenType::double_dash)
+            {
+                if (!term_un->ident.has_value())
+                {
+                    compilation_error("Expected identifier", term_un->line);
+                }
+
+                const std::vector<Var>::iterator iter = std::find_if(gen.m_vars.begin(), gen.m_vars.end(),
+                    [&](const Var& var){ return var.name == term_un->ident.value().value.value(); });
+                
+                if (iter == gen.m_vars.end())
+                {
+                    compilation_error(std::string("Undeclared identifier: ") + term_un->ident.value().value.value(), term_un->line);
+                }
+
+                Var& var = *iter;
+                int varDepth = gen.m_stack_size - 1 - var.stack_loc;
+                gen.numerical_reflection(std::to_string(varDepth));
+                gen.fishermans_gambit();
+
+                switch (term_un->op_type)
+                {
+                case TokenType::double_plus:
+                    gen.numerical_reflection("1");
+                    gen.additive_distilation();
+                    break;
+                case TokenType::double_dash:
+                    gen.numerical_reflection("-1");
+                    gen.additive_distilation();
+                    break;
+                }
+                
+                gen.numerical_reflection(std::to_string(-varDepth + 1));
+                gen.fishermans_gambit_II();
+                return;
+            }
+
             gen.gen_term(term_un->term);
 
             switch (term_un->op_type)
@@ -131,26 +243,6 @@ void Generator::gen_term(const NodeTerm* term)
 
             Var& var = *iter;
             gen.numerical_reflection(std::to_string(gen.m_stack_size - 1 - var.stack_loc));
-            gen.fishermans_gambit_II();
-        }
-
-        void operator()(const NodeTermAssign* term_assign)
-        {
-            const std::vector<Var>::iterator iter = std::find_if(gen.m_vars.begin(), gen.m_vars.end(),
-                [&](const Var& var){ return var.name == term_assign->ident.value.value(); });
-            
-            if (iter == gen.m_vars.end())
-            {
-                compilation_error(std::string("Undeclared identifier: ") + term_assign->ident.value.value(), term_assign->line);
-            }
-
-            Var& var = *iter;
-            gen.gen_expr(term_assign->expr);
-            int varDepth = gen.m_stack_size - 1 - var.stack_loc;
-            gen.numerical_reflection(std::to_string(varDepth));
-            gen.fishermans_gambit();
-            gen.pop();
-            gen.numerical_reflection(std::to_string(-varDepth + 1));
             gen.fishermans_gambit_II();
         }
 
@@ -401,15 +493,33 @@ void Generator::compass_purification_II()
     m_output << "Compass' Purification II\n";
 }
 
+void Generator::conjunction_distilation()
+{
+    m_output << "Conjunction Distillation\n";
+    --m_stack_size;
+}
+
 void Generator::conjure_light()
 {
     m_output << "Conjure Light\n";
     --m_stack_size;
 }
 
+void Generator::disjunction_distilation()
+{
+    m_output << "Disjunction Distillation\n";
+    --m_stack_size;
+}
+
 void Generator::division_distilation()
 {
     m_output << "Division Distillation\n";
+    --m_stack_size;
+}
+
+void Generator::equality_distilation()
+{
+    m_output << "Equality Distillation\n";
     --m_stack_size;
 }
 
@@ -436,9 +546,26 @@ void Generator::gemini_decomposition()
     ++m_stack_size;
 }
 
+void Generator::inequality_distilation()
+{
+    m_output << "Inequality Distillation\n";
+    --m_stack_size;
+}
+
+void Generator::jesters_gambit()
+{
+    m_output << "Jester's Gambit\n";
+}
+
 void Generator::maximus_distilation()
 {
     m_output << "Maximus Distillation\n";
+    --m_stack_size;
+}
+
+void Generator::maximus_distilation_II()
+{
+    m_output << "Maximus Distillation II\n";
     --m_stack_size;
 }
 
@@ -454,10 +581,27 @@ void Generator::minimus_distilation()
     --m_stack_size;
 }
 
+void Generator::minimus_distilation_II()
+{
+    m_output << "Minimus Distillation II\n";
+    --m_stack_size;
+}
+
+void Generator::modulus_distilation()
+{
+    m_output << "Modulus Distillation\n";
+    --m_stack_size;
+}
+
 void Generator::multiplicative_distilation()
 {
     m_output << "Multiplicative Distillation\n";
     --m_stack_size;
+}
+
+void Generator::negation_purification()
+{
+    m_output << "Negation Purification\n";
 }
 
 void Generator::numerical_reflection(std::string value)
