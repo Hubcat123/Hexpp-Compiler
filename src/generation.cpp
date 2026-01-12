@@ -210,7 +210,7 @@ void Generator::gen_term(const NodeTerm* term)
                     break;
                 }
                 
-                gen.numerical_reflection(std::to_string(-varDepth + 1));
+                gen.numerical_reflection(std::to_string(-varDepth));
                 gen.fishermans_gambit_II();
                 return;
             }
@@ -222,6 +222,9 @@ void Generator::gen_term(const NodeTerm* term)
             case TokenType::dash:
                 gen.numerical_reflection("-1");
                 gen.multiplicative_distilation();
+                break;
+            case TokenType::not_:
+                gen.negation_purification();
                 break;
             }
         }
