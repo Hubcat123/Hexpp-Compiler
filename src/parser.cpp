@@ -143,9 +143,11 @@ std::optional<NodeTerm*> Parser::parse_term()
         }
         // Check if term is a function
         else if (std::optional<NodeFunc*> func = parse_func(
-            { TokenType::pow, TokenType::vec, TokenType::self, TokenType::block_raycast, TokenType::block_normal_raycast }))
+            { TokenType::pow, TokenType::vec, TokenType::self, TokenType::block_raycast, TokenType::block_normal_raycast, TokenType::pos, TokenType::forward, TokenType::eye_pos }))
         {
+            const std::vector<TokenType> memberFunctionTypes = { TokenType::pos, TokenType::forward, TokenType::eye_pos };
             NodeTermFunc* node_term_func = m_allocator.alloc<NodeTermFunc>();
+            node_term_func->isMemberFunc = std::find(memberFunctionTypes.cbegin(), memberFunctionTypes.cend(), func.value()->func_type) != memberFunctionTypes.cend();
             node_term_func->func = func.value();
             node_term_func->line = line;
             NodeTerm* term = m_allocator.alloc<NodeTerm>();
@@ -166,8 +168,6 @@ std::optional<NodeExpr*> Parser::parse_expr(int min_prec)
         line = peek().value().line;
     }
 
-    // Grab identifier, if it is one
-    std::optional<Token> ident = (peek().has_value() && peek().value().type == TokenType::ident) ? peek().value() : std::optional<Token>{};
     std::optional<NodeTerm*> term_lhs = parse_term();
     if (!term_lhs.has_value())
     {
@@ -179,67 +179,36 @@ std::optional<NodeExpr*> Parser::parse_expr(int min_prec)
     lhs_expr->line = line;
     while (true)
     {
-        std::optional<Token> curr_tok;
-        std::optional<int> prec;
-
-        // Loop until end of expression found
-        bool expression_end = false;
-        while (true)
-        {
-            // Break if no next token
-            curr_tok = peek();
-            if (!curr_tok.has_value())
-            {
-                expression_end = true;
-                break;
-            }
-
-            // Break if next token not an operator or has lower precedance
-            prec = Tokenizer::bin_prec(curr_tok.value().type);
-            if (!prec.has_value() || prec.value() < min_prec)
-            {
-                // See if expression calling member function
-                if (peek().has_value() && peek().value().type == TokenType::dot)
-                {
-                    consume();
-
-                    if (std::optional<NodeFunc*> func = parse_func(
-                        { TokenType::pos, TokenType::forward, TokenType::eye_pos }))
-                    {
-                        NodeExprFunc* expr_func = m_allocator.alloc<NodeExprFunc>();
-                        expr_func->expr = lhs_expr;
-                        expr_func->func = func.value();
-                        expr_func->line = line;
-                        NodeExpr* expr = m_allocator.alloc<NodeExpr>();
-                        expr->var = expr_func;
-                        expr->line = line;
-                        lhs_expr = expr;
-
-                        continue;
-                    }
-                    else
-                    {
-                        compilation_error("Expected function", peek(-1).value().line);
-                    }
-                }
-                else
-                {
-                    expression_end = true;
-                    break;
-                }
-            }
-
-            break;
-        }
-
-        if (expression_end)
+        // Make sure token has a value
+        if (!peek().has_value())
         {
             break;
         }
 
-        TokenType op_type = consume().type;
+        TokenType op_type = peek().value().type;
 
-        int next_min_prec = prec.value() + 1;
+        int prec;
+
+        // Make sure token is bin operator
+        if (std::optional<int> op_prec = Tokenizer::bin_prec(op_type))
+        {
+            prec = op_prec.value();
+        }
+        else
+        {
+            break;
+        }
+
+        // Make sure operator has required precedence
+        if (prec < min_prec)
+        {
+            break;
+        }
+
+        // Consume operator
+        consume();
+
+        int next_min_prec = prec + 1;
         std::optional<NodeExpr*> rhs_expr = parse_expr(next_min_prec);
         if (!rhs_expr.has_value())
         {
@@ -247,8 +216,6 @@ std::optional<NodeExpr*> Parser::parse_expr(int min_prec)
         }
 
         NodeExprBin* expr_bin = m_allocator.alloc<NodeExprBin>();
-        expr_bin->ident = ident;
-        ident = {};
         expr_bin->op_type = op_type;
         expr_bin->lhs = lhs_expr;
         expr_bin->rhs = rhs_expr.value();

@@ -73,17 +73,25 @@ void Generator::gen_bin_expr(const NodeExprBin* expr_bin)
     if (expr_bin->op_type == TokenType::eq || expr_bin->op_type == TokenType::plus_eq || expr_bin->op_type == TokenType::dash_eq || expr_bin->op_type == TokenType::star_eq
          || expr_bin->op_type == TokenType::fslash_eq || expr_bin->op_type == TokenType::mod_eq)
     {
-        if (!expr_bin->ident.has_value())
+        if (!std::holds_alternative<NodeTerm*>(expr_bin->lhs->var))
         {
             compilation_error("Expected identifier", expr_bin->line);
         }
 
+        NodeTerm* term = std::get<NodeTerm*>(expr_bin->lhs->var);
+        if (!std::holds_alternative<NodeTermIdent*>(term->var))
+        {
+            compilation_error("Expected identifier", expr_bin->line);
+        }
+
+        Token ident = std::get<NodeTermIdent*>(term->var)->ident;
+
         const std::vector<Var>::iterator iter = std::find_if(m_vars.begin(), m_vars.end(),
-            [&](const Var& var){ return var.name == expr_bin->ident.value().value.value(); });
+            [&](const Var& var){ return var.name == ident.value.value(); });
         
         if (iter == m_vars.end())
         {
-            compilation_error(std::string("Undeclared identifier: ") + expr_bin->ident.value().value.value(), expr_bin->line);
+            compilation_error(std::string("Undeclared identifier: ") + ident.value.value(), expr_bin->line);
         }
 
         gen_expr(expr_bin->rhs);
@@ -123,6 +131,38 @@ void Generator::gen_bin_expr(const NodeExprBin* expr_bin)
     }
 
     gen_expr(expr_bin->lhs);
+
+    // If binary expression is calling a member function
+    if (expr_bin->op_type == TokenType::dot)
+    {
+        // If rhs is a term
+        if (std::holds_alternative<NodeTerm*>(expr_bin->rhs->var))
+        {
+            NodeTerm* term = std::get<NodeTerm*>(expr_bin->rhs->var);
+            // If term is a function
+            if (std::holds_alternative<NodeTermFunc*>(term->var))
+            {
+                NodeTermFunc* term_func = std::get<NodeTermFunc*>(term->var);
+
+                if (!term_func->isMemberFunc)
+                {
+                    compilation_error("Expected member function", expr_bin->line);
+                }
+
+                gen_func(term_func->func);
+                return;
+            }
+            else
+            {
+                compilation_error("Expected member function", expr_bin->line);
+            }
+        }
+        else
+        {
+            compilation_error("Expected member function", expr_bin->line);
+        }
+    }
+
     gen_expr(expr_bin->rhs);
 
     switch(expr_bin->op_type)
@@ -288,6 +328,11 @@ void Generator::gen_term(const NodeTerm* term)
 
         void operator()(const NodeTermFunc* term_func)
         {
+            if (term_func->isMemberFunc)
+            {
+                compilation_error("Must call member functions on a member", term_func->line);
+            }
+
             gen.gen_func(term_func->func);
         }
     };
@@ -310,12 +355,6 @@ void Generator::gen_expr(const NodeExpr* expr)
         void operator()(const NodeExprBin* expr_bin)
         {
             gen.gen_bin_expr(expr_bin);
-        }
-
-        void operator()(const NodeExprFunc* expr_func)
-        {
-            gen.gen_expr(expr_func->expr);
-            gen.gen_func(expr_func->func);
         }
     };
 

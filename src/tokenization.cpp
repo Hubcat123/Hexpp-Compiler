@@ -208,6 +208,8 @@ std::optional<int> Tokenizer::bin_prec(TokenType type)
     case TokenType::slash_forward:
     case TokenType::modulus:
         return 6;
+    case TokenType::dot:
+        return 7;
     default:
         return {};
     }
