@@ -63,6 +63,7 @@ std::vector<Token> Tokenizer::tokenize()
         {"eye_pos", TokenType::eye_pos},
         {"block_raycast", TokenType::block_raycast},
         {"block_raycast_from", TokenType::block_raycast_from},
+        {"block_normal_raycast", TokenType::block_normal_raycast},
         {"block_normal_raycast_from", TokenType::block_normal_raycast_from},
         {"summon_light", TokenType::summon_light},
     };
