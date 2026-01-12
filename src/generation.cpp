@@ -56,8 +56,24 @@ void Generator::gen_func(const NodeFunc* func)
         try_gen_x_exprs(func->exprs, 2, func->line);
         archers_distilation();
         break;
+    case TokenType::block_raycast_from:
+        try_gen_x_exprs(func->exprs, 1, func->line);
+        gemini_decomposition();
+        compass_purification();
+        jesters_gambit();
+        alidades_purification();
+        archers_distilation();
+        break;
     case TokenType::block_normal_raycast:
         try_gen_x_exprs(func->exprs, 2, func->line);
+        architects_distilation();
+        break;
+    case TokenType::block_normal_raycast_from:
+        try_gen_x_exprs(func->exprs, 1, func->line);
+        gemini_decomposition();
+        compass_purification();
+        jesters_gambit();
+        alidades_purification();
         architects_distilation();
         break;
     case TokenType::summon_light:

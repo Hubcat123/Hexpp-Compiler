@@ -165,7 +165,8 @@ std::optional<NodeTerm*> Parser::parse_term()
         }
         // Check if term is a function
         else if (std::optional<NodeFunc*> func = parse_func(
-            { TokenType::pow, TokenType::vec, TokenType::self, TokenType::block_raycast, TokenType::block_normal_raycast, TokenType::pos, TokenType::forward, TokenType::eye_pos }))
+            { TokenType::pow, TokenType::vec, TokenType::self, TokenType::block_raycast, TokenType::block_raycast_from, TokenType::block_normal_raycast, TokenType::block_normal_raycast_from,
+            TokenType::pos, TokenType::forward, TokenType::eye_pos }))
         {
             const std::vector<TokenType> memberFunctionTypes = { TokenType::pos, TokenType::forward, TokenType::eye_pos };
             NodeTermFunc* node_term_func = m_allocator.alloc<NodeTermFunc>();
