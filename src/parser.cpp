@@ -58,7 +58,7 @@ std::optional<NodeTerm*> Parser::parse_term()
         size_t line = peek().value().line;
         
         const std::vector<TokenType> unaryOperandTypes = { TokenType::dash, TokenType::not_, TokenType::double_dash, TokenType::double_plus };
-        // Check if term is unary operator
+        // Check if term is pre unary operator
         if (std::find(unaryOperandTypes.cbegin(), unaryOperandTypes.cend(), peek().value().type) != unaryOperandTypes.end())
         {
             TokenType op_type = consume().type;
@@ -96,6 +96,23 @@ std::optional<NodeTerm*> Parser::parse_term()
         // Check if term is an identifier
         else if (peek().value().type == TokenType::ident)
         {
+            if (peek(1).has_value())
+            {
+                const std::vector<TokenType> postUnaryOperandTypes = { TokenType::double_plus, TokenType::double_dash };
+                // Check if term is post unary operator
+                if (std::find(postUnaryOperandTypes.cbegin(), postUnaryOperandTypes.cend(), peek(1).value().type) != postUnaryOperandTypes.end())
+                {
+                    NodeTermUnPost* term_un_post = m_allocator.alloc<NodeTermUnPost>();
+                    term_un_post->ident = consume();
+                    term_un_post->op_type = consume().type;
+                    term_un_post->line = line;
+                    NodeTerm* node_term = m_allocator.alloc<NodeTerm>();
+                    node_term->var = term_un_post;
+                    node_term->line = line;
+                    return node_term;
+                }
+            }
+
             NodeTermIdent* node_term_ident = m_allocator.alloc<NodeTermIdent>();
             node_term_ident->ident = consume();
             node_term_ident->line = line;

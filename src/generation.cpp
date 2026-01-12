@@ -229,6 +229,38 @@ void Generator::gen_term(const NodeTerm* term)
             }
         }
 
+        void operator()(const NodeTermUnPost* term_un_post)
+        {
+            const std::vector<Var>::iterator iter = std::find_if(gen.m_vars.begin(), gen.m_vars.end(),
+                [&](const Var& var){ return var.name == term_un_post->ident.value.value(); });
+            
+            if (iter == gen.m_vars.end())
+            {
+                compilation_error(std::string("Undeclared identifier: ") + term_un_post->ident.value.value(), term_un_post->line);
+            }
+
+            Var& var = *iter;
+            int varDepth = gen.m_stack_size - 1 - var.stack_loc;
+            gen.numerical_reflection(std::to_string(varDepth));
+            gen.fishermans_gambit();
+            gen.gemini_decomposition();
+
+            switch (term_un_post->op_type)
+            {
+            case TokenType::double_plus:
+                gen.numerical_reflection("1");
+                gen.additive_distilation();
+                break;
+            case TokenType::double_dash:
+                gen.numerical_reflection("-1");
+                gen.additive_distilation();
+                break;
+            }
+            
+            gen.numerical_reflection(std::to_string(-varDepth + 1));
+            gen.fishermans_gambit();
+        }
+
         void operator()(const NodeTermNumLit* term_int_lit)
         {
             gen.numerical_reflection(term_int_lit->num_lit.value.value());

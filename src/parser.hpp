@@ -48,8 +48,13 @@ struct NodeTermUn : Node {
     NodeTerm* term;
 };
 
+struct NodeTermUnPost : Node {
+    TokenType op_type;
+    Token ident;
+};
+
 struct NodeTerm : Node {
-    std::variant<NodeTermUn*, NodeTermNumLit*, NodeTermIdent*, NodeTermParen*, NodeTermFunc*> var;
+    std::variant<NodeTermUn*, NodeTermUnPost*, NodeTermNumLit*, NodeTermIdent*, NodeTermParen*, NodeTermFunc*> var;
 };
 
 struct NodeExprFunc : Node {
