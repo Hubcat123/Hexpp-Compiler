@@ -134,7 +134,7 @@ std::vector<Token> Tokenizer::tokenize()
             buf.clear();
         }
         // Check if num
-        else if (std::isdigit(peek().value()))
+        else if (std::isdigit(peek().value()) || (peek(1).has_value() && peek().value() == '-' && std::isdigit(peek(1).value())))
         {
             buf.push_back(consume());
             bool foundDecimal = false;
