@@ -103,8 +103,10 @@ bool Generator::gen_defined_func(const NodeDefinedFunc* func)
     muninns_reflection();
     numerical_reflection(std::to_string(iter->stack_loc));
     selection_distilation();
-    m_output << "Hermes' Gambit\n";
+    // Iris' Gambit
+    m_output << "Pattern \"qwaqde\"\n";
 
+    // Account for expression left on stack from non-void function and function iota being consumed
     if (iter->is_void)
     {
         --m_stack_size;
@@ -489,7 +491,12 @@ void Generator::gen_stmt(const NodeStmt* stmt)
                 gen.gen_expr(stmt_ret->expr.value());
             }
 
+            // Remove scope items from stack
+            gen.end_scopes_return(stmt_ret->expr.has_value());
 
+            // Execute jump iota
+            gen.jesters_gambit();
+            gen.m_output << "Hermes' Gambit\n";
         }
 
         void operator()(const NodeExpr* stmt_expr)
@@ -624,6 +631,8 @@ void Generator::gen_func_def(const NodeFunctionDef* func_def)
     std::visit(visitor, func_def->var);
 
     generating_void_function = is_void;
+    m_function_start_scope = m_scopes.size();
+    m_function_num_params = params.size();
 
     m_output << "{\n";
     begin_scope();
@@ -634,6 +643,9 @@ void Generator::gen_func_def(const NodeFunctionDef* func_def)
         m_vars.push_back(Var{.name = param.value.value(), .stack_loc = m_stack_size});
         ++m_stack_size;
     }
+
+    // Account for jump iota from iris' gambit
+    ++m_stack_size;
 
     // Generate stmts in function
     for (NodeStmt* stmt : scope->stmts)
@@ -752,17 +764,25 @@ void Generator::pop(int amount)
 
 void Generator::begin_scope()
 {
-    m_scopes.push(Scope{.stack_size = m_stack_size, .var_num = m_vars.size()});
+    m_scopes.push_back(Scope{.stack_size = m_stack_size, .var_num = m_vars.size()});
 }
 
 void Generator::end_scope()
 {
-    size_t pop_count = m_stack_size - m_scopes.top().stack_size;
+    size_t pop_count = m_stack_size - m_scopes.back().stack_size;
     pop(pop_count);
 
-    m_vars.resize(m_scopes.top().var_num);
+    m_vars.resize(m_scopes.back().var_num);
 
-    m_scopes.pop();
+    m_scopes.pop_back();
+}
+
+void Generator::end_scopes_return(bool has_ret_value)
+{
+    size_t pop_count = m_stack_size - m_scopes[m_function_start_scope].stack_size - (has_ret_value ? 1 : 0) - 1;
+
+    // Bookkeepr's Gambit all stack elements except possible ret value and jump iota
+    m_output << "Bookkeeper's Gambit: " << std::string(m_function_num_params, 'v') << '-' << std::string(pop_count - m_function_num_params, 'v') << (has_ret_value ? "-" : "") << '\n';
 }
 
 void Generator::dec_func(bool is_void, std::string name, int num_params, size_t line)

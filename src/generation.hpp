@@ -25,6 +25,7 @@ public:
     void pop(int amount = 1);
     void begin_scope();
     void end_scope();
+    void end_scopes_return(bool has_ret_value);
     void dec_func(bool is_void, std::string name, int num_params, size_t line);
 
     void additive_distilation();
@@ -98,5 +99,8 @@ private:
     std::vector<Var> m_vars {};
     std::vector<Var> m_global_vars {};
     std::vector<Func> m_funcs {};
-    std::stack<Scope> m_scopes {};
+    std::vector<Scope> m_scopes {};
+
+    size_t m_function_start_scope;
+    size_t m_function_num_params;
 };

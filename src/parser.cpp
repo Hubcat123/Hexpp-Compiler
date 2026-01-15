@@ -152,6 +152,17 @@ std::optional<NodeTerm*> Parser::parse_term()
             node_term->line = line;
             return node_term;
         }
+        // Check if term is a user-defined function
+        else if (std::optional<NodeDefinedFunc*> func = parse_defined_func())
+        {
+            NodeTermCallFunc* call_func = m_allocator.alloc<NodeTermCallFunc>();
+            call_func->func = func.value();
+            call_func->line = line;
+            NodeTerm* term = m_allocator.alloc<NodeTerm>();
+            term->var = call_func;
+            term->line = line;
+            return term;
+        }
         // Check if term is an identifier
         else if (peek().value().type == TokenType::ident)
         {
@@ -212,17 +223,6 @@ std::optional<NodeTerm*> Parser::parse_term()
             node_term_func->line = line;
             NodeTerm* term = m_allocator.alloc<NodeTerm>();
             term->var = node_term_func;
-            term->line = line;
-            return term;
-        }
-        // Check if term is a user-defined function
-        else if (std::optional<NodeDefinedFunc*> func = parse_defined_func())
-        {
-            NodeTermCallFunc* call_func = m_allocator.alloc<NodeTermCallFunc>();
-            call_func->func = func.value();
-            call_func->line = line;
-            NodeTerm* term = m_allocator.alloc<NodeTerm>();
-            term->var = call_func;
             term->line = line;
             return term;
         }
