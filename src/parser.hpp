@@ -19,6 +19,11 @@ struct NodeFunc : Node {
     std::vector<NodeExpr*> exprs;
 };
 
+struct NodeDefinedFunc : Node {
+    Token ident;
+    std::vector<NodeExpr*> exprs;
+};
+
 struct NodeTermNumLit : Node {
     Token num_lit;
 };
@@ -27,9 +32,13 @@ struct NodeTermIdent : Node {
     Token ident;
 };
 
-struct NodeTermFunc : Node {
+struct NodeTermInbuiltFunc : Node {
     bool isMemberFunc;
     NodeFunc* func;
+};
+
+struct NodeTermCallFunc : Node {
+    NodeDefinedFunc* func;
 };
 
 struct NodeTermUn : Node {
@@ -55,7 +64,7 @@ struct NodeTermNullLit : Node {
 };
 
 struct NodeTerm : Node {
-    std::variant<NodeTermUn*, NodeTermUnPost*, NodeTermNumLit*, NodeTermBoolLit*, NodeTermNullLit*, NodeTermIdent*, NodeTermParen*, NodeTermFunc*> var;
+    std::variant<NodeTermUn*, NodeTermUnPost*, NodeTermNumLit*, NodeTermBoolLit*, NodeTermNullLit*, NodeTermIdent*, NodeTermParen*, NodeTermInbuiltFunc*, NodeTermCallFunc*> var;
 };
 
 struct NodeExprBin : Node {
@@ -88,16 +97,47 @@ struct NodeStmtWhile : Node {
     NodeStmt* stmt;
 };
 
-struct NodeStmtFunc : Node {
+struct NodeStmtInbuiltFunc : Node {
     NodeFunc* func;
 };
 
+struct NodeStmtCallFunction : Node {
+    NodeDefinedFunc* func;
+};
+
+struct NodeStmtReturn : Node {
+    std::optional<NodeExpr*> expr;
+};
+
 struct NodeStmt : Node {
-    std::variant<NodeStmtFunc*, NodeExpr*, NodeStmtLet*, NodeStmtIf*, NodeStmtWhile*, NodeScope*> var;
+    std::variant<NodeStmtInbuiltFunc*, NodeStmtCallFunction*, NodeStmtReturn*, NodeExpr*, NodeStmtLet*, NodeStmtIf*, NodeStmtWhile*, NodeScope*> var;
+};
+
+struct NodeGlobalLet : Node {
+    Token ident;
+    NodeExpr* expr;
+};
+
+struct NodeFunctionDefVoid : Node {
+    Token ident;
+    std::vector<Token> params;
+    NodeScope* scope;
+};
+
+struct NodeFunctionDefRet : Node {
+    Token ident;
+    std::vector<Token> params;
+    NodeScope* scope;
+};
+
+struct NodeFunctionDef : Node {
+    std::variant<NodeFunctionDefVoid*, NodeFunctionDefRet*> var;
 };
 
 struct NodeProg : Node {
-    std::vector<NodeStmt*> stmts;
+    std::vector<NodeGlobalLet*> vars;
+    std::vector<NodeFunctionDef*> funcs;
+    NodeFunctionDefVoid* main_ = nullptr;
 };
 
 class Parser
@@ -108,10 +148,12 @@ public:
     std::optional<NodeProg*> parse();
 private:
     std::optional<NodeFunc*> parse_func(std::vector<TokenType> valid_types);
+    std::optional<NodeDefinedFunc*> parse_defined_func();
     std::optional<NodeTerm*> parse_term();
-    std::optional<NodeExpr*> parse_expr(int min_prec = 0);
+    std::optional<NodeExpr*> parse_expr(int min_prec = 0, NodeTerm* first_term = nullptr);
     std::optional<NodeScope*> parse_scope();
     std::optional<NodeStmt*> parse_stmt();
+    std::optional<NodeFunctionDef*> parse_func_def();
     std::optional<NodeProg*> parse_prog();
 
     void try_consume(TokenType type, char tokenChar);

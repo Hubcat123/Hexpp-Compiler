@@ -12,16 +12,20 @@ public:
     std::string generate();
 
     void gen_func(const NodeFunc* func);
+    // Returns whether func is void func
+    bool gen_defined_func(const NodeDefinedFunc* func);
     void gen_bin_expr(const NodeExprBin* expr_bin);
     void gen_term(const NodeTerm* term);
     void gen_expr(const NodeExpr* expr);
     void gen_stmt(const NodeStmt* stmt);
+    void gen_func_def(const NodeFunctionDef* func_def);
     void gen_prog();
     
     void try_gen_x_exprs(std::vector<NodeExpr*> exprs, int correct_amount, size_t line);
     void pop(int amount = 1);
     void begin_scope();
     void end_scope();
+    void dec_func(bool is_void, std::string name, int num_params, size_t line);
 
     void additive_distilation();
     void alidades_purification();
@@ -43,6 +47,8 @@ public:
     void fishermans_gambit_II();
     void flocks_reflection();
     void gemini_decomposition();
+    // Store in Raven's Mind
+    void huginns_gambit();
     void inequality_distilation();
     void jesters_gambit();
     void maximus_distilation();
@@ -52,18 +58,32 @@ public:
     void minimus_distilation_II();
     void modulus_distilation();
     void multiplicative_distilation();
+    // Retrieve from Raven's Mind
+    void muninns_reflection();
     void negation_purification();
     void nullary_reflection();
     void numerical_reflection(std::string value);
     void power_distilation();
     void reveal();
+    void selection_distilation();
     void subtractive_distilation();
+    void surgeons_exaltation();
     void true_reflection();
+    void vacant_reflection();
     void vector_exaltation();
+
+    bool generating_void_function = false;
 private:
 
     struct Var {
         std::string name;
+        size_t stack_loc;
+    };
+
+    struct Func {
+        bool is_void;
+        std::string name;
+        int num_params;
         size_t stack_loc;
     };
 
@@ -76,5 +96,7 @@ private:
     std::stringstream m_output;
     size_t m_stack_size = 0;
     std::vector<Var> m_vars {};
+    std::vector<Var> m_global_vars {};
+    std::vector<Func> m_funcs {};
     std::stack<Scope> m_scopes {};
 };

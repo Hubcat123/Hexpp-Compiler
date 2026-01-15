@@ -13,7 +13,7 @@ std::optional<NodeProg*> Parser::parse()
 
 std::optional<NodeFunc*> Parser::parse_func(std::vector<TokenType> valid_types)
 {
-    // Check if statement is print
+    // Check if function is valid type
     if (peek().has_value() && std::find(valid_types.cbegin(), valid_types.cend(), peek().value().type) != valid_types.cend() &&
         peek(1).has_value() && peek(1).value().type == TokenType::paren_open)
     {
@@ -46,6 +46,43 @@ std::optional<NodeFunc*> Parser::parse_func(std::vector<TokenType> valid_types)
         stmt_func->exprs = exprs;
         stmt_func->line = line;
         return stmt_func;
+    }
+
+    return {};
+}
+
+std::optional<NodeDefinedFunc*> Parser::parse_defined_func()
+{
+    // Check if function is valid type
+    if (peek().has_value() && peek().value().type == TokenType::ident &&
+        peek(1).has_value() && peek(1).value().type == TokenType::paren_open)
+    {
+        size_t line = peek().value().line;
+
+        // Consume starting tokens
+        NodeDefinedFunc* def_func = m_allocator.alloc<NodeDefinedFunc>();
+        def_func->ident = consume();
+        def_func->exprs = std::vector<NodeExpr*>();
+        def_func->line = line;
+        consume();
+
+        // Parse expresions
+        while (std::optional<NodeExpr*> node_expr = parse_expr())
+        {
+            def_func->exprs.push_back(node_expr.value());
+
+            if (!peek().has_value() || peek().value().type != TokenType::comma)
+            {
+                break;
+            }
+
+            consume();
+        }
+
+        // Check for closing tokens
+        try_consume(TokenType::paren_close, ')');
+
+        return def_func;
     }
 
     return {};
@@ -163,13 +200,13 @@ std::optional<NodeTerm*> Parser::parse_term()
                 compilation_error("Expected expression", peek(-1).has_value() ? peek(-1).value().line : 1);
             }
         }
-        // Check if term is a function
+        // Check if term is an inbuilt function
         else if (std::optional<NodeFunc*> func = parse_func(
             { TokenType::pow, TokenType::vec, TokenType::self, TokenType::block_raycast, TokenType::block_raycast_from, TokenType::block_normal_raycast, TokenType::block_normal_raycast_from,
             TokenType::pos, TokenType::forward, TokenType::eye_pos }))
         {
             const std::vector<TokenType> memberFunctionTypes = { TokenType::pos, TokenType::forward, TokenType::eye_pos };
-            NodeTermFunc* node_term_func = m_allocator.alloc<NodeTermFunc>();
+            NodeTermInbuiltFunc* node_term_func = m_allocator.alloc<NodeTermInbuiltFunc>();
             node_term_func->isMemberFunc = std::find(memberFunctionTypes.cbegin(), memberFunctionTypes.cend(), func.value()->func_type) != memberFunctionTypes.cend();
             node_term_func->func = func.value();
             node_term_func->line = line;
@@ -178,12 +215,23 @@ std::optional<NodeTerm*> Parser::parse_term()
             term->line = line;
             return term;
         }
+        // Check if term is a user-defined function
+        else if (std::optional<NodeDefinedFunc*> func = parse_defined_func())
+        {
+            NodeTermCallFunc* call_func = m_allocator.alloc<NodeTermCallFunc>();
+            call_func->func = func.value();
+            call_func->line = line;
+            NodeTerm* term = m_allocator.alloc<NodeTerm>();
+            term->var = call_func;
+            term->line = line;
+            return term;
+        }
     }
 
     return {};
 }
 
-std::optional<NodeExpr*> Parser::parse_expr(int min_prec)
+std::optional<NodeExpr*> Parser::parse_expr(int min_prec, NodeTerm* first_term)
 {
     size_t line;
     if (peek().has_value())
@@ -191,10 +239,20 @@ std::optional<NodeExpr*> Parser::parse_expr(int min_prec)
         line = peek().value().line;
     }
 
-    std::optional<NodeTerm*> term_lhs = parse_term();
-    if (!term_lhs.has_value())
+    std::optional<NodeTerm*> term_lhs;
+
+    // Check if we were passed an initial term
+    if (first_term == nullptr)
     {
-        return {};
+        term_lhs = parse_term();
+        if (!term_lhs.has_value())
+        {
+            return {};
+        }
+    }
+    else
+    {
+        term_lhs = first_term;
     }
 
     NodeExpr* lhs_expr = m_allocator.alloc<NodeExpr>();
@@ -281,19 +339,77 @@ std::optional<NodeStmt*> Parser::parse_stmt()
     {
         size_t line = peek().value().line;
 
-        // Check if statement is function
+        // Check if statement is inbuilt function
         if (std::optional<NodeFunc*> func = parse_func(
             { TokenType::print, TokenType::mine, TokenType::summon_light }))
         {
             try_consume(TokenType::semi, ';');
 
-            NodeStmtFunc* node_stmt_func = m_allocator.alloc<NodeStmtFunc>();
+            NodeStmtInbuiltFunc* node_stmt_func = m_allocator.alloc<NodeStmtInbuiltFunc>();
             node_stmt_func->func = func.value();
             node_stmt_func->line = line;
             NodeStmt* node_stmt = m_allocator.alloc<NodeStmt>();
             node_stmt->var = node_stmt_func;
             node_stmt->line = line;
             return node_stmt;
+        }
+        // Check if statement is user-defined function
+        else if (std::optional<NodeDefinedFunc*> defined_func = parse_defined_func())
+        {
+            // If has a semi, make it a stmt call
+            if (peek().has_value() && peek().value().type == TokenType::semi)
+            {
+                consume();
+
+                NodeStmtCallFunction* call_func = m_allocator.alloc<NodeStmtCallFunction>();
+                call_func->func = defined_func.value();
+                call_func->line = line;
+                NodeStmt* stmt = m_allocator.alloc<NodeStmt>();
+                stmt->var = call_func;
+                stmt->line = line;
+                return stmt;
+            }
+            // If no semi, make it an expr
+            else
+            {
+                NodeTermCallFunc* call_func = m_allocator.alloc<NodeTermCallFunc>();
+                call_func->func = defined_func.value();
+                call_func->line = line;
+                NodeTerm* term = m_allocator.alloc<NodeTerm>();
+                term->var = call_func;
+                term->line = line;
+
+                if (std::optional<NodeExpr*> expr = parse_expr(0, term))
+                {
+                    try_consume(TokenType::semi, ';');
+
+                    NodeStmt* stmt = m_allocator.alloc<NodeStmt>();
+                    stmt->var = expr.value();
+                    stmt->line = line;
+                    return stmt;
+                }
+                else
+                {
+                    // Should be unreachable
+                    compilation_error("Compiler failure: An error occured in the compiler due to failure to parse an expression. Please report bug. Problem found", line);
+                }
+            }
+        }
+        // Check if return
+        else if (peek().value().type == TokenType::return_)
+        {
+            consume();
+
+            NodeStmtReturn* stmt_ret = m_allocator.alloc<NodeStmtReturn>();
+            stmt_ret->expr = parse_expr();
+            stmt_ret->line = line;
+
+            try_consume(TokenType::semi, ';');
+
+            NodeStmt* stmt = m_allocator.alloc<NodeStmt>();
+            stmt->var = stmt_ret;
+            stmt->line = line;
+            return stmt;
         }
         // Check if expression
         else if (std::optional<NodeExpr*> expr = parse_expr())
@@ -305,7 +421,7 @@ std::optional<NodeStmt*> Parser::parse_stmt()
             stmt->line = line;
             return stmt;
         }
-        // Check if num var
+        // Check if var
         else if (
             peek().value().type == TokenType::let && peek(1).has_value() &&
             peek(1).value().type == TokenType::ident &&
@@ -429,22 +545,185 @@ std::optional<NodeStmt*> Parser::parse_stmt()
     return {};
 }
 
+std::optional<NodeFunctionDef*> Parser::parse_func_def()
+{
+    // Return if no more tokens
+    if (!peek().has_value())
+    {
+        return {};
+    }
+
+    size_t line = peek().value().line;
+
+    NodeFunctionDef* func_def = m_allocator.alloc<NodeFunctionDef>();
+    func_def->line = line;
+
+    // Check if void function
+    if (peek().value().type == TokenType::void_ && peek(1).has_value() &&
+        peek(1).value().type == TokenType::ident && peek(2).has_value() &&
+        peek(2).value().type == TokenType::paren_open)
+    {
+        consume();
+        NodeFunctionDefVoid* func_void = m_allocator.alloc<NodeFunctionDefVoid>();
+        func_void->ident = consume();
+        func_void->line = line;
+        consume();
+
+        // Parse params
+        while (peek().has_value() && peek().value().type == TokenType::ident)
+        {
+            func_void->params.push_back(consume());
+
+            if (!peek().has_value() || peek().value().type != TokenType::comma)
+            {
+                break;
+            }
+
+            consume();
+        }
+
+        try_consume(TokenType::paren_close, ')');
+
+        // Parse scope of function
+        if (std::optional<NodeScope*> scope = parse_scope())
+        {
+            func_void->scope = scope.value();
+        }
+        else
+        {
+            compilation_error("Expected scope", line);
+        }
+
+        func_def->var = func_void;
+        return func_def;
+    }
+    // Check if ret function
+    else if (
+        peek().value().type == TokenType::ret && peek(1).has_value() &&
+        peek(1).value().type == TokenType::ident && peek(2).has_value() &&
+        peek(2).value().type == TokenType::paren_open)
+    {
+        consume();
+        NodeFunctionDefRet* func_void = m_allocator.alloc<NodeFunctionDefRet>();
+        func_void->ident = consume();
+        func_void->line = line;
+        consume();
+
+        // Parse params
+        while (peek().has_value() && peek().value().type == TokenType::ident)
+        {
+            func_void->params.push_back(consume());
+
+            if (!peek().has_value() || peek().value().type != TokenType::comma)
+            {
+                break;
+            }
+
+            consume();
+        }
+
+        try_consume(TokenType::paren_close, ')');
+
+        // Parse scope of function
+        if (std::optional<NodeScope*> scope = parse_scope())
+        {
+            func_void->scope = scope.value();
+        }
+        else
+        {
+            compilation_error("Expected scope", line);
+        }
+
+        func_def->var = func_void;
+        return func_def;
+    }
+    else
+    {
+        return {};
+    }
+}
+
 std::optional<NodeProg*> Parser::parse_prog()
 {
     NodeProg* prog = m_allocator.alloc<NodeProg>();
+    prog->vars = std::vector<NodeGlobalLet*>();
+    prog->funcs = std::vector<NodeFunctionDef*>();
     prog->line = 1;
 
     // Keep looping looking for statements until all found
     while (peek().has_value())
     {
-        if (std::optional<NodeStmt*> node_stmt = parse_stmt())
+        size_t line = peek().value().line;
+
+        // Check if global var
+        if (peek().value().type == TokenType::let && peek(1).has_value() &&
+            peek(1).value().type == TokenType::ident &&
+            peek(2).has_value() && peek(2).value().type == TokenType::eq)
         {
-            prog->stmts.push_back(node_stmt.value());
+            // Consume sarting tokens and grab ident
+            consume();
+            NodeGlobalLet* global_let = m_allocator.alloc<NodeGlobalLet>();
+            global_let->ident = consume();
+            global_let->line = line;
+            consume();
+
+            // Parse expression
+            if (std::optional<NodeExpr*> expr = parse_expr())
+            {
+                global_let->expr = expr.value();
+            }
+            else
+            {
+                compilation_error("Expected expression", peek(-1).has_value() ? peek(-1).value().line : 1);
+            }
+
+            // Check for closing token
+            try_consume(TokenType::semi, ';');
+
+            prog->vars.push_back(global_let);
+        }
+        // Check if function def
+        else if (std::optional<NodeFunctionDef*> func_def = parse_func_def())
+        {
+            // Check if main function
+            bool isMain = false;
+            if (std::holds_alternative<NodeFunctionDefVoid*>(func_def.value()->var))
+            {
+                NodeFunctionDefVoid* func_void = std::get<NodeFunctionDefVoid*>(func_def.value()->var);
+                if (func_void->ident.value == "main")
+                {
+                    // Make sure main function isn't being passed arguments
+                    if (func_void->params.size() > 0)
+                    {
+                        compilation_error("Main function must not require arguments", line);
+                    }
+
+                    // Make sure not defining multiple main functions
+                    if (prog->main_ != nullptr)
+                    {
+                        compilation_error("Second main function defined", line);
+                    }
+
+                    isMain = true;
+                    prog->main_ = func_void;
+                }
+            }
+
+            if (!isMain)
+            {
+                prog->funcs.push_back(func_def.value());
+            }
         }
         else
         {
-            compilation_error("Invalid statement", peek(-1).has_value() ? peek(-1).value().line : 1);
+            compilation_error("Expected global statement", line);
         }
+    }
+
+    // Make sure a main function was defined
+    if (prog->main_ == nullptr)
+    {
+        compilation_error("Main function never defined", 0);
     }
 
     return prog;

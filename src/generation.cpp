@@ -83,6 +83,36 @@ void Generator::gen_func(const NodeFunc* func)
     }
 }
 
+bool Generator::gen_defined_func(const NodeDefinedFunc* func)
+{
+    // Find function being called
+    std::vector<Func>::iterator iter = std::find_if(m_funcs.begin(), m_funcs.end(), [&](const Func& _func){
+        return _func.name == func->ident.value.value() && _func.num_params == func->exprs.size();});
+    if (iter == m_funcs.end())
+    {
+        compilation_error(std::string("No function defined with this name with the passed number of parameters: ") + func->ident.value.value(), func->line);
+    }
+
+    // Generate expressions
+    for (NodeExpr* expr : func->exprs)
+    {
+        gen_expr(expr);
+    }
+
+    // Execute function code
+    muninns_reflection();
+    numerical_reflection(std::to_string(iter->stack_loc));
+    selection_distilation();
+    m_output << "Hermes' Gambit\n";
+
+    if (iter->is_void)
+    {
+        --m_stack_size;
+    }
+
+    return iter->is_void;
+}
+
 void Generator::gen_bin_expr(const NodeExprBin* expr_bin)
 {
     // If binary expression is a type of assignment
@@ -156,9 +186,9 @@ void Generator::gen_bin_expr(const NodeExprBin* expr_bin)
         {
             NodeTerm* term = std::get<NodeTerm*>(expr_bin->rhs->var);
             // If term is a function
-            if (std::holds_alternative<NodeTermFunc*>(term->var))
+            if (std::holds_alternative<NodeTermInbuiltFunc*>(term->var))
             {
-                NodeTermFunc* term_func = std::get<NodeTermFunc*>(term->var);
+                NodeTermInbuiltFunc* term_func = std::get<NodeTermInbuiltFunc*>(term->var);
 
                 if (!term_func->isMemberFunc)
                 {
@@ -341,17 +371,35 @@ void Generator::gen_term(const NodeTerm* term)
 
         void operator()(const NodeTermIdent* term_ident)
         {
-            const std::vector<Var>::iterator iter = std::find_if(gen.m_vars.begin(), gen.m_vars.end(),
+            bool is_global = false;
+            std::vector<Var>::iterator iter = std::find_if(gen.m_vars.begin(), gen.m_vars.end(),
                 [&](const Var& var){ return var.name == term_ident->ident.value.value(); });
             
             if (iter == gen.m_vars.end())
             {
-                compilation_error(std::string("Undeclared identifier: ") + term_ident->ident.value.value(), term_ident->line);
+                is_global = true;
+                iter = std::find_if(gen.m_global_vars.begin(), gen.m_global_vars.end(),
+                    [&](const Var& var){ return var.name == term_ident->ident.value.value(); });
+                
+                if (iter == gen.m_global_vars.end())
+                {
+                    compilation_error(std::string("Undeclared identifier: ") + term_ident->ident.value.value(), term_ident->line);
+                }
             }
 
             Var& var = *iter;
-            gen.numerical_reflection(std::to_string(gen.m_stack_size - 1 - var.stack_loc));
-            gen.fishermans_gambit_II();
+
+            if (is_global)
+            {
+                gen.muninns_reflection();
+                gen.numerical_reflection(std::to_string(var.stack_loc));
+                gen.selection_distilation();
+            }
+            else
+            {
+                gen.numerical_reflection(std::to_string(gen.m_stack_size - 1 - var.stack_loc));
+                gen.fishermans_gambit_II();
+            }
         }
 
         void operator()(const NodeTermParen* term_paren)
@@ -359,7 +407,7 @@ void Generator::gen_term(const NodeTerm* term)
             gen.gen_expr(term_paren->expr);
         }
 
-        void operator()(const NodeTermFunc* term_func)
+        void operator()(const NodeTermInbuiltFunc* term_func)
         {
             if (term_func->isMemberFunc)
             {
@@ -367,6 +415,14 @@ void Generator::gen_term(const NodeTerm* term)
             }
 
             gen.gen_func(term_func->func);
+        }
+
+        void operator()(const NodeTermCallFunc* call_func)
+        {
+            if (gen.gen_defined_func(call_func->func))
+            {
+                compilation_error("Calling void function as return function", call_func->line);
+            }
         }
     };
 
@@ -401,9 +457,39 @@ void Generator::gen_stmt(const NodeStmt* stmt)
         Generator& gen;
         StmtVisitor(Generator& _gen) :gen(_gen) {}
 
-        void operator()(const NodeStmtFunc* stmt_func)
+        void operator()(const NodeStmtInbuiltFunc* stmt_func)
         {
             gen.gen_func(stmt_func->func);
+        }
+
+        void operator()(const NodeStmtCallFunction* call_func)
+        {
+            if (!gen.gen_defined_func(call_func->func))
+            {
+                gen.pop();
+            }
+        }
+
+        void operator()(const NodeStmtReturn* stmt_ret)
+        {
+            // Error check for passing/not passing expression into return
+            if (gen.generating_void_function && stmt_ret->expr.has_value())
+            {
+                compilation_error("Returning expression from void function", stmt_ret->line);
+            }
+
+            if (!gen.generating_void_function && !stmt_ret->expr.has_value())
+            {
+                compilation_error("Return must have expression in non-void functions", stmt_ret->line);
+            }
+
+            // Generate expression if there is one
+            if (stmt_ret->expr.has_value())
+            {
+                gen.gen_expr(stmt_ret->expr.value());
+            }
+
+
         }
 
         void operator()(const NodeExpr* stmt_expr)
@@ -505,9 +591,134 @@ void Generator::gen_stmt(const NodeStmt* stmt)
     std::visit(visitor, stmt->var);
 }
 
+void Generator::gen_func_def(const NodeFunctionDef* func_def)
+{
+    // Visitor to extract function info
+    struct FuncDefVisitor {
+        Generator& gen;
+        bool& is_void;
+        std::vector<Token>& params;
+        NodeScope*& scope;
+        FuncDefVisitor (Generator& _gen, bool& _is_void, std::vector<Token>& _params, NodeScope*& _scope) :gen(_gen), is_void(_is_void), params(_params), scope(_scope) {}
+        
+        void operator()(const NodeFunctionDefVoid* func_void)
+        {
+            is_void = true;
+            params = func_void->params;
+            scope = func_void->scope;
+        }
+
+        void operator()(const NodeFunctionDefRet* func_ret)
+        {
+            is_void = false;
+            params = func_ret->params;
+            scope = func_ret->scope;
+        }
+    };
+
+    // Extract function info
+    bool is_void;
+    std::vector<Token> params;
+    NodeScope* scope;
+    FuncDefVisitor visitor(*this, is_void, params, scope);
+    std::visit(visitor, func_def->var);
+
+    generating_void_function = is_void;
+
+    m_output << "{\n";
+    begin_scope();
+
+    // Treat top of the stack as params
+    for (Token param : params)
+    {
+        m_vars.push_back(Var{.name = param.value.value(), .stack_loc = m_stack_size});
+        ++m_stack_size;
+    }
+
+    // Generate stmts in function
+    for (NodeStmt* stmt : scope->stmts)
+    {
+        gen_stmt(stmt);
+    }
+
+    end_scope();
+    m_output << "}\n";
+
+    // Account for function now being on the stack
+    ++m_stack_size;
+
+    generating_void_function = false;
+}
+
 void Generator::gen_prog()
 {
-    for (const NodeStmt* stmt : m_prog->stmts)
+    // Gen global var exprs
+    for (NodeGlobalLet* global_let : m_prog->vars)
+    {
+        if (std::find_if(m_global_vars.cbegin(), m_global_vars.cend(), [&](const Var& var){return var.name == global_let->ident.value.value();}) != m_global_vars.cend())
+        {
+            compilation_error(std::string("Global identifier already used: ") + global_let->ident.value.value(), global_let->line);
+        }
+
+        gen_expr(global_let->expr);
+
+        // Register temporarily as local var so they can reference other global vars during declaration
+        m_vars.push_back(Var{.name = global_let->ident.value.value(), .stack_loc = m_vars.size()});
+    }
+
+    // Clear temp local vars
+    m_vars.clear();
+
+    // Mark global variables as declared
+    for (NodeGlobalLet* global_let : m_prog->vars)
+    {
+        m_global_vars.push_back(Var{.name = global_let->ident.value.value(), .stack_loc = m_global_vars.size()});
+    }
+
+    // Visitor for declaring functions
+    struct FuncDefVisitor {
+        Generator& gen;
+        FuncDefVisitor (Generator& _gen) :gen(_gen) {}
+        
+        void operator()(const NodeFunctionDefVoid* func_void)
+        {
+            gen.dec_func(true, func_void->ident.value.value(), func_void->params.size(), func_void->line);
+        }
+
+        void operator()(const NodeFunctionDefRet* func_ret)
+        {
+            gen.dec_func(false, func_ret->ident.value.value(), func_ret->params.size(), func_ret->line);
+        }
+    };
+    FuncDefVisitor visitor(*this);
+
+    // Gen function declarations
+    for (NodeFunctionDef* func_def : m_prog->funcs)
+    {
+        std::visit(visitor, func_def->var);
+    }
+
+    // Gen functions
+    for (NodeFunctionDef* func_def : m_prog->funcs)
+    {
+        gen_func_def(func_def);
+    }
+
+    // Store functions and global vars in list for raven's mind
+    if (m_global_vars.size() + m_funcs.size() > 0)
+    {
+        numerical_reflection(std::to_string(m_global_vars.size() + m_funcs.size()));
+        m_output << "Flock's Gambit\n";
+        m_stack_size -= m_global_vars.size() + m_funcs.size();
+    }
+    else
+    {
+        vacant_reflection();
+    }
+    huginns_gambit();
+
+    // Gen main
+    for (NodeStmt* stmt : m_prog->main_->scope->stmts)
     {
         gen_stmt(stmt);
     }
@@ -552,6 +763,16 @@ void Generator::end_scope()
     m_vars.resize(m_scopes.top().var_num);
 
     m_scopes.pop();
+}
+
+void Generator::dec_func(bool is_void, std::string name, int num_params, size_t line)
+{
+    if (std::find_if(m_funcs.cbegin(), m_funcs.cend(), [&](const Func& func){return func.name == name && func.num_params == num_params;}) != m_funcs.cend())
+    {
+        compilation_error(std::string("Function with this name and number of parameters already declared: ") + name, line);
+    }
+
+    m_funcs.push_back(Func{.is_void = is_void, .name = name, .num_params = num_params, .stack_loc = m_global_vars.size() + m_funcs.size()});
 }
 
 
@@ -659,6 +880,12 @@ void Generator::gemini_decomposition()
     ++m_stack_size;
 }
 
+void Generator::huginns_gambit()
+{
+    m_output << "Huginn's Gambit\n";
+    --m_stack_size;
+}
+
 void Generator::inequality_distilation()
 {
     m_output << "Inequality Distillation\n";
@@ -712,6 +939,12 @@ void Generator::multiplicative_distilation()
     --m_stack_size;
 }
 
+void Generator::muninns_reflection()
+{
+    m_output << "Muninn's Reflection\n";
+    ++m_stack_size;
+}
+
 void Generator::negation_purification()
 {
     m_output << "Negation Purification\n";
@@ -737,7 +970,13 @@ void Generator::power_distilation()
 
 void Generator::reveal()
 {
-    m_output << "Reveal" << '\n';
+    m_output << "Reveal\n";
+}
+
+void Generator::selection_distilation()
+{
+    m_output << "Selection Distillation\n";
+    --m_stack_size;
 }
 
 void Generator::subtractive_distilation()
@@ -746,9 +985,21 @@ void Generator::subtractive_distilation()
     --m_stack_size;
 }
 
+void Generator::surgeons_exaltation()
+{
+    m_output << "Surgeon's Exaltation\n";
+    m_stack_size -= 2;
+}
+
 void Generator::true_reflection()
 {
     m_output << "True Reflection\n";
+    ++m_stack_size;
+}
+
+void Generator::vacant_reflection()
+{
+    m_output << "Vacant Reflection\n";
     ++m_stack_size;
 }
 
