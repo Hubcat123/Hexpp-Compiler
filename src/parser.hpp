@@ -15,7 +15,7 @@ struct NodeStmt;
 struct NodeTerm;
 
 struct NodeFunc : Node {
-    TokenType func_type;
+    TokenType_ func_type;
     std::vector<NodeExpr*> exprs;
 };
 
@@ -42,13 +42,13 @@ struct NodeTermCallFunc : Node {
 };
 
 struct NodeTermUn : Node {
-    TokenType op_type;
+    TokenType_ op_type;
     std::optional<Token> ident;
     NodeTerm* term;
 };
 
 struct NodeTermUnPost : Node {
-    TokenType op_type;
+    TokenType_ op_type;
     Token ident;
 };
 
@@ -68,7 +68,7 @@ struct NodeTerm : Node {
 };
 
 struct NodeExprBin : Node {
-    TokenType op_type;
+    TokenType_ op_type;
     NodeExpr* lhs;
     NodeExpr* rhs;
 };
@@ -147,7 +147,7 @@ public:
 
     std::optional<NodeProg*> parse();
 private:
-    std::optional<NodeFunc*> parse_func(std::vector<TokenType> valid_types);
+    std::optional<NodeFunc*> parse_func(std::vector<TokenType_> valid_types);
     std::optional<NodeDefinedFunc*> parse_defined_func();
     std::optional<NodeTerm*> parse_term();
     std::optional<NodeExpr*> parse_expr(int min_prec = 0, NodeTerm* first_term = nullptr);
@@ -156,7 +156,7 @@ private:
     std::optional<NodeFunctionDef*> parse_func_def();
     std::optional<NodeProg*> parse_prog();
 
-    void try_consume(TokenType type, char tokenChar);
+    void try_consume(TokenType_ type, char tokenChar);
 
     std::optional<Token> peek(int ahead = 0) const;
     Token consume();

@@ -12,63 +12,63 @@ std::vector<Token> Tokenizer::tokenize()
 {
     std::vector<Token> tokens {};
 
-    const std::map<char, TokenType> singleNonAlphaTokenMap {
-        {';', TokenType::semi},
-        {'(', TokenType::paren_open},
-        {')', TokenType::paren_close},
-        {'=', TokenType::eq},
-        {'+', TokenType::plus},
-        {'*', TokenType::star},
-        {'-', TokenType::dash},
-        {'/', TokenType::slash_forward},
-        {'{', TokenType::curly_open},
-        {'}', TokenType::curly_close},
-        {'<', TokenType::angle_open},
-        {'>', TokenType::angle_close},
-        {',', TokenType::comma},
-        {'.', TokenType::dot},
-        {'!', TokenType::not_},
-        {'%', TokenType::modulus},
+    const std::map<char, TokenType_> singleNonAlphaTokenMap {
+        {';', TokenType_::semi},
+        {'(', TokenType_::paren_open},
+        {')', TokenType_::paren_close},
+        {'=', TokenType_::eq},
+        {'+', TokenType_::plus},
+        {'*', TokenType_::star},
+        {'-', TokenType_::dash},
+        {'/', TokenType_::slash_forward},
+        {'{', TokenType_::curly_open},
+        {'}', TokenType_::curly_close},
+        {'<', TokenType_::angle_open},
+        {'>', TokenType_::angle_close},
+        {',', TokenType_::comma},
+        {'.', TokenType_::dot},
+        {'!', TokenType_::not_},
+        {'%', TokenType_::modulus},
     };
 
-    const std::map<std::string, TokenType> doubleNonAlphaTokenMap {
-        {"==", TokenType::double_eq},
-        {"--", TokenType::double_dash},
-        {"++", TokenType::double_plus},
-        {"+=", TokenType::plus_eq},
-        {"-=", TokenType::dash_eq},
-        {"*=", TokenType::star_eq},
-        {"/=", TokenType::fslash_eq},
-        {"&&", TokenType::double_amp},
-        {"||", TokenType::double_bar},
-        {"!=", TokenType::not_eq_},
-        {"<=", TokenType::oangle_eq},
-        {">=", TokenType::cangle_eq},
-        {"%=", TokenType::mod_eq},
+    const std::map<std::string, TokenType_> doubleNonAlphaTokenMap {
+        {"==", TokenType_::double_eq},
+        {"--", TokenType_::double_dash},
+        {"++", TokenType_::double_plus},
+        {"+=", TokenType_::plus_eq},
+        {"-=", TokenType_::dash_eq},
+        {"*=", TokenType_::star_eq},
+        {"/=", TokenType_::fslash_eq},
+        {"&&", TokenType_::double_amp},
+        {"||", TokenType_::double_bar},
+        {"!=", TokenType_::not_eq_},
+        {"<=", TokenType_::oangle_eq},
+        {">=", TokenType_::cangle_eq},
+        {"%=", TokenType_::mod_eq},
     };
 
-    const std::map<std::string, TokenType> identifierTokenMap {
-        {"print", TokenType::print},
-        {"let", TokenType::let},
-        {"if", TokenType::if_},
-        {"else", TokenType::else_},
-        {"while", TokenType::while_},
-        {"null", TokenType::null_lit},
-        {"void", TokenType::void_},
-        {"ret", TokenType::ret},
-        {"return", TokenType::return_},
-        {"pow", TokenType::pow},
-        {"vec", TokenType::vec},
-        {"self", TokenType::self},
-        {"pos", TokenType::pos},
-        {"mine", TokenType::mine},
-        {"forward", TokenType::forward},
-        {"eye_pos", TokenType::eye_pos},
-        {"block_raycast", TokenType::block_raycast},
-        {"block_raycast_from", TokenType::block_raycast_from},
-        {"block_normal_raycast", TokenType::block_normal_raycast},
-        {"block_normal_raycast_from", TokenType::block_normal_raycast_from},
-        {"summon_light", TokenType::summon_light},
+    const std::map<std::string, TokenType_> identifierTokenMap {
+        {"print", TokenType_::print},
+        {"let", TokenType_::let},
+        {"if", TokenType_::if_},
+        {"else", TokenType_::else_},
+        {"while", TokenType_::while_},
+        {"null", TokenType_::null_lit},
+        {"void", TokenType_::void_},
+        {"ret", TokenType_::ret},
+        {"return", TokenType_::return_},
+        {"pow", TokenType_::pow},
+        {"vec", TokenType_::vec},
+        {"self", TokenType_::self},
+        {"pos", TokenType_::pos},
+        {"mine", TokenType_::mine},
+        {"forward", TokenType_::forward},
+        {"eye_pos", TokenType_::eye_pos},
+        {"block_raycast", TokenType_::block_raycast},
+        {"block_raycast_from", TokenType_::block_raycast_from},
+        {"block_normal_raycast", TokenType_::block_normal_raycast},
+        {"block_normal_raycast_from", TokenType_::block_normal_raycast_from},
+        {"summon_light", TokenType_::summon_light},
     };
 
     // Loop through all characters in string
@@ -129,7 +129,7 @@ std::vector<Token> Tokenizer::tokenize()
             // Find correct identifier and add to token vector
             if (buf == "true" || buf == "false")
             {
-                tokens.push_back({.type = TokenType::bool_lit, .value = buf, .line = m_curr_line});
+                tokens.push_back({.type = TokenType_::bool_lit, .value = buf, .line = m_curr_line});
             }
             else if (identifierTokenMap.contains(buf))
             {
@@ -137,7 +137,7 @@ std::vector<Token> Tokenizer::tokenize()
             }
             else
             {
-                tokens.push_back({.type = TokenType::ident, .value = buf, .line = m_curr_line});
+                tokens.push_back({.type = TokenType_::ident, .value = buf, .line = m_curr_line});
             }
 
             // Reset buffer
@@ -158,7 +158,7 @@ std::vector<Token> Tokenizer::tokenize()
                 buf.push_back(consume());
             }
 
-            tokens.push_back({.type = TokenType::num_lit, .value = buf, .line = m_curr_line});
+            tokens.push_back({.type = TokenType_::num_lit, .value = buf, .line = m_curr_line});
             buf.clear();
         }
         // Skip white space
@@ -188,37 +188,37 @@ std::vector<Token> Tokenizer::tokenize()
     return tokens;
 }
 
-std::optional<int> Tokenizer::bin_prec(TokenType type)
+std::optional<int> Tokenizer::bin_prec(TokenType_ type)
 {
     switch (type)
     {
-    case TokenType::plus_eq:
-    case TokenType::dash_eq:
-    case TokenType::star_eq:
-    case TokenType::fslash_eq:
-    case TokenType::mod_eq:
-    case TokenType::eq:
+    case TokenType_::plus_eq:
+    case TokenType_::dash_eq:
+    case TokenType_::star_eq:
+    case TokenType_::fslash_eq:
+    case TokenType_::mod_eq:
+    case TokenType_::eq:
         return 0;
-    case TokenType::double_bar:
+    case TokenType_::double_bar:
         return 1;
-    case TokenType::double_amp:
+    case TokenType_::double_amp:
         return 2;
-    case TokenType::double_eq:
-    case TokenType::not_eq_:
+    case TokenType_::double_eq:
+    case TokenType_::not_eq_:
         return 3;
-    case TokenType::angle_open:
-    case TokenType::angle_close:
-    case TokenType::oangle_eq:
-    case TokenType::cangle_eq:
+    case TokenType_::angle_open:
+    case TokenType_::angle_close:
+    case TokenType_::oangle_eq:
+    case TokenType_::cangle_eq:
         return 4;
-    case TokenType::plus:
-    case TokenType::dash:
+    case TokenType_::plus:
+    case TokenType_::dash:
         return 5;
-    case TokenType::star:
-    case TokenType::slash_forward:
-    case TokenType::modulus:
+    case TokenType_::star:
+    case TokenType_::slash_forward:
+    case TokenType_::modulus:
         return 6;
-    case TokenType::dot:
+    case TokenType_::dot:
         return 7;
     default:
         return {};

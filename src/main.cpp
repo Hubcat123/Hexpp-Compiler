@@ -6,6 +6,8 @@
 #include <vector>
 #include <map>
 
+#include <windows.h>
+
 #include "util.hpp"
 #include "tokenization.hpp"
 #include "parser.hpp"
@@ -22,7 +24,7 @@ int main(int argc, char** argv)
     }
 
     // Print name of file being compiled
-    std::cout << "Compiling \"" << argv[1] << '\"' << std::endl;
+    std::cout << "Compiling \"" << argv[1] << "\"..." << std::endl;
 
     // Read contents of file to compile into a string
     std::string contents;
@@ -60,13 +62,48 @@ int main(int argc, char** argv)
         code = generator.generate();
     }
 
-    // Print out hex patterns
-    std::cout << code << std::endl;
-
     // Write patterns to file
     {
         std::fstream output(argv[2], std::ios::out);
         output << code;
+    }
+
+    // Prepare for hexagon building
+    STARTUPINFOW si = {0};
+    si.cb = sizeof(si);
+    PROCESS_INFORMATION pi = {0};
+
+    // Prepare command
+    char args[256];
+    strcpy(args, "..\\hexagon.exe build \"");
+    strcat(args, argv[2]);
+    strcat(args, "\"");
+
+    std::cout << "Compilation successful. Building with Hexagon..." << std::endl;
+
+    // Process output with hexagon
+    if (CreateProcessA(
+        NULL,
+        args,
+        NULL, NULL, FALSE, 0, NULL, NULL,
+        (LPSTARTUPINFOA)&si, (LPPROCESS_INFORMATION)&pi))
+    {
+        // Wait for hexagon to finish
+        WaitForSingleObject(pi.hProcess, INFINITE);
+
+        // Close process
+        CloseHandle(pi.hProcess);
+        CloseHandle(pi.hThread);
+    }
+    else
+    {
+        DWORD errCode = GetLastError();
+        wchar_t err[256];
+        memset(err, 0, 256);
+        FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM, NULL, errCode,
+                  MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), err, 255, NULL);
+        std::wcout << "Failed to build output with Hexagon. Is the exe missing or in the wrong place? CreateProcessA error: "
+            << err << "Error code: " << errCode << std::endl;
     }
 
     return EXIT_SUCCESS;

@@ -11,16 +11,16 @@ std::optional<NodeProg*> Parser::parse()
     return parse_prog();
 }
 
-std::optional<NodeFunc*> Parser::parse_func(std::vector<TokenType> valid_types)
+std::optional<NodeFunc*> Parser::parse_func(std::vector<TokenType_> valid_types)
 {
     // Check if function is valid type
     if (peek().has_value() && std::find(valid_types.cbegin(), valid_types.cend(), peek().value().type) != valid_types.cend() &&
-        peek(1).has_value() && peek(1).value().type == TokenType::paren_open)
+        peek(1).has_value() && peek(1).value().type == TokenType_::paren_open)
     {
         size_t line = peek().value().line;
 
         // Consume starting tokens
-        TokenType func_type = consume().type;
+        TokenType_ func_type = consume().type;
         consume();
 
         std::vector<NodeExpr*> exprs{};
@@ -30,7 +30,7 @@ std::optional<NodeFunc*> Parser::parse_func(std::vector<TokenType> valid_types)
         {
             exprs.push_back(node_expr.value());
 
-            if (!peek().has_value() || peek().value().type != TokenType::comma)
+            if (!peek().has_value() || peek().value().type != TokenType_::comma)
             {
                 break;
             }
@@ -39,7 +39,7 @@ std::optional<NodeFunc*> Parser::parse_func(std::vector<TokenType> valid_types)
         }
 
         // Check for closing tokens
-        try_consume(TokenType::paren_close, ')');
+        try_consume(TokenType_::paren_close, ')');
 
         NodeFunc* stmt_func = m_allocator.alloc<NodeFunc>();
         stmt_func->func_type = func_type;
@@ -54,8 +54,8 @@ std::optional<NodeFunc*> Parser::parse_func(std::vector<TokenType> valid_types)
 std::optional<NodeDefinedFunc*> Parser::parse_defined_func()
 {
     // Check if function is valid type
-    if (peek().has_value() && peek().value().type == TokenType::ident &&
-        peek(1).has_value() && peek(1).value().type == TokenType::paren_open)
+    if (peek().has_value() && peek().value().type == TokenType_::ident &&
+        peek(1).has_value() && peek(1).value().type == TokenType_::paren_open)
     {
         size_t line = peek().value().line;
 
@@ -71,7 +71,7 @@ std::optional<NodeDefinedFunc*> Parser::parse_defined_func()
         {
             def_func->exprs.push_back(node_expr.value());
 
-            if (!peek().has_value() || peek().value().type != TokenType::comma)
+            if (!peek().has_value() || peek().value().type != TokenType_::comma)
             {
                 break;
             }
@@ -80,7 +80,7 @@ std::optional<NodeDefinedFunc*> Parser::parse_defined_func()
         }
 
         // Check for closing tokens
-        try_consume(TokenType::paren_close, ')');
+        try_consume(TokenType_::paren_close, ')');
 
         return def_func;
     }
@@ -94,14 +94,14 @@ std::optional<NodeTerm*> Parser::parse_term()
     {
         size_t line = peek().value().line;
         
-        const std::vector<TokenType> unaryOperandTypes = { TokenType::dash, TokenType::not_, TokenType::double_dash, TokenType::double_plus };
+        const std::vector<TokenType_> unaryOperandTypes = { TokenType_::dash, TokenType_::not_, TokenType_::double_dash, TokenType_::double_plus };
         // Check if term is pre unary operator
         if (std::find(unaryOperandTypes.cbegin(), unaryOperandTypes.cend(), peek().value().type) != unaryOperandTypes.end())
         {
-            TokenType op_type = consume().type;
+            TokenType_ op_type = consume().type;
 
             // Grab ident, if there is one
-            std::optional<Token> ident = (peek().has_value() && peek().value().type == TokenType::ident) ? peek().value() : std::optional<Token>{};
+            std::optional<Token> ident = (peek().has_value() && peek().value().type == TokenType_::ident) ? peek().value() : std::optional<Token>{};
             if (std::optional<NodeTerm*> un_term = parse_term())
             {
                 NodeTermUn* term_un = m_allocator.alloc<NodeTermUn>();
@@ -120,7 +120,7 @@ std::optional<NodeTerm*> Parser::parse_term()
             }
         }
         // Check if term is a num literal
-        else if (peek().value().type == TokenType::num_lit)
+        else if (peek().value().type == TokenType_::num_lit)
         {
             NodeTermNumLit* node_term_num_lit = m_allocator.alloc<NodeTermNumLit>();
             node_term_num_lit->num_lit = consume();
@@ -131,7 +131,7 @@ std::optional<NodeTerm*> Parser::parse_term()
             return node_term;
         }
         // Check if term is bool lit
-        else if (peek().value().type == TokenType::bool_lit)
+        else if (peek().value().type == TokenType_::bool_lit)
         {
             NodeTermBoolLit* bool_lit = m_allocator.alloc<NodeTermBoolLit>();
             bool_lit->bool_ = consume();
@@ -142,7 +142,7 @@ std::optional<NodeTerm*> Parser::parse_term()
             return node_term;
         }
         // Check if term is null lit
-        else if (peek().value().type == TokenType::null_lit)
+        else if (peek().value().type == TokenType_::null_lit)
         {
             consume();
             NodeTermNullLit* null_lit = m_allocator.alloc<NodeTermNullLit>();
@@ -164,11 +164,11 @@ std::optional<NodeTerm*> Parser::parse_term()
             return term;
         }
         // Check if term is an identifier
-        else if (peek().value().type == TokenType::ident)
+        else if (peek().value().type == TokenType_::ident)
         {
             if (peek(1).has_value())
             {
-                const std::vector<TokenType> postUnaryOperandTypes = { TokenType::double_plus, TokenType::double_dash };
+                const std::vector<TokenType_> postUnaryOperandTypes = { TokenType_::double_plus, TokenType_::double_dash };
                 // Check if term is post unary operator
                 if (std::find(postUnaryOperandTypes.cbegin(), postUnaryOperandTypes.cend(), peek(1).value().type) != postUnaryOperandTypes.end())
                 {
@@ -192,12 +192,12 @@ std::optional<NodeTerm*> Parser::parse_term()
             return node_term;
         }
         // Check if term is a parentheses enclosed expression
-        else if (peek().value().type == TokenType::paren_open)
+        else if (peek().value().type == TokenType_::paren_open)
         {
             consume();
             if (std::optional<NodeExpr*> expr = parse_expr())
             {
-                try_consume(TokenType::paren_close, ')');
+                try_consume(TokenType_::paren_close, ')');
                 NodeTermParen* node_term_paren = m_allocator.alloc<NodeTermParen>();
                 node_term_paren->expr = expr.value();
                 node_term_paren->line = line;
@@ -213,10 +213,10 @@ std::optional<NodeTerm*> Parser::parse_term()
         }
         // Check if term is an inbuilt function
         else if (std::optional<NodeFunc*> func = parse_func(
-            { TokenType::pow, TokenType::vec, TokenType::self, TokenType::block_raycast, TokenType::block_raycast_from, TokenType::block_normal_raycast, TokenType::block_normal_raycast_from,
-            TokenType::pos, TokenType::forward, TokenType::eye_pos }))
+            { TokenType_::pow, TokenType_::vec, TokenType_::self, TokenType_::block_raycast, TokenType_::block_raycast_from, TokenType_::block_normal_raycast, TokenType_::block_normal_raycast_from,
+            TokenType_::pos, TokenType_::forward, TokenType_::eye_pos }))
         {
-            const std::vector<TokenType> memberFunctionTypes = { TokenType::pos, TokenType::forward, TokenType::eye_pos };
+            const std::vector<TokenType_> memberFunctionTypes = { TokenType_::pos, TokenType_::forward, TokenType_::eye_pos };
             NodeTermInbuiltFunc* node_term_func = m_allocator.alloc<NodeTermInbuiltFunc>();
             node_term_func->isMemberFunc = std::find(memberFunctionTypes.cbegin(), memberFunctionTypes.cend(), func.value()->func_type) != memberFunctionTypes.cend();
             node_term_func->func = func.value();
@@ -266,7 +266,7 @@ std::optional<NodeExpr*> Parser::parse_expr(int min_prec, NodeTerm* first_term)
             break;
         }
 
-        TokenType op_type = peek().value().type;
+        TokenType_ op_type = peek().value().type;
 
         int prec;
 
@@ -312,7 +312,7 @@ std::optional<NodeExpr*> Parser::parse_expr(int min_prec, NodeTerm* first_term)
 
 std::optional<NodeScope*> Parser::parse_scope()
 {
-    if (peek().has_value() && peek().value().type == TokenType::curly_open)
+    if (peek().has_value() && peek().value().type == TokenType_::curly_open)
     {
         size_t line = consume().line;
 
@@ -322,7 +322,7 @@ std::optional<NodeScope*> Parser::parse_scope()
             stmts.push_back(stmt.value());
         }
 
-        try_consume(TokenType::curly_close, '}');
+        try_consume(TokenType_::curly_close, '}');
 
         NodeScope* stmt_scope = m_allocator.alloc<NodeScope>();
         stmt_scope->stmts = stmts;
@@ -341,9 +341,9 @@ std::optional<NodeStmt*> Parser::parse_stmt()
 
         // Check if statement is inbuilt function
         if (std::optional<NodeFunc*> func = parse_func(
-            { TokenType::print, TokenType::mine, TokenType::summon_light }))
+            { TokenType_::print, TokenType_::mine, TokenType_::summon_light }))
         {
-            try_consume(TokenType::semi, ';');
+            try_consume(TokenType_::semi, ';');
 
             NodeStmtInbuiltFunc* node_stmt_func = m_allocator.alloc<NodeStmtInbuiltFunc>();
             node_stmt_func->func = func.value();
@@ -357,7 +357,7 @@ std::optional<NodeStmt*> Parser::parse_stmt()
         else if (std::optional<NodeDefinedFunc*> defined_func = parse_defined_func())
         {
             // If has a semi, make it a stmt call
-            if (peek().has_value() && peek().value().type == TokenType::semi)
+            if (peek().has_value() && peek().value().type == TokenType_::semi)
             {
                 consume();
 
@@ -381,7 +381,7 @@ std::optional<NodeStmt*> Parser::parse_stmt()
 
                 if (std::optional<NodeExpr*> expr = parse_expr(0, term))
                 {
-                    try_consume(TokenType::semi, ';');
+                    try_consume(TokenType_::semi, ';');
 
                     NodeStmt* stmt = m_allocator.alloc<NodeStmt>();
                     stmt->var = expr.value();
@@ -396,7 +396,7 @@ std::optional<NodeStmt*> Parser::parse_stmt()
             }
         }
         // Check if return
-        else if (peek().value().type == TokenType::return_)
+        else if (peek().value().type == TokenType_::return_)
         {
             consume();
 
@@ -404,7 +404,7 @@ std::optional<NodeStmt*> Parser::parse_stmt()
             stmt_ret->expr = parse_expr();
             stmt_ret->line = line;
 
-            try_consume(TokenType::semi, ';');
+            try_consume(TokenType_::semi, ';');
 
             NodeStmt* stmt = m_allocator.alloc<NodeStmt>();
             stmt->var = stmt_ret;
@@ -414,7 +414,7 @@ std::optional<NodeStmt*> Parser::parse_stmt()
         // Check if expression
         else if (std::optional<NodeExpr*> expr = parse_expr())
         {
-            try_consume(TokenType::semi, ';');
+            try_consume(TokenType_::semi, ';');
 
             NodeStmt* stmt = m_allocator.alloc<NodeStmt>();
             stmt->var = expr.value();
@@ -423,9 +423,9 @@ std::optional<NodeStmt*> Parser::parse_stmt()
         }
         // Check if var
         else if (
-            peek().value().type == TokenType::let && peek(1).has_value() &&
-            peek(1).value().type == TokenType::ident &&
-            peek(2).has_value() && peek(2).value().type == TokenType::eq)
+            peek().value().type == TokenType_::let && peek(1).has_value() &&
+            peek(1).value().type == TokenType_::ident &&
+            peek(2).has_value() && peek(2).value().type == TokenType_::eq)
         {
             // Consume sarting tokens and grab ident
             consume();
@@ -445,7 +445,7 @@ std::optional<NodeStmt*> Parser::parse_stmt()
             }
 
             // Check for closing token
-            try_consume(TokenType::semi, ';');
+            try_consume(TokenType_::semi, ';');
 
             NodeStmt* node_stmt = m_allocator.alloc<NodeStmt>();
             node_stmt->var = stmt_let;
@@ -454,14 +454,14 @@ std::optional<NodeStmt*> Parser::parse_stmt()
         }
         // Check if if
         else if (
-            peek().value().type == TokenType::if_ && peek(1).has_value() &&
-            peek(1).value().type == TokenType::paren_open)
+            peek().value().type == TokenType_::if_ && peek(1).has_value() &&
+            peek(1).value().type == TokenType_::paren_open)
         {
             consume(2);
 
             if (std::optional<NodeExpr*> expr = parse_expr())
             {
-                try_consume(TokenType::paren_close, ')');
+                try_consume(TokenType_::paren_close, ')');
                 if (std::optional<NodeStmt*> if_stmt = parse_stmt())
                 {
                     NodeStmtIf* stmt_if = m_allocator.alloc<NodeStmtIf>();
@@ -471,7 +471,7 @@ std::optional<NodeStmt*> Parser::parse_stmt()
                     stmt_if->line = line;
 
                     // Check for potential else
-                    if (peek().has_value() && peek().value().type == TokenType::else_)
+                    if (peek().has_value() && peek().value().type == TokenType_::else_)
                     {
                         consume();
 
@@ -502,14 +502,14 @@ std::optional<NodeStmt*> Parser::parse_stmt()
         }
         // Check if while
         else if (
-            peek().value().type == TokenType::while_ && peek(1).has_value() &&
-            peek(1).value().type == TokenType::paren_open)
+            peek().value().type == TokenType_::while_ && peek(1).has_value() &&
+            peek(1).value().type == TokenType_::paren_open)
         {
             consume(2);
 
             if (std::optional<NodeExpr*> expr = parse_expr())
             {
-                try_consume(TokenType::paren_close, ')');
+                try_consume(TokenType_::paren_close, ')');
 
                 if (std::optional<NodeStmt*> while_stmt = parse_stmt())
                 {
@@ -559,9 +559,9 @@ std::optional<NodeFunctionDef*> Parser::parse_func_def()
     func_def->line = line;
 
     // Check if void function
-    if (peek().value().type == TokenType::void_ && peek(1).has_value() &&
-        peek(1).value().type == TokenType::ident && peek(2).has_value() &&
-        peek(2).value().type == TokenType::paren_open)
+    if (peek().value().type == TokenType_::void_ && peek(1).has_value() &&
+        peek(1).value().type == TokenType_::ident && peek(2).has_value() &&
+        peek(2).value().type == TokenType_::paren_open)
     {
         consume();
         NodeFunctionDefVoid* func_void = m_allocator.alloc<NodeFunctionDefVoid>();
@@ -570,11 +570,11 @@ std::optional<NodeFunctionDef*> Parser::parse_func_def()
         consume();
 
         // Parse params
-        while (peek().has_value() && peek().value().type == TokenType::ident)
+        while (peek().has_value() && peek().value().type == TokenType_::ident)
         {
             func_void->params.push_back(consume());
 
-            if (!peek().has_value() || peek().value().type != TokenType::comma)
+            if (!peek().has_value() || peek().value().type != TokenType_::comma)
             {
                 break;
             }
@@ -582,7 +582,7 @@ std::optional<NodeFunctionDef*> Parser::parse_func_def()
             consume();
         }
 
-        try_consume(TokenType::paren_close, ')');
+        try_consume(TokenType_::paren_close, ')');
 
         // Parse scope of function
         if (std::optional<NodeScope*> scope = parse_scope())
@@ -599,9 +599,9 @@ std::optional<NodeFunctionDef*> Parser::parse_func_def()
     }
     // Check if ret function
     else if (
-        peek().value().type == TokenType::ret && peek(1).has_value() &&
-        peek(1).value().type == TokenType::ident && peek(2).has_value() &&
-        peek(2).value().type == TokenType::paren_open)
+        peek().value().type == TokenType_::ret && peek(1).has_value() &&
+        peek(1).value().type == TokenType_::ident && peek(2).has_value() &&
+        peek(2).value().type == TokenType_::paren_open)
     {
         consume();
         NodeFunctionDefRet* func_void = m_allocator.alloc<NodeFunctionDefRet>();
@@ -610,11 +610,11 @@ std::optional<NodeFunctionDef*> Parser::parse_func_def()
         consume();
 
         // Parse params
-        while (peek().has_value() && peek().value().type == TokenType::ident)
+        while (peek().has_value() && peek().value().type == TokenType_::ident)
         {
             func_void->params.push_back(consume());
 
-            if (!peek().has_value() || peek().value().type != TokenType::comma)
+            if (!peek().has_value() || peek().value().type != TokenType_::comma)
             {
                 break;
             }
@@ -622,7 +622,7 @@ std::optional<NodeFunctionDef*> Parser::parse_func_def()
             consume();
         }
 
-        try_consume(TokenType::paren_close, ')');
+        try_consume(TokenType_::paren_close, ')');
 
         // Parse scope of function
         if (std::optional<NodeScope*> scope = parse_scope())
@@ -656,9 +656,9 @@ std::optional<NodeProg*> Parser::parse_prog()
         size_t line = peek().value().line;
 
         // Check if global var
-        if (peek().value().type == TokenType::let && peek(1).has_value() &&
-            peek(1).value().type == TokenType::ident &&
-            peek(2).has_value() && peek(2).value().type == TokenType::eq)
+        if (peek().value().type == TokenType_::let && peek(1).has_value() &&
+            peek(1).value().type == TokenType_::ident &&
+            peek(2).has_value() && peek(2).value().type == TokenType_::eq)
         {
             // Consume sarting tokens and grab ident
             consume();
@@ -678,7 +678,7 @@ std::optional<NodeProg*> Parser::parse_prog()
             }
 
             // Check for closing token
-            try_consume(TokenType::semi, ';');
+            try_consume(TokenType_::semi, ';');
 
             prog->vars.push_back(global_let);
         }
@@ -729,7 +729,7 @@ std::optional<NodeProg*> Parser::parse_prog()
     return prog;
 }
 
-void Parser::try_consume(TokenType type, char tokenChar)
+void Parser::try_consume(TokenType_ type, char tokenChar)
 {
     if (peek().has_value() && peek().value().type == type)
     {

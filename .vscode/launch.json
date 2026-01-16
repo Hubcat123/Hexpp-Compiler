@@ -5,7 +5,7 @@
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${fileDirname}/Hex++Compiler",
-            "args": ["../test.hxpp", "../text.txt"],
+            "args": ["../test.hxpp", "../test.hexagon"],
             "stopAtEntry": false,
             "cwd": "${fileDirname}",
             "environment": [],

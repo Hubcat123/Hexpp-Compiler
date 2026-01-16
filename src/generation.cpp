@@ -19,44 +19,44 @@ void Generator::gen_func(const NodeFunc* func)
 {
     switch (func->func_type)
     {
-    case TokenType::print:
+    case TokenType_::print:
         try_gen_x_exprs(func->exprs, 1, func->line);
         reveal();
         pop();
         break;
-    case TokenType::pow:
+    case TokenType_::pow:
         try_gen_x_exprs(func->exprs, 2, func->line);
         power_distilation();
         break;
-    case TokenType::vec:
+    case TokenType_::vec:
         try_gen_x_exprs(func->exprs, 3, func->line);
         vector_exaltation();
         break;
-    case TokenType::self:
+    case TokenType_::self:
         try_gen_x_exprs(func->exprs, 0, func->line);
         minds_reflection();
         break;
-    case TokenType::pos:
+    case TokenType_::pos:
         try_gen_x_exprs(func->exprs, 0, func->line);
         compass_purification_II();
         break;
-    case TokenType::mine:
+    case TokenType_::mine:
         try_gen_x_exprs(func->exprs, 1, func->line);
         break_block();
         break;
-    case TokenType::forward:
+    case TokenType_::forward:
         try_gen_x_exprs(func->exprs, 0, func->line);
         alidades_purification();
         break;
-    case TokenType::eye_pos:
+    case TokenType_::eye_pos:
         try_gen_x_exprs(func->exprs, 0, func->line);
         compass_purification();
         break;
-    case TokenType::block_raycast:
+    case TokenType_::block_raycast:
         try_gen_x_exprs(func->exprs, 2, func->line);
         archers_distilation();
         break;
-    case TokenType::block_raycast_from:
+    case TokenType_::block_raycast_from:
         try_gen_x_exprs(func->exprs, 1, func->line);
         gemini_decomposition();
         compass_purification();
@@ -64,11 +64,11 @@ void Generator::gen_func(const NodeFunc* func)
         alidades_purification();
         archers_distilation();
         break;
-    case TokenType::block_normal_raycast:
+    case TokenType_::block_normal_raycast:
         try_gen_x_exprs(func->exprs, 2, func->line);
         architects_distilation();
         break;
-    case TokenType::block_normal_raycast_from:
+    case TokenType_::block_normal_raycast_from:
         try_gen_x_exprs(func->exprs, 1, func->line);
         gemini_decomposition();
         compass_purification();
@@ -76,7 +76,7 @@ void Generator::gen_func(const NodeFunc* func)
         alidades_purification();
         architects_distilation();
         break;
-    case TokenType::summon_light:
+    case TokenType_::summon_light:
         try_gen_x_exprs(func->exprs, 1, func->line);
         conjure_light();
         break;
@@ -104,7 +104,7 @@ bool Generator::gen_defined_func(const NodeDefinedFunc* func)
     numerical_reflection(std::to_string(iter->stack_loc));
     selection_distilation();
     // Iris' Gambit
-    m_output << "Pattern \"qwaqde\"\n";
+    m_output << "Iris' Gambit\n";
 
     // Account for expression left on stack from non-void function and function iota being consumed
     if (iter->is_void)
@@ -118,8 +118,8 @@ bool Generator::gen_defined_func(const NodeDefinedFunc* func)
 void Generator::gen_bin_expr(const NodeExprBin* expr_bin)
 {
     // If binary expression is a type of assignment
-    if (expr_bin->op_type == TokenType::eq || expr_bin->op_type == TokenType::plus_eq || expr_bin->op_type == TokenType::dash_eq || expr_bin->op_type == TokenType::star_eq
-         || expr_bin->op_type == TokenType::fslash_eq || expr_bin->op_type == TokenType::mod_eq)
+    if (expr_bin->op_type == TokenType_::eq || expr_bin->op_type == TokenType_::plus_eq || expr_bin->op_type == TokenType_::dash_eq || expr_bin->op_type == TokenType_::star_eq
+         || expr_bin->op_type == TokenType_::fslash_eq || expr_bin->op_type == TokenType_::mod_eq)
     {
         if (!std::holds_alternative<NodeTerm*>(expr_bin->lhs->var))
         {
@@ -150,24 +150,24 @@ void Generator::gen_bin_expr(const NodeExprBin* expr_bin)
 
         switch (expr_bin->op_type)
         {
-        case TokenType::eq:
+        case TokenType_::eq:
             pop();
             break;
-        case TokenType::plus_eq:
+        case TokenType_::plus_eq:
             additive_distilation();
             break;
-        case TokenType::dash_eq:
+        case TokenType_::dash_eq:
             jesters_gambit();
             subtractive_distilation();
             break;
-        case TokenType::star_eq:
+        case TokenType_::star_eq:
             multiplicative_distilation();
             break;
-        case TokenType::fslash_eq:
+        case TokenType_::fslash_eq:
             jesters_gambit();
             division_distilation();
             break;
-        case TokenType::mod_eq:
+        case TokenType_::mod_eq:
             jesters_gambit();
             modulus_distilation();
             break;
@@ -181,7 +181,7 @@ void Generator::gen_bin_expr(const NodeExprBin* expr_bin)
     gen_expr(expr_bin->lhs);
 
     // If binary expression is calling a member function
-    if (expr_bin->op_type == TokenType::dot)
+    if (expr_bin->op_type == TokenType_::dot)
     {
         // If rhs is a term
         if (std::holds_alternative<NodeTerm*>(expr_bin->rhs->var))
@@ -215,43 +215,43 @@ void Generator::gen_bin_expr(const NodeExprBin* expr_bin)
 
     switch(expr_bin->op_type)
     {
-    case TokenType::double_eq:
+    case TokenType_::double_eq:
         equality_distilation();
         break;
-    case TokenType::not_eq_:
+    case TokenType_::not_eq_:
         inequality_distilation();
         break;
-    case TokenType::angle_open:
+    case TokenType_::angle_open:
         minimus_distilation();
         break;
-    case TokenType::oangle_eq:
+    case TokenType_::oangle_eq:
         minimus_distilation_II();
         break;
-    case TokenType::angle_close:
+    case TokenType_::angle_close:
         maximus_distilation();
         break;
-    case TokenType::cangle_eq:
+    case TokenType_::cangle_eq:
         maximus_distilation_II();
         break;
-    case TokenType::plus:
+    case TokenType_::plus:
         additive_distilation();
         break;
-    case TokenType::dash:
+    case TokenType_::dash:
         subtractive_distilation(); 
         break;
-    case TokenType::star:
+    case TokenType_::star:
         multiplicative_distilation();
         break;
-    case TokenType::slash_forward:
+    case TokenType_::slash_forward:
         division_distilation();
         break;
-    case TokenType::modulus:
+    case TokenType_::modulus:
         modulus_distilation();
         break;
-    case TokenType::double_amp:
+    case TokenType_::double_amp:
         conjunction_distilation();
         break;
-    case TokenType::double_bar:
+    case TokenType_::double_bar:
         disjunction_distilation();
         break;
     }
@@ -266,7 +266,7 @@ void Generator::gen_term(const NodeTerm* term)
         void operator()(const NodeTermUn* term_un)
         {
             // If unary expression is a type of assignment
-            if (term_un->op_type == TokenType::double_plus || term_un->op_type == TokenType::double_dash)
+            if (term_un->op_type == TokenType_::double_plus || term_un->op_type == TokenType_::double_dash)
             {
                 if (!term_un->ident.has_value())
                 {
@@ -288,11 +288,11 @@ void Generator::gen_term(const NodeTerm* term)
 
                 switch (term_un->op_type)
                 {
-                case TokenType::double_plus:
+                case TokenType_::double_plus:
                     gen.numerical_reflection("1");
                     gen.additive_distilation();
                     break;
-                case TokenType::double_dash:
+                case TokenType_::double_dash:
                     gen.numerical_reflection("-1");
                     gen.additive_distilation();
                     break;
@@ -307,11 +307,11 @@ void Generator::gen_term(const NodeTerm* term)
 
             switch (term_un->op_type)
             {
-            case TokenType::dash:
+            case TokenType_::dash:
                 gen.numerical_reflection("-1");
                 gen.multiplicative_distilation();
                 break;
-            case TokenType::not_:
+            case TokenType_::not_:
                 gen.negation_purification();
                 break;
             }
@@ -335,11 +335,11 @@ void Generator::gen_term(const NodeTerm* term)
 
             switch (term_un_post->op_type)
             {
-            case TokenType::double_plus:
+            case TokenType_::double_plus:
                 gen.numerical_reflection("1");
                 gen.additive_distilation();
                 break;
-            case TokenType::double_dash:
+            case TokenType_::double_dash:
                 gen.numerical_reflection("-1");
                 gen.additive_distilation();
                 break;
