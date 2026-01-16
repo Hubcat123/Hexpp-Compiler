@@ -11,6 +11,7 @@ public:
 
     std::string generate();
 
+    void gen_assignment(const Token ident, const std::variant<const NodeExpr*, const float> value, TokenType_ op, size_t line, bool is_post = false);
     void gen_func(const NodeFunc* func);
     // Returns whether func is void func
     bool gen_defined_func(const NodeDefinedFunc* func);
@@ -68,6 +69,10 @@ public:
     void numerical_reflection(std::string value);
     void power_distilation();
     void reveal();
+    // 3rd becomes 1st
+    void rotation_gambit();
+    // 1st becomes 3rd
+    void rotation_gambit_II();
     void selection_distilation();
     void subtractive_distilation();
     void surgeons_exaltation();
