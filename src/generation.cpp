@@ -106,6 +106,9 @@ bool Generator::gen_defined_func(const NodeDefinedFunc* func)
     // Iris' Gambit
     m_output << "Iris' Gambit\n";
 
+    // Account for function cleaning up exprs
+    m_stack_size -= func->exprs.size();
+
     // Account for expression left on stack from non-void function and function iota being consumed
     if (iter->is_void)
     {
@@ -494,8 +497,13 @@ void Generator::gen_stmt(const NodeStmt* stmt)
             // Remove scope items from stack
             gen.end_scopes_return(stmt_ret->expr.has_value());
 
+            // If there's an expression on the stack, swap it with jump iota
+            if (stmt_ret->expr.has_value())
+            {
+                gen.jesters_gambit();
+            }
+
             // Execute jump iota
-            gen.jesters_gambit();
             gen.m_output << "Hermes' Gambit\n";
         }
 
@@ -653,13 +661,24 @@ void Generator::gen_func_def(const NodeFunctionDef* func_def)
         gen_stmt(stmt);
     }
 
-    end_scope();
+    // If function isn't void, then provide null return value by default
+    if (is_void)
+    {
+        end_scope();
+    }
+    else
+    {
+        // Remove excess from stack
+        end_scopes_return(false);
+        // Destroy jump iota
+        pop();
+        // Add null to stack
+        nullary_reflection();
+    }
     m_output << "}\n";
 
     // Account for function now being on the stack
     ++m_stack_size;
-
-    generating_void_function = false;
 }
 
 void Generator::gen_prog()
@@ -686,6 +705,9 @@ void Generator::gen_prog()
     {
         m_global_vars.push_back(Var{.name = global_let->ident.value.value(), .stack_loc = m_global_vars.size()});
     }
+
+    // Account for main's jump iota
+    ++m_stack_size;
 
     // Visitor for declaring functions
     struct FuncDefVisitor {
@@ -729,11 +751,15 @@ void Generator::gen_prog()
     }
     huginns_gambit();
 
+    // Remove accounting of jump iota so it isn't double counted
+    --m_stack_size;
+
     // Gen main
-    for (NodeStmt* stmt : m_prog->main_->scope->stmts)
-    {
-        gen_stmt(stmt);
-    }
+    gen_func_def(m_prog->main_);
+
+    // Execute main
+    --m_stack_size;
+    m_output << "Iris' Gambit";
 }
 
 
@@ -978,6 +1004,11 @@ void Generator::nullary_reflection()
 
 void Generator::numerical_reflection(std::string value)
 {
+    if (value.find('.') != std::string::npos)
+    {
+        has_non_integer_num = true;
+    }
+
     m_output << "Numerical Reflection: " << value << '\n';
     ++m_stack_size;
 }

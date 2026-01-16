@@ -57,9 +57,11 @@ int main(int argc, char** argv)
 
     // Generate hexes
     std::string code;
+    bool found_non_integer_num;
     {
         Generator generator(prog);
         code = generator.generate();
+        found_non_integer_num = generator.has_non_integer_num;
     }
 
     // Write patterns to file
@@ -94,6 +96,16 @@ int main(int argc, char** argv)
         // Close process
         CloseHandle(pi.hProcess);
         CloseHandle(pi.hThread);
+
+        // Add spacing after hexagon output
+        std::cout << std::endl;
+
+        // Print warning if code has non-integer
+        if (found_non_integer_num)
+        {
+            compilation_warning(
+                "Hexagon's provided /give command may not work properly, as the compiled patterns contained non-integer numerical reflections. If the spell from the /give command does not function fully, try replacing non-integer num literals with integers (e.g. 0.5 becomes 1/2) or convert the hexpattern output into patterns another way.", 0);
+        }
     }
     else
     {

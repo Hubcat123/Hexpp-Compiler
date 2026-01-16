@@ -705,7 +705,10 @@ std::optional<NodeProg*> Parser::parse_prog()
                     }
 
                     isMain = true;
-                    prog->main_ = func_void;
+                    NodeFunctionDef* main_def = m_allocator.alloc<NodeFunctionDef>();
+                    main_def->var = func_void;
+                    main_def->line = line;
+                    prog->main_ = main_def;
                 }
             }
 

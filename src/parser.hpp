@@ -137,7 +137,7 @@ struct NodeFunctionDef : Node {
 struct NodeProg : Node {
     std::vector<NodeGlobalLet*> vars;
     std::vector<NodeFunctionDef*> funcs;
-    NodeFunctionDefVoid* main_ = nullptr;
+    NodeFunctionDef* main_ = nullptr;
 };
 
 class Parser

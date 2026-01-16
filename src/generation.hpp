@@ -73,6 +73,8 @@ public:
     void vacant_reflection();
     void vector_exaltation();
 
+    bool has_non_integer_num = false;
+
     bool generating_void_function = false;
 private:
 
