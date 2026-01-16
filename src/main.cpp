@@ -75,7 +75,7 @@ int main(int argc, char** argv)
 
     // Prepare command
     char args[256];
-    strcpy(args, "..\\hexagon.exe build \"");
+    strcpy(args, ".\\hexagon.exe build \"");
     strcat(args, argv[2]);
     strcat(args, "\"");
 
@@ -98,12 +98,17 @@ int main(int argc, char** argv)
     else
     {
         DWORD errCode = GetLastError();
-        wchar_t err[256];
-        memset(err, 0, 256);
-        FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM, NULL, errCode,
-                  MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), err, 255, NULL);
-        std::wcout << "Failed to build output with Hexagon. Is the exe missing or in the wrong place? CreateProcessA error: "
-            << err << "Error code: " << errCode << std::endl;
+
+        // Check if just missing Hexagon
+        if (errCode != 2)
+        {
+            wchar_t err[256];
+            memset(err, 0, 256);
+            FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM, NULL, errCode,
+                    MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), err, 255, NULL);
+            std::wcout << "Failed to build output with Hexagon. CreateProcessA error: "
+                << err << "Error code: " << errCode << std::endl;
+        }
     }
 
     return EXIT_SUCCESS;

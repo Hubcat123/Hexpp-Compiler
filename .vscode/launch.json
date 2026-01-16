@@ -5,9 +5,9 @@
             "type": "cppvsdbg",
             "request": "launch",
             "program": "${fileDirname}/Hex++Compiler",
-            "args": ["../test.hxpp", "../test.hexagon"],
+            "args": ["test.hxpp", "test.hexagon"],
             "stopAtEntry": false,
-            "cwd": "${fileDirname}",
+            "cwd": "${fileDirname}/..",
             "environment": [],
             "console": "externalTerminal",
             "preLaunchTask": "C/C++: cl.exe build active file"
