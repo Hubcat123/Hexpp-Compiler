@@ -27,6 +27,8 @@ public:
     void end_scope();
     void end_scopes_return(bool has_ret_value);
     void dec_func(bool is_void, std::string name, int num_params, size_t line);
+    void increase_indent();
+    void decrease_indent();
 
     void additive_distilation();
     void alidades_purification();
@@ -73,6 +75,8 @@ public:
     void vacant_reflection();
     void vector_exaltation();
 
+    void add_pattern(std::string pattern, size_t stack_size_net);
+
     bool has_non_integer_num = false;
 
     bool generating_void_function = false;
@@ -102,6 +106,8 @@ private:
     std::vector<Var> m_global_vars {};
     std::vector<Func> m_funcs {};
     std::vector<Scope> m_scopes {};
+
+    int m_indent_level = 0;
 
     size_t m_function_start_scope;
     size_t m_function_num_params;
