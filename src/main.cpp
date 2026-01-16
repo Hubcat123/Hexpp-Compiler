@@ -16,10 +16,10 @@
 int main(int argc, char** argv)
 {
     // Check to make sure proper args are given
-    if (argc < 3)
+    if (argc != 3)
     {
-        std::cerr << "Hex++ Compiler: Incorrect usage. Correct usage is:" << std::endl;
-        std::cerr << "Hex++Compiler <input.hexpp> <output> [flags]" << std::endl;
+        std::cerr << "Hex++ Compiler: Incorrect arguments. Correct arguments are:" << std::endl;
+        std::cerr << "<input.hexpp> <output.hexpattern>" << std::endl;
         return EXIT_FAILURE;
     }
 
