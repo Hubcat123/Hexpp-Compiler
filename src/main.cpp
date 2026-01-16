@@ -24,7 +24,7 @@ int main(int argc, char** argv)
     }
 
     // Print name of file being compiled
-    std::cout << "Compiling \"" << argv[1] << "\"..." << std::endl;
+    std::cout << "Hex++ Compiler: Compiling \"" << argv[1] << "\"..." << std::endl;
 
     // Read contents of file to compile into a string
     std::string contents;
@@ -70,6 +70,8 @@ int main(int argc, char** argv)
         output << code;
     }
 
+    std::cout << "Hex++ Compiler: Compilation successful. Building with Hexagon..." << std::endl;
+
     // Prepare for hexagon building
     STARTUPINFOW si = {0};
     si.cb = sizeof(si);
@@ -80,8 +82,6 @@ int main(int argc, char** argv)
     strcpy(args, ".\\hexagon.exe build \"");
     strcat(args, argv[2]);
     strcat(args, "\"");
-
-    std::cout << "Compilation successful. Building with Hexagon..." << std::endl;
 
     // Process output with hexagon
     if (CreateProcessA(
@@ -118,8 +118,12 @@ int main(int argc, char** argv)
             memset(err, 0, 256);
             FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM, NULL, errCode,
                     MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), err, 255, NULL);
-            std::wcout << "Failed to build output with Hexagon. CreateProcessA error: "
-                << err << "Error code: " << errCode << std::endl;
+            std::wcout << "Hex++ Compiler: Failed to build output with Hexagon. CreateProcessA error: "
+                << err << "Hex++ Compiler: Error code: " << errCode << std::endl;
+        }
+        else
+        {
+            std::cout << "Hex++ Compiler: Couldn't find hexagon.exe. If hexagon.exe is placed in the same folder as the compiler's executable, it could output a /give command for a focus with the compiled spell here." << std::endl;
         }
     }
 
