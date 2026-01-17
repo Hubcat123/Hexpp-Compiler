@@ -71,8 +71,15 @@ std::vector<Token> Tokenizer::tokenize()
         {"block_raycast_from", TokenType_::block_raycast_from},
         {"block_normal_raycast", TokenType_::block_normal_raycast},
         {"block_normal_raycast_from", TokenType_::block_normal_raycast_from},
-        {"summon_light", TokenType_::summon_light},
+        {"create_light", TokenType_::create_light},
+        {"create_water", TokenType_::create_water},
         {"add", TokenType_::add},
+        {"size", TokenType_::size},
+        {"length", TokenType_::size},
+        {"abs", TokenType_::size},
+        {"find", TokenType_::find},
+        {"stack_size", TokenType_::stack_size},
+        {"dump_stack", TokenType_::dump_stack},
     };
 
     // Loop through all characters in string

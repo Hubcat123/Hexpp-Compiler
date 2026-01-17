@@ -246,11 +246,11 @@ std::optional<NodeTerm*> Parser::parse_term()
                 term_var->line = line;
 
                 // Check for post-op
-                if (peek(1).has_value())
+                if (peek().has_value())
                 {
                     const std::vector<TokenType_> postUnaryOperandTypes = { TokenType_::double_plus, TokenType_::double_dash };
                     // Check if term is post unary operator
-                    if (std::find(postUnaryOperandTypes.cbegin(), postUnaryOperandTypes.cend(), peek(1).value().type) != postUnaryOperandTypes.end())
+                    if (std::find(postUnaryOperandTypes.cbegin(), postUnaryOperandTypes.cend(), peek().value().type) != postUnaryOperandTypes.end())
                     {
                         NodeTermUnPost* term_un_post = m_allocator.alloc<NodeTermUnPost>();
                         term_un_post->vari = term_var;
@@ -292,9 +292,9 @@ std::optional<NodeTerm*> Parser::parse_term()
         // Check if term is an inbuilt function
         else if (std::optional<NodeFunc*> func = parse_func(
             { TokenType_::pow, TokenType_::vec, TokenType_::self, TokenType_::block_raycast, TokenType_::block_raycast_from, TokenType_::block_normal_raycast, TokenType_::block_normal_raycast_from,
-            TokenType_::pos, TokenType_::forward, TokenType_::eye_pos, TokenType_::add }))
+            TokenType_::pos, TokenType_::forward, TokenType_::eye_pos, TokenType_::add, TokenType_::size, TokenType_::find, TokenType_::stack_size, TokenType_::dump_stack }))
         {
-            const std::vector<TokenType_> memberFunctionTypes = { TokenType_::pos, TokenType_::forward, TokenType_::eye_pos, TokenType_::add };
+            const std::vector<TokenType_> memberFunctionTypes = { TokenType_::pos, TokenType_::forward, TokenType_::eye_pos, TokenType_::add, TokenType_::size, TokenType_::find };
             NodeTermInbuiltFunc* node_term_func = m_allocator.alloc<NodeTermInbuiltFunc>();
             node_term_func->isMemberFunc = std::find(memberFunctionTypes.cbegin(), memberFunctionTypes.cend(), func.value()->func_type) != memberFunctionTypes.cend();
             node_term_func->func = func.value();
@@ -419,7 +419,7 @@ std::optional<NodeStmt*> Parser::parse_stmt()
 
         // Check if statement is inbuilt function
         if (std::optional<NodeFunc*> func = parse_func(
-            { TokenType_::print, TokenType_::mine, TokenType_::summon_light }))
+            { TokenType_::print, TokenType_::mine, TokenType_::create_light, TokenType_::create_water }))
         {
             try_consume(TokenType_::semi, ';');
 

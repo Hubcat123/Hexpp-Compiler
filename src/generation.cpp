@@ -231,13 +231,41 @@ void Generator::gen_func(const NodeFunc* func)
         alidades_purification();
         architects_distillation();
         break;
-    case TokenType_::summon_light:
+    case TokenType_::create_light:
         try_gen_x_exprs(func->exprs, 1, func->line);
         conjure_light();
+        break;
+    case TokenType_::create_water:
+        try_gen_x_exprs(func->exprs, 1, func->line);
+        create_water();
         break;
     case TokenType_::add:
         try_gen_x_exprs(func->exprs, 1, func->line);
         integration_distillation();
+        break;
+    case TokenType_::size:
+        try_gen_x_exprs(func->exprs, 0, func->line);
+        length_purification();
+        break;
+    case TokenType_::find:
+        try_gen_x_exprs(func->exprs, 1, func->line);
+        locators_distillation();
+        break;
+    case TokenType_::stack_size:
+        try_gen_x_exprs(func->exprs, 0, func->line);
+        flocks_reflection();
+        break;
+    case TokenType_::dump_stack:
+        try_gen_x_exprs(func->exprs, 0, func->line);
+        add_pattern("{", 0);
+        pop();
+        flocks_reflection();
+        add_pattern("Flock's Gambit", 0);
+        add_pattern("}", 0);
+        numerical_reflection("0");
+        singles_purification();
+        add_pattern("Thoth's Gambit", 0);
+        add_pattern("Flock's Disintegration", 0);
         break;
     }
 }
@@ -1011,6 +1039,11 @@ void Generator::conjure_light()
     add_pattern("Conjure Light", -1);
 }
 
+void Generator::create_water()
+{
+    add_pattern("Create Water", -1);
+}
+
 void Generator::dioscuri_gambit()
 {
     add_pattern("Dioscuri Gambit", 2);
@@ -1079,6 +1112,16 @@ void Generator::integration_distillation()
 void Generator::jesters_gambit()
 {
     add_pattern("Jester's Gambit", 0);
+}
+
+void Generator::length_purification()
+{
+    add_pattern("Length Purification", 0);
+}
+
+void Generator::locators_distillation()
+{
+    add_pattern("Locator's Distillation", -1);
 }
 
 void Generator::maximus_distillation()
@@ -1159,6 +1202,11 @@ void Generator::rotation_gambit()
 void Generator::rotation_gambit_II()
 {
     add_pattern("Rotation Gambit II", 0);
+}
+
+void Generator::singles_purification()
+{
+    add_pattern("Single's Purification", 0);
 }
 
 void Generator::selection_distillation()

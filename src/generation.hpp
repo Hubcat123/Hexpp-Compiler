@@ -51,6 +51,7 @@ public:
     // AND
     void conjunction_distillation();
     void conjure_light();
+    void create_water();
     void dioscuri_gambit();
     // OR
     void disjunction_distillation();
@@ -67,6 +68,8 @@ public:
     void inequality_distillation();
     void integration_distillation();
     void jesters_gambit();
+    void length_purification();
+    void locators_distillation();
     void maximus_distillation();
     void maximus_distillation_II();
     void minds_reflection();
@@ -85,6 +88,7 @@ public:
     void rotation_gambit();
     // 1st becomes 3rd
     void rotation_gambit_II();
+    void singles_purification();
     void selection_distillation();
     void subtractive_distillation();
     void surgeons_exaltation();
