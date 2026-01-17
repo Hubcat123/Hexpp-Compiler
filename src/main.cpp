@@ -24,7 +24,7 @@ int main(int argc, char** argv)
     }
 
     // Print name of file being compiled
-    std::cout << "Hex++ Compiler: Compiling \"" << argv[1] << "\"..." << std::endl;
+    compilation_message(std::string("Compiling \"") + argv[1] + "\"...");
 
     // Read contents of file to compile into a string
     std::string contents;
@@ -70,7 +70,7 @@ int main(int argc, char** argv)
         output << code;
     }
 
-    std::cout << "Hex++ Compiler: Compilation successful. Building with Hexagon..." << std::endl;
+    compilation_message("Compilation successful. Building with Hexagon...");
 
     // Prepare for hexagon building
     STARTUPINFOW si = {0};
@@ -123,7 +123,7 @@ int main(int argc, char** argv)
         }
         else
         {
-            std::cout << "Hex++ Compiler: Couldn't find hexagon.exe. If hexagon.exe is placed in the same folder as the compiler's executable, it could output a /give command for a focus with the compiled spell here." << std::endl;
+            compilation_message("Couldn't find hexagon.exe. If hexagon.exe is placed in the same folder as the compiler's executable, it could output a /give command for a focus with the compiled spell here.");
         }
     }
 

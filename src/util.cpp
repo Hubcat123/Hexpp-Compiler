@@ -26,3 +26,8 @@ void compilation_warning(const std::string message, size_t line)
         std::cout << "Hex++ Compilation Warning: " << message << std::endl;
     }
 }
+
+void compilation_message(const std::string message)
+{
+    std::cout << "Hex++ Compiler: " << message << std::endl;
+}

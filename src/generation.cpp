@@ -15,6 +15,161 @@ std::string Generator::generate()
     return m_output.str();
 }
 
+void Generator::gen_assignment(const NodeTermVar* term_var, const std::variant<const NodeExpr*, const float> value, TokenType_ op, size_t line, bool is_post)
+{
+    // Add value to top of stack
+    struct ValueVisitor {
+        Generator& gen;
+        ValueVisitor (Generator& _gen) :gen(_gen) {}
+        
+        void operator()(const NodeExpr* expr)
+        {
+            gen.gen_expr(expr);
+        }
+
+        void operator()(const float num)
+        {
+            // Cut off decimal part if it's not used
+            if (num == (int)num)
+            {
+                gen.numerical_reflection(std::to_string((int)num));
+            }
+            else
+            {
+                gen.numerical_reflection(std::to_string(num));
+            }
+        }
+    };
+
+    ValueVisitor visitor(*this);
+    std::visit(visitor, value);
+
+    // Extract var info
+    struct VarVisitor {
+        Generator& gen;
+        bool& is_subscript;
+        std::string& ident_name;
+        NodeExpr*& subscript_expr;
+        VarVisitor (Generator& _gen, bool& _is_subscript, std::string& _ident_name, NodeExpr*& _subscript_expr)
+            :gen(_gen), is_subscript(_is_subscript), ident_name(_ident_name), subscript_expr(_subscript_expr) {}
+        
+        void operator()(const NodeVarIdent* ident)
+        {
+            is_subscript = false;
+            ident_name = ident->ident.value.value();
+        }
+
+        void operator()(const NodeVarListSubscript* list)
+        {
+            is_subscript = true;
+            ident_name = list->ident.value.value();
+            subscript_expr = list->expr;
+        }
+    };
+
+    bool is_subscript;
+    std::string ident_name;
+    NodeExpr* subscript_expr = nullptr;
+
+    VarVisitor varVisitor(*this, is_subscript, ident_name, subscript_expr);
+    std::visit(varVisitor, term_var->var);
+
+    Var var = gen_var_ident(ident_name, term_var->line, op == TokenType_::eq && !is_subscript, false);
+
+    // Gen index and handle list
+    if (is_subscript)
+    {
+        gen_expr(subscript_expr);
+
+        // If it's not eq, grab relavent list item
+        if (op != TokenType_::eq)
+        {
+            // Duplicate list and index so we can re-assign it later
+            dioscuri_gambit();
+            selection_distillation();
+            numerical_reflection("3");
+            fishermans_gambit();
+            jesters_gambit();
+        }
+        else
+        {
+            rotation_gambit();
+        }
+    }
+
+    // Make duplicate pre-op if it's a post-op
+    if (is_post)
+    {
+        gemini_decomposition();
+    }
+
+    switch (op)
+    {
+    case TokenType_::eq:
+        // Remove prev value from stack if local. Global var will be overwritten later
+        if (!var.is_global && !is_subscript)
+        {
+            pop();
+        }
+        break;
+    case TokenType_::plus_eq:
+        additive_distillation();
+        break;
+    case TokenType_::dash_eq:
+        jesters_gambit();
+        subtractive_distillation();
+        break;
+    case TokenType_::star_eq:
+        multiplicative_distillation();
+        break;
+    case TokenType_::fslash_eq:
+        jesters_gambit();
+        division_distillation();
+        break;
+    case TokenType_::mod_eq:
+        jesters_gambit();
+        modulus_distillation();
+        break;
+    }
+
+    // Place value in list
+    if (is_subscript)
+    {
+        surgeons_exaltation();
+    }
+    
+    // If local
+    if (!var.is_global)
+    {
+        numerical_reflection(std::to_string(-(int)m_stack_size + (int)var.stack_loc + 1));
+
+        // Don't duplicate down if post-op
+        if (is_post)
+        {
+            fishermans_gambit();
+        }
+        else
+        {
+            fishermans_gambit_II();
+        }
+    }
+    // If global
+    else
+    {
+        // Don't duplicate if post-op
+        if (!is_post)
+        {
+            gemini_decomposition();
+        }
+
+        muninns_reflection();
+        numerical_reflection(std::to_string(var.stack_loc));
+        rotation_gambit();
+        surgeons_exaltation();
+        huginns_gambit();
+    }
+}
+
 void Generator::gen_func(const NodeFunc* func)
 {
     switch (func->func_type)
@@ -26,7 +181,7 @@ void Generator::gen_func(const NodeFunc* func)
         break;
     case TokenType_::pow:
         try_gen_x_exprs(func->exprs, 2, func->line);
-        power_distilation();
+        power_distillation();
         break;
     case TokenType_::vec:
         try_gen_x_exprs(func->exprs, 3, func->line);
@@ -54,7 +209,7 @@ void Generator::gen_func(const NodeFunc* func)
         break;
     case TokenType_::block_raycast:
         try_gen_x_exprs(func->exprs, 2, func->line);
-        archers_distilation();
+        archers_distillation();
         break;
     case TokenType_::block_raycast_from:
         try_gen_x_exprs(func->exprs, 1, func->line);
@@ -62,11 +217,11 @@ void Generator::gen_func(const NodeFunc* func)
         compass_purification();
         jesters_gambit();
         alidades_purification();
-        archers_distilation();
+        archers_distillation();
         break;
     case TokenType_::block_normal_raycast:
         try_gen_x_exprs(func->exprs, 2, func->line);
-        architects_distilation();
+        architects_distillation();
         break;
     case TokenType_::block_normal_raycast_from:
         try_gen_x_exprs(func->exprs, 1, func->line);
@@ -74,11 +229,15 @@ void Generator::gen_func(const NodeFunc* func)
         compass_purification();
         jesters_gambit();
         alidades_purification();
-        architects_distilation();
+        architects_distillation();
         break;
     case TokenType_::summon_light:
         try_gen_x_exprs(func->exprs, 1, func->line);
         conjure_light();
+        break;
+    case TokenType_::add:
+        try_gen_x_exprs(func->exprs, 1, func->line);
+        integration_distillation();
         break;
     }
 }
@@ -102,7 +261,7 @@ bool Generator::gen_defined_func(const NodeDefinedFunc* func)
     // Execute function code
     muninns_reflection();
     numerical_reflection(std::to_string(iter->stack_loc));
-    selection_distilation();
+    selection_distillation();
     // Iris' Gambit
     add_pattern("Iris' Gambit", 0);
 
@@ -130,14 +289,12 @@ void Generator::gen_bin_expr(const NodeExprBin* expr_bin)
         }
 
         NodeTerm* term = std::get<NodeTerm*>(expr_bin->lhs->var);
-        if (!std::holds_alternative<NodeTermIdent*>(term->var))
+        if (!std::holds_alternative<NodeTermVar*>(term->var))
         {
             compilation_error("Expected identifier", expr_bin->line);
         }
 
-        Token ident = std::get<NodeTermIdent*>(term->var)->ident;
-
-        gen_assignment(std::get<NodeTermIdent*>(term->var)->ident, expr_bin->rhs, expr_bin->op_type, expr_bin->line);
+        gen_assignment(std::get<NodeTermVar*>(term->var), expr_bin->rhs, expr_bin->op_type, expr_bin->line);
 
         return;
     }
@@ -180,45 +337,112 @@ void Generator::gen_bin_expr(const NodeExprBin* expr_bin)
     switch(expr_bin->op_type)
     {
     case TokenType_::double_eq:
-        equality_distilation();
+        equality_distillation();
         break;
     case TokenType_::not_eq_:
-        inequality_distilation();
+        inequality_distillation();
         break;
     case TokenType_::angle_open:
-        minimus_distilation();
+        minimus_distillation();
         break;
     case TokenType_::oangle_eq:
-        minimus_distilation_II();
+        minimus_distillation_II();
         break;
     case TokenType_::angle_close:
-        maximus_distilation();
+        maximus_distillation();
         break;
     case TokenType_::cangle_eq:
-        maximus_distilation_II();
+        maximus_distillation_II();
         break;
     case TokenType_::plus:
-        additive_distilation();
+        additive_distillation();
         break;
     case TokenType_::dash:
-        subtractive_distilation(); 
+        subtractive_distillation(); 
         break;
     case TokenType_::star:
-        multiplicative_distilation();
+        multiplicative_distillation();
         break;
     case TokenType_::slash_forward:
-        division_distilation();
+        division_distillation();
         break;
     case TokenType_::modulus:
-        modulus_distilation();
+        modulus_distillation();
         break;
     case TokenType_::double_amp:
-        conjunction_distilation();
+        conjunction_distillation();
         break;
     case TokenType_::double_bar:
-        disjunction_distilation();
+        disjunction_distillation();
         break;
     }
+}
+
+Generator::Var Generator::gen_var_ident(const std::string ident_name, size_t line, bool dont_gen_if_global, bool leave_copy)
+{
+    std::vector<Var>::iterator iter = std::find_if(m_vars.begin(), m_vars.end(),
+        [&](const Var& var){ return var.name == ident_name; });
+    
+    if (iter == m_vars.end())
+    {
+        iter = std::find_if(m_global_vars.begin(), m_global_vars.end(),
+            [&](const Var& var){ return var.name == ident_name; });
+        
+        if (iter == m_global_vars.end())
+        {
+            compilation_error(std::string("Undeclared identifier: ") + ident_name, line);
+        }
+    }
+
+    Var& var = *iter;
+
+    if (var.is_global)
+    {
+        if (!dont_gen_if_global)
+        {
+            muninns_reflection();
+            numerical_reflection(std::to_string(var.stack_loc));
+            selection_distillation();
+        }
+    }
+    else
+    {
+        numerical_reflection(std::to_string(m_stack_size - 1 - var.stack_loc));
+
+        if (leave_copy)
+        {
+            fishermans_gambit_II();
+        }
+        else
+        {
+            fishermans_gambit();
+        }
+    }
+
+    return var;
+}
+
+void Generator::gen_var(const NodeTermVar* var)
+{
+    struct VarVisitor {
+        Generator& gen;
+        VarVisitor (Generator& _gen) :gen(_gen) {}
+        
+        void operator()(const NodeVarIdent* var_ident)
+        {
+            gen.gen_var_ident(var_ident->ident.value.value(), var_ident->line);
+        }
+
+        void operator()(const NodeVarListSubscript* var_list)
+        {
+            gen.gen_var_ident(var_list->ident.value.value(), var_list->line);
+            gen.gen_expr(var_list->expr);
+            gen.selection_distillation();
+        }
+    };
+
+    VarVisitor visitor(*this);
+    std::visit(visitor, var->var);
 }
 
 void Generator::gen_term(const NodeTerm* term)
@@ -232,12 +456,13 @@ void Generator::gen_term(const NodeTerm* term)
             // If unary expression is a type of assignment
             if (term_un->op_type == TokenType_::double_plus || term_un->op_type == TokenType_::double_dash)
             {
-                if (!term_un->ident.has_value())
+                // Check to make sure term is a var
+                if (!std::holds_alternative<NodeTermVar*>(term_un->term->var))
                 {
                     compilation_error("Expected identifier", term_un->line);
                 }
 
-                gen.gen_assignment(term_un->ident.value(), (float)((term_un->op_type == TokenType_::double_plus) ? 1 : -1), TokenType_::plus_eq, term_un->line);
+                gen.gen_assignment(std::get<NodeTermVar*>(term_un->term->var), (float)((term_un->op_type == TokenType_::double_plus) ? 1 : -1), TokenType_::plus_eq, term_un->line);
 
                 return;
             }
@@ -248,7 +473,7 @@ void Generator::gen_term(const NodeTerm* term)
             {
             case TokenType_::dash:
                 gen.numerical_reflection("-1");
-                gen.multiplicative_distilation();
+                gen.multiplicative_distillation();
                 break;
             case TokenType_::not_:
                 gen.negation_purification();
@@ -258,12 +483,30 @@ void Generator::gen_term(const NodeTerm* term)
 
         void operator()(const NodeTermUnPost* term_un_post)
         {
-            gen.gen_assignment(term_un_post->ident, (float)((term_un_post->op_type == TokenType_::double_plus) ? 1 : -1), TokenType_::plus_eq, term_un_post->line, true);
+            gen.gen_assignment(term_un_post->vari, (float)((term_un_post->op_type == TokenType_::double_plus) ? 1 : -1), TokenType_::plus_eq, term_un_post->line, true);
         }
 
         void operator()(const NodeTermNumLit* term_int_lit)
         {
             gen.numerical_reflection(term_int_lit->num_lit.value.value());
+        }
+
+        void operator()(const NodeTermListLit* term_list_lit)
+        {
+            if (term_list_lit->exprs.size() <= 0)
+            {
+                gen.vacant_reflection();
+            }
+            else
+            {
+                for (NodeExpr* expr : term_list_lit->exprs)
+                {
+                    gen.gen_expr(expr);
+                }
+
+                gen.numerical_reflection(std::to_string(term_list_lit->exprs.size()));
+                gen.flocks_gambit(term_list_lit->exprs.size());
+            }
         }
 
         void operator()(const NodeTermBoolLit* term_bool_lit)
@@ -283,37 +526,9 @@ void Generator::gen_term(const NodeTerm* term)
             gen.nullary_reflection();
         }
 
-        void operator()(const NodeTermIdent* term_ident)
+        void operator()(const NodeTermVar* term_var)
         {
-            bool is_global = false;
-            std::vector<Var>::iterator iter = std::find_if(gen.m_vars.begin(), gen.m_vars.end(),
-                [&](const Var& var){ return var.name == term_ident->ident.value.value(); });
-            
-            if (iter == gen.m_vars.end())
-            {
-                is_global = true;
-                iter = std::find_if(gen.m_global_vars.begin(), gen.m_global_vars.end(),
-                    [&](const Var& var){ return var.name == term_ident->ident.value.value(); });
-                
-                if (iter == gen.m_global_vars.end())
-                {
-                    compilation_error(std::string("Undeclared identifier: ") + term_ident->ident.value.value(), term_ident->line);
-                }
-            }
-
-            Var& var = *iter;
-
-            if (is_global)
-            {
-                gen.muninns_reflection();
-                gen.numerical_reflection(std::to_string(var.stack_loc));
-                gen.selection_distilation();
-            }
-            else
-            {
-                gen.numerical_reflection(std::to_string(gen.m_stack_size - 1 - var.stack_loc));
-                gen.fishermans_gambit_II();
-            }
+            gen.gen_var(term_var);
         }
 
         void operator()(const NodeTermParen* term_paren)
@@ -430,7 +645,7 @@ void Generator::gen_stmt(const NodeStmt* stmt)
             }
 
             gen.gen_expr(stmt_let->expr);
-            gen.m_vars.push_back(Var{.name = stmt_let->ident.value.value(), .stack_loc = gen.m_stack_size - 1});
+            gen.m_vars.push_back(Var{.name = stmt_let->ident.value.value(), .stack_loc = gen.m_stack_size - 1, .is_global = false});
         }
 
         void operator()(const NodeStmtIf* stmt_if)
@@ -566,7 +781,7 @@ void Generator::gen_func_def(const NodeFunctionDef* func_def)
     // Treat top of the stack as params
     for (Token param : params)
     {
-        m_vars.push_back(Var{.name = param.value.value(), .stack_loc = m_stack_size});
+        m_vars.push_back(Var{.name = param.value.value(), .stack_loc = m_stack_size, .is_global = false});
         ++m_stack_size;
     }
 
@@ -610,7 +825,7 @@ void Generator::gen_prog()
         gen_expr(global_let->expr);
 
         // Register temporarily as local var so they can reference other global vars during declaration
-        m_vars.push_back(Var{.name = global_let->ident.value.value(), .stack_loc = m_vars.size()});
+        m_vars.push_back(Var{.name = global_let->ident.value.value(), .stack_loc = m_vars.size(), .is_global = false});
     }
 
     // Clear temp local vars
@@ -619,7 +834,7 @@ void Generator::gen_prog()
     // Mark global variables as declared
     for (NodeGlobalLet* global_let : m_prog->vars)
     {
-        m_global_vars.push_back(Var{.name = global_let->ident.value.value(), .stack_loc = m_global_vars.size()});
+        m_global_vars.push_back(Var{.name = global_let->ident.value.value(), .stack_loc = m_global_vars.size(), .is_global = true});
     }
 
     // Account for main's jump iota
@@ -658,7 +873,7 @@ void Generator::gen_prog()
     if (m_global_vars.size() + m_funcs.size() > 0)
     {
         numerical_reflection(std::to_string(m_global_vars.size() + m_funcs.size()));
-        add_pattern("Flock's Gambit", -m_global_vars.size() - m_funcs.size());
+        flocks_gambit(m_global_vars.size() + m_funcs.size());
     }
     else
     {
@@ -688,137 +903,6 @@ void Generator::try_gen_x_exprs(std::vector<NodeExpr*> exprs, int correct_amount
     for (NodeExpr* expr : exprs)
     {
         gen_expr(expr);
-    }
-}
-
-void Generator::gen_assignment(const Token ident, const std::variant<const NodeExpr*, const float> value, TokenType_ op, size_t line, bool is_post)
-{
-    bool is_global = false;
-    // Try to find local var
-    std::vector<Var>::iterator iter = std::find_if(m_vars.begin(), m_vars.end(),
-        [&](const Var& var){ return var.name == ident.value.value(); });
-    
-    if (iter == m_vars.end())
-    {
-        is_global = true;
-        // Try to find global var
-        iter = std::find_if(m_global_vars.begin(), m_global_vars.end(), 
-            [&](const Var& var){ return var.name == ident.value.value(); });
-        
-        if (iter == m_global_vars.end())
-        {
-            compilation_error(std::string("Undeclared identifier: ") + ident.value.value(), line);
-        }
-    }
-
-    // Add value to top of stack
-    struct ValueVisitor {
-        Generator& gen;
-        ValueVisitor (Generator& _gen) :gen(_gen) {}
-        
-        void operator()(const NodeExpr* expr)
-        {
-            gen.gen_expr(expr);
-        }
-
-        void operator()(const float num)
-        {
-            // Cut off decimal part if it's not used
-            if (num == (int)num)
-            {
-                gen.numerical_reflection(std::to_string((int)num));
-            }
-            else
-            {
-                gen.numerical_reflection(std::to_string(num));
-            }
-        }
-    };
-
-    ValueVisitor visitor(*this);
-    std::visit(visitor, value);
-
-    Var& var = *iter;
-
-    // If local
-    int varDepth = m_stack_size - 1 - var.stack_loc;
-    if (!is_global)
-    {
-        numerical_reflection(std::to_string(varDepth));
-        fishermans_gambit();
-    }
-    // If global and not eq
-    else if (op != TokenType_::eq)
-    {
-        muninns_reflection();
-        numerical_reflection(std::to_string(var.stack_loc));
-        selection_distilation();
-    }
-
-    // Make duplicate pre-op if it's a post-op
-    if (is_post)
-    {
-        gemini_decomposition();
-    }
-
-    switch (op)
-    {
-    case TokenType_::eq:
-        // Remove prev value from stack if local. Global var will be overwritten later
-        if (!is_global)
-        {
-            pop();
-        }
-        break;
-    case TokenType_::plus_eq:
-        additive_distilation();
-        break;
-    case TokenType_::dash_eq:
-        jesters_gambit();
-        subtractive_distilation();
-        break;
-    case TokenType_::star_eq:
-        multiplicative_distilation();
-        break;
-    case TokenType_::fslash_eq:
-        jesters_gambit();
-        division_distilation();
-        break;
-    case TokenType_::mod_eq:
-        jesters_gambit();
-        modulus_distilation();
-        break;
-    }
-    
-    // If local
-    if (!is_global)
-    {
-        numerical_reflection(std::to_string(-varDepth + 1));
-
-        // Don't duplicate down if post-op
-        if (is_post)
-        {
-            fishermans_gambit();
-        }
-        else
-        {
-            fishermans_gambit_II();
-        }
-    }
-    // If global
-    else
-    {
-        // Don't duplicate if post-op
-        if (!is_post)
-        {
-            gemini_decomposition();
-        }
-
-        muninns_reflection();
-        numerical_reflection(std::to_string(var.stack_loc));
-        rotation_gambit();
-        surgeons_exaltation();
-        huginns_gambit();
     }
 }
 
@@ -877,7 +961,7 @@ void Generator::decrease_indent()
 
 
 
-void Generator::additive_distilation()
+void Generator::additive_distillation()
 {
     add_pattern("Additive Distillation", -1);
 }
@@ -887,12 +971,12 @@ void Generator::alidades_purification()
     add_pattern("Alidade's Purification", 0);
 }
 
-void Generator::archers_distilation()
+void Generator::archers_distillation()
 {
     add_pattern("Archer's Distillation", -1);
 }
 
-void Generator::architects_distilation()
+void Generator::architects_distillation()
 {
     add_pattern("Architect's Distillation", -1);
 }
@@ -917,7 +1001,7 @@ void Generator::compass_purification_II()
     add_pattern("Compass' Purification II", 0);
 }
 
-void Generator::conjunction_distilation()
+void Generator::conjunction_distillation()
 {
     add_pattern("Conjunction Distillation", -1);
 }
@@ -927,17 +1011,22 @@ void Generator::conjure_light()
     add_pattern("Conjure Light", -1);
 }
 
-void Generator::disjunction_distilation()
+void Generator::dioscuri_gambit()
+{
+    add_pattern("Dioscuri Gambit", 2);
+}
+
+void Generator::disjunction_distillation()
 {
     add_pattern("Disjunction Distillation", -1);
 }
 
-void Generator::division_distilation()
+void Generator::division_distillation()
 {
     add_pattern("Division Distillation", -1);
 }
 
-void Generator::equality_distilation()
+void Generator::equality_distillation()
 {
     add_pattern("Equality Distillation", -1);
 }
@@ -957,6 +1046,11 @@ void Generator::fishermans_gambit_II()
     add_pattern("Fisherman's Gambit II", 0);
 }
 
+void Generator::flocks_gambit(int num_iotas_packed)
+{
+    add_pattern("Flock's Gambit", -num_iotas_packed);
+}
+
 void Generator::flocks_reflection()
 {
     add_pattern("Flock's Reflection", 1);
@@ -972,9 +1066,14 @@ void Generator::huginns_gambit()
     add_pattern("Huginn's Gambit", -1);
 }
 
-void Generator::inequality_distilation()
+void Generator::inequality_distillation()
 {
     add_pattern("Inequality Distillation", -1);
+}
+
+void Generator::integration_distillation()
+{
+    add_pattern("Integration Distillation", -1);
 }
 
 void Generator::jesters_gambit()
@@ -982,12 +1081,12 @@ void Generator::jesters_gambit()
     add_pattern("Jester's Gambit", 0);
 }
 
-void Generator::maximus_distilation()
+void Generator::maximus_distillation()
 {
     add_pattern("Maximus Distillation", -1);
 }
 
-void Generator::maximus_distilation_II()
+void Generator::maximus_distillation_II()
 {
     add_pattern("Maximus Distillation II", -1);
 }
@@ -997,22 +1096,22 @@ void Generator::minds_reflection()
     add_pattern("Mind's Reflection", 1);
 }
 
-void Generator::minimus_distilation()
+void Generator::minimus_distillation()
 {
     add_pattern("Minimus Distillation", -1);
 }
 
-void Generator::minimus_distilation_II()
+void Generator::minimus_distillation_II()
 {
     add_pattern("Minimus Distillation II", -1);
 }
 
-void Generator::modulus_distilation()
+void Generator::modulus_distillation()
 {
     add_pattern("Modulus Distillation", -1);
 }
 
-void Generator::multiplicative_distilation()
+void Generator::multiplicative_distillation()
 {
     add_pattern("Multiplicative Distillation", -1);
 }
@@ -1042,7 +1141,7 @@ void Generator::numerical_reflection(std::string value)
     add_pattern(std::string("Numerical Reflection: ") + value, 1);
 }
 
-void Generator::power_distilation()
+void Generator::power_distillation()
 {
     add_pattern("Power Distillation", -1);
 }
@@ -1062,12 +1161,12 @@ void Generator::rotation_gambit_II()
     add_pattern("Rotation Gambit II", 0);
 }
 
-void Generator::selection_distilation()
+void Generator::selection_distillation()
 {
     add_pattern("Selection Distillation", -1);
 }
 
-void Generator::subtractive_distilation()
+void Generator::subtractive_distillation()
 {
     add_pattern("Subtractive Distillation", -1);
 }

@@ -14,6 +14,19 @@ struct NodeExpr;
 struct NodeStmt;
 struct NodeTerm;
 
+struct NodeVarListSubscript : Node {
+    Token ident;
+    NodeExpr* expr;
+};
+
+struct NodeVarIdent : Node {
+    Token ident;
+};
+
+struct NodeTermVar : Node {
+    std::variant<NodeVarIdent*, NodeVarListSubscript*> var;
+};
+
 struct NodeFunc : Node {
     TokenType_ func_type;
     std::vector<NodeExpr*> exprs;
@@ -28,8 +41,8 @@ struct NodeTermNumLit : Node {
     Token num_lit;
 };
 
-struct NodeTermIdent : Node {
-    Token ident;
+struct NodeTermListLit : Node {
+    std::vector<NodeExpr*> exprs;
 };
 
 struct NodeTermInbuiltFunc : Node {
@@ -43,13 +56,12 @@ struct NodeTermCallFunc : Node {
 
 struct NodeTermUn : Node {
     TokenType_ op_type;
-    std::optional<Token> ident;
     NodeTerm* term;
 };
 
 struct NodeTermUnPost : Node {
     TokenType_ op_type;
-    Token ident;
+    NodeTermVar* vari;
 };
 
 struct NodeTermParen : Node {
@@ -64,7 +76,7 @@ struct NodeTermNullLit : Node {
 };
 
 struct NodeTerm : Node {
-    std::variant<NodeTermUn*, NodeTermUnPost*, NodeTermNumLit*, NodeTermBoolLit*, NodeTermNullLit*, NodeTermIdent*, NodeTermParen*, NodeTermInbuiltFunc*, NodeTermCallFunc*> var;
+    std::variant<NodeTermUn*, NodeTermUnPost*, NodeTermNumLit*, NodeTermListLit*, NodeTermBoolLit*, NodeTermNullLit*, NodeTermVar*, NodeTermParen*, NodeTermInbuiltFunc*, NodeTermCallFunc*> var;
 };
 
 struct NodeExprBin : Node {

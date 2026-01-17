@@ -7,15 +7,24 @@
 
 class Generator {
 public:
+    struct Var {
+        std::string name;
+        size_t stack_loc;
+        bool is_global;
+    };
+
     Generator(const NodeProg* root);
 
     std::string generate();
 
-    void gen_assignment(const Token ident, const std::variant<const NodeExpr*, const float> value, TokenType_ op, size_t line, bool is_post = false);
+    void gen_assignment(const NodeTermVar* var, const std::variant<const NodeExpr*, const float> value, TokenType_ op, size_t line, bool is_post = false);
     void gen_func(const NodeFunc* func);
     // Returns whether func is void func
     bool gen_defined_func(const NodeDefinedFunc* func);
     void gen_bin_expr(const NodeExprBin* expr_bin);
+    // Returns the var of the variable gen-ed
+    Var gen_var_ident(const std::string ident_name, size_t line, bool dont_gen_if_global = false, bool leave_copy = true);
+    void gen_var(const NodeTermVar* var);
     void gen_term(const NodeTerm* term);
     void gen_expr(const NodeExpr* expr);
     void gen_stmt(const NodeStmt* stmt);
@@ -31,50 +40,53 @@ public:
     void increase_indent();
     void decrease_indent();
 
-    void additive_distilation();
+    void additive_distillation();
     void alidades_purification();
-    void archers_distilation();
-    void architects_distilation();
+    void archers_distillation();
+    void architects_distillation();
     void augurs_purification();
     void break_block();
     void compass_purification();
     void compass_purification_II();
     // AND
-    void conjunction_distilation();
+    void conjunction_distillation();
     void conjure_light();
+    void dioscuri_gambit();
     // OR
-    void disjunction_distilation();
-    void division_distilation();
-    void equality_distilation();
+    void disjunction_distillation();
+    void division_distillation();
+    void equality_distillation();
     void false_reflection();
     void fishermans_gambit();
     void fishermans_gambit_II();
+    void flocks_gambit(int num_iotas_packed);
     void flocks_reflection();
     void gemini_decomposition();
     // Store in Raven's Mind
     void huginns_gambit();
-    void inequality_distilation();
+    void inequality_distillation();
+    void integration_distillation();
     void jesters_gambit();
-    void maximus_distilation();
-    void maximus_distilation_II();
+    void maximus_distillation();
+    void maximus_distillation_II();
     void minds_reflection();
-    void minimus_distilation();
-    void minimus_distilation_II();
-    void modulus_distilation();
-    void multiplicative_distilation();
+    void minimus_distillation();
+    void minimus_distillation_II();
+    void modulus_distillation();
+    void multiplicative_distillation();
     // Retrieve from Raven's Mind
     void muninns_reflection();
     void negation_purification();
     void nullary_reflection();
     void numerical_reflection(std::string value);
-    void power_distilation();
+    void power_distillation();
     void reveal();
     // 3rd becomes 1st
     void rotation_gambit();
     // 1st becomes 3rd
     void rotation_gambit_II();
-    void selection_distilation();
-    void subtractive_distilation();
+    void selection_distillation();
+    void subtractive_distillation();
     void surgeons_exaltation();
     void true_reflection();
     void vacant_reflection();
@@ -86,11 +98,6 @@ public:
 
     bool generating_void_function = false;
 private:
-
-    struct Var {
-        std::string name;
-        size_t stack_loc;
-    };
 
     struct Func {
         bool is_void;

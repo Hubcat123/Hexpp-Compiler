@@ -29,6 +29,8 @@ std::vector<Token> Tokenizer::tokenize()
         {'.', TokenType_::dot},
         {'!', TokenType_::not_},
         {'%', TokenType_::modulus},
+        {'[', TokenType_::square_open},
+        {']', TokenType_::square_close},
     };
 
     const std::map<std::string, TokenType_> doubleNonAlphaTokenMap {
@@ -57,6 +59,7 @@ std::vector<Token> Tokenizer::tokenize()
         {"void", TokenType_::void_},
         {"ret", TokenType_::ret},
         {"return", TokenType_::return_},
+
         {"pow", TokenType_::pow},
         {"vec", TokenType_::vec},
         {"self", TokenType_::self},
@@ -69,6 +72,7 @@ std::vector<Token> Tokenizer::tokenize()
         {"block_normal_raycast", TokenType_::block_normal_raycast},
         {"block_normal_raycast_from", TokenType_::block_normal_raycast_from},
         {"summon_light", TokenType_::summon_light},
+        {"add", TokenType_::add},
     };
 
     // Loop through all characters in string

@@ -100,12 +100,9 @@ std::optional<NodeTerm*> Parser::parse_term()
         {
             TokenType_ op_type = consume().type;
 
-            // Grab ident, if there is one
-            std::optional<Token> ident = (peek().has_value() && peek().value().type == TokenType_::ident) ? peek().value() : std::optional<Token>{};
             if (std::optional<NodeTerm*> un_term = parse_term())
             {
                 NodeTermUn* term_un = m_allocator.alloc<NodeTermUn>();
-                term_un->ident = ident;
                 term_un->op_type = op_type;
                 term_un->term = un_term.value();
                 term_un->line = line;
@@ -129,6 +126,35 @@ std::optional<NodeTerm*> Parser::parse_term()
             node_term->var = node_term_num_lit;
             node_term->line = line;
             return node_term;
+        }
+        // Check if term is a list lit
+        else if (peek().value().type == TokenType_::square_open)
+        {
+            consume();
+
+            NodeTermListLit* list_lit = m_allocator.alloc<NodeTermListLit>();
+            list_lit->exprs = std::vector<NodeExpr*>();
+            list_lit->line = line;
+
+            // Loop capturing exprs
+            while (std::optional<NodeExpr*> expr = parse_expr())
+            {
+                list_lit->exprs.push_back(expr.value());
+
+                if (!peek().has_value() || peek().value().type != TokenType_::comma)
+                {
+                    break;
+                }
+
+                consume();
+            }
+
+            try_consume(TokenType_::square_close, ']');
+
+            NodeTerm* term = m_allocator.alloc<NodeTerm>();
+            term->var = list_lit;
+            term->line = line;
+            return term;
         }
         // Check if term is bool lit
         else if (peek().value().type == TokenType_::bool_lit)
@@ -166,30 +192,82 @@ std::optional<NodeTerm*> Parser::parse_term()
         // Check if term is an identifier
         else if (peek().value().type == TokenType_::ident)
         {
-            if (peek(1).has_value())
+            // Check if is subscript var
+            if (peek(1).has_value() && peek(1).value().type == TokenType_::square_open)
             {
-                const std::vector<TokenType_> postUnaryOperandTypes = { TokenType_::double_plus, TokenType_::double_dash };
-                // Check if term is post unary operator
-                if (std::find(postUnaryOperandTypes.cbegin(), postUnaryOperandTypes.cend(), peek(1).value().type) != postUnaryOperandTypes.end())
-                {
-                    NodeTermUnPost* term_un_post = m_allocator.alloc<NodeTermUnPost>();
-                    term_un_post->ident = consume();
-                    term_un_post->op_type = consume().type;
-                    term_un_post->line = line;
-                    NodeTerm* node_term = m_allocator.alloc<NodeTerm>();
-                    node_term->var = term_un_post;
-                    node_term->line = line;
-                    return node_term;
-                }
-            }
+                NodeVarListSubscript* var_list = m_allocator.alloc<NodeVarListSubscript>();
+                var_list->ident = consume();
+                var_list->line = line;
 
-            NodeTermIdent* node_term_ident = m_allocator.alloc<NodeTermIdent>();
-            node_term_ident->ident = consume();
-            node_term_ident->line = line;
-            NodeTerm* node_term = m_allocator.alloc<NodeTerm>();
-            node_term->var = node_term_ident;
-            node_term->line = line;
-            return node_term;
+                // Consume subscript
+                consume();
+                std::optional<NodeExpr*> expr = parse_expr();
+                if (!expr.has_value())
+                {
+                    compilation_error("Expected expression", line);
+                }
+                var_list->expr = expr.value();
+                try_consume(TokenType_::square_close, ']');
+
+                NodeTermVar* term_var = m_allocator.alloc<NodeTermVar>();
+                term_var->var = var_list;
+                term_var->line = line;
+
+                // Check for post-op
+                if (peek(1).has_value())
+                {
+                    const std::vector<TokenType_> postUnaryOperandTypes = { TokenType_::double_plus, TokenType_::double_dash };
+                    // Check if term is post unary operator
+                    if (std::find(postUnaryOperandTypes.cbegin(), postUnaryOperandTypes.cend(), peek(1).value().type) != postUnaryOperandTypes.end())
+                    {
+                        NodeTermUnPost* term_un_post = m_allocator.alloc<NodeTermUnPost>();
+                        term_un_post->vari = term_var;
+                        term_un_post->op_type = consume().type;
+                        term_un_post->line = line;
+                        NodeTerm* node_term = m_allocator.alloc<NodeTerm>();
+                        node_term->var = term_un_post;
+                        node_term->line = line;
+                        return node_term;
+                    }
+                }
+
+                NodeTerm* node_term = m_allocator.alloc<NodeTerm>();
+                node_term->var = term_var;
+                node_term->line = line;
+                return node_term;
+            }
+            else
+            {
+                NodeVarIdent* var_ident = m_allocator.alloc<NodeVarIdent>();
+                var_ident->ident = consume();
+                var_ident->line = line;
+                NodeTermVar* term_var = m_allocator.alloc<NodeTermVar>();
+                term_var->var = var_ident;
+                term_var->line = line;
+
+                // Check for post-op
+                if (peek(1).has_value())
+                {
+                    const std::vector<TokenType_> postUnaryOperandTypes = { TokenType_::double_plus, TokenType_::double_dash };
+                    // Check if term is post unary operator
+                    if (std::find(postUnaryOperandTypes.cbegin(), postUnaryOperandTypes.cend(), peek(1).value().type) != postUnaryOperandTypes.end())
+                    {
+                        NodeTermUnPost* term_un_post = m_allocator.alloc<NodeTermUnPost>();
+                        term_un_post->vari = term_var;
+                        term_un_post->op_type = consume().type;
+                        term_un_post->line = line;
+                        NodeTerm* node_term = m_allocator.alloc<NodeTerm>();
+                        node_term->var = term_un_post;
+                        node_term->line = line;
+                        return node_term;
+                    }
+                }
+
+                NodeTerm* node_term = m_allocator.alloc<NodeTerm>();
+                node_term->var = term_var;
+                node_term->line = line;
+                return node_term;
+            }
         }
         // Check if term is a parentheses enclosed expression
         else if (peek().value().type == TokenType_::paren_open)
@@ -214,9 +292,9 @@ std::optional<NodeTerm*> Parser::parse_term()
         // Check if term is an inbuilt function
         else if (std::optional<NodeFunc*> func = parse_func(
             { TokenType_::pow, TokenType_::vec, TokenType_::self, TokenType_::block_raycast, TokenType_::block_raycast_from, TokenType_::block_normal_raycast, TokenType_::block_normal_raycast_from,
-            TokenType_::pos, TokenType_::forward, TokenType_::eye_pos }))
+            TokenType_::pos, TokenType_::forward, TokenType_::eye_pos, TokenType_::add }))
         {
-            const std::vector<TokenType_> memberFunctionTypes = { TokenType_::pos, TokenType_::forward, TokenType_::eye_pos };
+            const std::vector<TokenType_> memberFunctionTypes = { TokenType_::pos, TokenType_::forward, TokenType_::eye_pos, TokenType_::add };
             NodeTermInbuiltFunc* node_term_func = m_allocator.alloc<NodeTermInbuiltFunc>();
             node_term_func->isMemberFunc = std::find(memberFunctionTypes.cbegin(), memberFunctionTypes.cend(), func.value()->func_type) != memberFunctionTypes.cend();
             node_term_func->func = func.value();
