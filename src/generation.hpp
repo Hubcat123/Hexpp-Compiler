@@ -5,6 +5,23 @@
 #include <sstream>
 #include <stack>
 
+enum PatternType {
+    additive_distillation, alidades_purification, archers_distillation, architects_distillation, augurs_exaltation, augurs_purification, bookkeepers_gambit, break_block, charons_gambit,
+    compass_purification, compass_purification_II, conjunction_distillation, conjure_light, conjure_water, dioscuri_gambit, disjunction_distillation, division_distillation, equality_distillation,
+    false_reflection, fishermans_gambit, fishermans_gambit_II, flocks_disintegration, flocks_gambit, flocks_reflection, gemini_decomposition, hermes_gambit, huginns_gambit, inequality_distillation,
+    integration_distillation, introspection, iris_gambit, jesters_gambit, length_purification, locators_distillation, maximus_distillation, maximus_distillation_II, minds_reflection,
+    minimus_distillation, minimus_distillation_II, modulus_distillation, multiplicative_distillation, muninns_reflection, negation_purification, nullary_reflection, numerical_reflection,
+    power_distillation, retrospection, reveal, rotation_gambit, rotation_gambit_II, singles_purification, selection_distillation, subtractive_distillation, surgeons_exaltation, thoths_gambit,
+    true_reflection, vacant_reflection, vector_exaltation, num_patterns
+};
+
+struct Pattern {
+    PatternType type;
+    std::optional<std::string> value;
+};
+
+
+
 class Generator {
 public:
     struct Var {
@@ -15,7 +32,7 @@ public:
 
     Generator(const NodeProg* root);
 
-    std::string generate();
+    std::vector<Pattern> generate();
 
     void gen_assignment(const NodeTermVar* var, const std::variant<const NodeExpr*, const float> value, TokenType_ op, size_t line, bool is_post = false);
     void gen_func(const NodeFunc* func);
@@ -37,8 +54,6 @@ public:
     void end_scope();
     void end_scopes_return(bool has_ret_value);
     void dec_func(bool is_void, std::string name, int num_params, size_t line);
-    void increase_indent();
-    void decrease_indent();
 
     void additive_distillation();
     void alidades_purification();
@@ -96,7 +111,7 @@ public:
     void vacant_reflection();
     void vector_exaltation();
 
-    void add_pattern(std::string pattern, size_t stack_size_net);
+    void add_pattern(PatternType pattern, size_t stack_size_net, std::optional<std::string> value = std::nullopt);
 
     bool has_non_integer_num = false;
 
@@ -116,14 +131,12 @@ private:
     };
 
     const NodeProg* m_prog;
-    std::stringstream m_output;
+    std::vector<Pattern> m_output;
     size_t m_stack_size = 0;
     std::vector<Var> m_vars {};
     std::vector<Var> m_global_vars {};
     std::vector<Func> m_funcs {};
     std::vector<Scope> m_scopes {};
-
-    int m_indent_level = 0;
 
     size_t m_function_start_scope;
     size_t m_function_num_params;

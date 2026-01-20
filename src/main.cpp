@@ -12,6 +12,8 @@
 #include "tokenization.hpp"
 #include "parser.hpp"
 #include "generation.hpp"
+#include "optimization.hpp"
+#include "assembler.hpp"
 
 int main(int argc, char** argv)
 {
@@ -42,7 +44,7 @@ int main(int argc, char** argv)
         tokens = tokenizer.tokenize();
     }
 
-    // Parse tokens
+    // Parse tokens, not in scope so allocator doesn't destruct
     NodeProg* prog;
     Parser parser(tokens);
     std::optional<NodeProg*> opt_prog = parser.parse();
@@ -56,12 +58,25 @@ int main(int argc, char** argv)
     }
 
     // Generate hexes
-    std::string code;
+    std::vector<Pattern> patterns;
     bool found_non_integer_num;
     {
         Generator generator(prog);
-        code = generator.generate();
+        patterns = generator.generate();
         found_non_integer_num = generator.has_non_integer_num;
+    }
+
+    // Do post-gen optimization
+    {
+        Optimizer optimizer(patterns);
+        patterns = optimizer.optimize();
+    }
+
+    // Assemble patterns into string output
+    std::string code;
+    {
+        Assembler assembler(patterns);
+        code = assembler.assemble();
     }
 
     // Write patterns to file

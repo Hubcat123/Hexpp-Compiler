@@ -8,11 +8,11 @@ Generator::Generator(const NodeProg* prog)
     :m_prog(prog)
 { }
 
-std::string Generator::generate()
+std::vector<Pattern> Generator::generate()
 {
     gen_prog();
 
-    return m_output.str();
+    return m_output;
 }
 
 void Generator::gen_assignment(const NodeTermVar* term_var, const std::variant<const NodeExpr*, const float> value, TokenType_ op, size_t line, bool is_post)
@@ -257,15 +257,15 @@ void Generator::gen_func(const NodeFunc* func)
         break;
     case TokenType_::dump_stack:
         try_gen_x_exprs(func->exprs, 0, func->line);
-        add_pattern("{", 0);
+        add_pattern(PatternType::introspection, 0);
         pop();
         flocks_reflection();
-        add_pattern("Flock's Gambit", 0);
-        add_pattern("}", 0);
+        add_pattern(PatternType::flocks_gambit, 0);
+        add_pattern(PatternType::retrospection, 0);
         numerical_reflection("0");
         singles_purification();
-        add_pattern("Thoth's Gambit", 0);
-        add_pattern("Flock's Disintegration", 0);
+        add_pattern(PatternType::thoths_gambit, 0);
+        add_pattern(PatternType::flocks_disintegration, 0);
         break;
     }
 }
@@ -291,7 +291,7 @@ bool Generator::gen_defined_func(const NodeDefinedFunc* func)
     numerical_reflection(std::to_string(iter->stack_loc));
     selection_distillation();
     // Iris' Gambit
-    add_pattern("Iris' Gambit", 0);
+    add_pattern(PatternType::iris_gambit, 0);
 
     // Account for function cleaning up exprs
     m_stack_size -= func->exprs.size();
@@ -656,7 +656,7 @@ void Generator::gen_stmt(const NodeStmt* stmt)
             }
 
             // Execute jump iota
-            gen.add_pattern("Hermes' Gambit", 0);
+            gen.add_pattern(PatternType::hermes_gambit, 0);
         }
 
         void operator()(const NodeExpr* stmt_expr)
@@ -685,52 +685,45 @@ void Generator::gen_stmt(const NodeStmt* stmt)
 
             // Generate statement
             gen.begin_scope();
-            gen.add_pattern("{", 0);
-            gen.increase_indent();
+            gen.add_pattern(PatternType::introspection, 0);
             gen.gen_stmt(stmt_if->stmt);
-            gen.decrease_indent();
-            gen.add_pattern("}", 0);
+            gen.add_pattern(PatternType::retrospection, 0);
             gen.end_scope();
 
             // Potentially generate else statement
             if (stmt_if->else_stmt == nullptr)
             {
-                gen.add_pattern("Vacant Reflection", 0);
+                gen.add_pattern(PatternType::vacant_reflection, 0);
             }
             else
             {
-                gen.add_pattern("{", 0);
-                gen.increase_indent();
+                gen.add_pattern(PatternType::introspection, 0);
                 gen.begin_scope();
                 gen.gen_stmt(stmt_if->else_stmt);
                 gen.end_scope(); 
-                gen.decrease_indent();
-                gen.add_pattern("}", 0);
+                gen.add_pattern(PatternType::retrospection, 0);
             }
             
             // Perform bool comparison and execute
-            gen.add_pattern("Augur's Exaltation", 0);
-            gen.add_pattern("Hermes' Gambit", 0);
+            gen.add_pattern(PatternType::augurs_exaltation, 0);
+            gen.add_pattern(PatternType::hermes_gambit, 0);
         }
 
         void operator()(const NodeStmtWhile* stmt_while)
         {
-            gen.add_pattern("{", 0);
-            gen.increase_indent();
+            gen.add_pattern(PatternType::introspection, 0);
             ++gen.m_stack_size;
             gen.gen_expr(stmt_while->expr);
 
             // Exit loop if false
             gen.augurs_purification();
-            gen.add_pattern("Vacant Reflection", 0);
-            gen.add_pattern("{", 0);
-            gen.increase_indent();
-            gen.add_pattern("Charon's Gambit", 0);
-            gen.decrease_indent();
-            gen.add_pattern("}", 0);
-            gen.add_pattern("Flock's Disintegration", 0);
-            gen.add_pattern("Augur's Exaltation", 0);
-            gen.add_pattern("Hermes' Gambit", 0);
+            gen.add_pattern(PatternType::vacant_reflection, 0);
+            gen.add_pattern(PatternType::introspection, 0);
+            gen.add_pattern(PatternType::charons_gambit, 0);
+            gen.add_pattern(PatternType::retrospection, 0);
+            gen.add_pattern(PatternType::flocks_disintegration, 0);
+            gen.add_pattern(PatternType::augurs_exaltation, 0);
+            gen.add_pattern(PatternType::hermes_gambit, 0);
             
             // Generate statement
             --gen.m_stack_size;
@@ -739,13 +732,12 @@ void Generator::gen_stmt(const NodeStmt* stmt)
             gen.end_scope();
 
             // Execute next loop
-            gen.add_pattern("Gemini Decomposition", 0);
-            gen.add_pattern("Hermes' Gambit", 0);
-            gen.decrease_indent();
-            gen.add_pattern("}", 0);
+            gen.add_pattern(PatternType::gemini_decomposition, 0);
+            gen.add_pattern(PatternType::hermes_gambit, 0);
+            gen.add_pattern(PatternType::retrospection, 0);
 
-            gen.add_pattern("Gemini Decomposition", 0);
-            gen.add_pattern("Hermes' Gambit", 0);
+            gen.add_pattern(PatternType::gemini_decomposition, 0);
+            gen.add_pattern(PatternType::hermes_gambit, 0);
             gen.pop();
         }
 
@@ -802,8 +794,7 @@ void Generator::gen_func_def(const NodeFunctionDef* func_def)
     m_function_start_scope = m_scopes.size();
     m_function_num_params = params.size();
 
-    add_pattern("{", 0);
-    increase_indent();
+    add_pattern(PatternType::introspection, 0);
     begin_scope();
 
     // Treat top of the stack as params
@@ -836,8 +827,7 @@ void Generator::gen_func_def(const NodeFunctionDef* func_def)
         // Add null to stack
         nullary_reflection();
     }
-    decrease_indent();
-    add_pattern("}", 1);
+    add_pattern(PatternType::retrospection, 1);
 }
 
 void Generator::gen_prog()
@@ -916,7 +906,7 @@ void Generator::gen_prog()
     gen_func_def(m_prog->main_);
 
     // Execute main
-    add_pattern("Iris' Gambit", -1);
+    add_pattern(PatternType::iris_gambit, -1);
 }
 
 
@@ -941,7 +931,7 @@ void Generator::pop(int amount)
         return;
     }
 
-    add_pattern(std::string("Bookkeeper's Gambit: ") + std::string(amount, 'v'), -amount);
+    add_pattern(PatternType::bookkeepers_gambit, -amount, std::string(amount, 'v'));
 }
 
 void Generator::begin_scope()
@@ -964,7 +954,7 @@ void Generator::end_scopes_return(bool has_ret_value)
     size_t pop_count = m_stack_size - m_scopes[m_function_start_scope].stack_size - (has_ret_value ? 1 : 0) - 1;
 
     // Bookkeepr's Gambit all stack elements except possible ret value and jump iota
-    add_pattern(std::string("Bookkeeper's Gambit: ") + std::string(m_function_num_params, 'v') + '-' + std::string(pop_count - m_function_num_params, 'v') + (has_ret_value ? "-" : ""), 0);
+    add_pattern(PatternType::bookkeepers_gambit, 0, std::string(m_function_num_params, 'v') + '-' + std::string(pop_count - m_function_num_params, 'v') + (has_ret_value ? "-" : ""));
 }
 
 void Generator::dec_func(bool is_void, std::string name, int num_params, size_t line)
@@ -977,201 +967,191 @@ void Generator::dec_func(bool is_void, std::string name, int num_params, size_t 
     m_funcs.push_back(Func{.is_void = is_void, .name = name, .num_params = num_params, .stack_loc = m_global_vars.size() + m_funcs.size()});
 }
 
-void Generator::increase_indent()
-{
-    ++m_indent_level;
-}
-
-void Generator::decrease_indent()
-{
-    --m_indent_level;
-}
-
 
 
 void Generator::additive_distillation()
 {
-    add_pattern("Additive Distillation", -1);
+    add_pattern(PatternType::additive_distillation, -1);
 }
 
 void Generator::alidades_purification()
 {
-    add_pattern("Alidade's Purification", 0);
+    add_pattern(PatternType::alidades_purification, 0);
 }
 
 void Generator::archers_distillation()
 {
-    add_pattern("Archer's Distillation", -1);
+    add_pattern(PatternType::archers_distillation, -1);
 }
 
 void Generator::architects_distillation()
 {
-    add_pattern("Architect's Distillation", -1);
+    add_pattern(PatternType::architects_distillation, -1);
 }
 
 void Generator::augurs_purification()
 {
-    add_pattern("Augur's Purification", 0);
+    add_pattern(PatternType::augurs_purification, 0);
 }
 
 void Generator::break_block()
 {
-    add_pattern("Break Block", -1);
+    add_pattern(PatternType::break_block, -1);
 }
 
 void Generator::compass_purification()
 {
-    add_pattern("Compass' Purification", 0);
+    add_pattern(PatternType::compass_purification, 0);
 }
 
 void Generator::compass_purification_II()
 {
-    add_pattern("Compass' Purification II", 0);
+    add_pattern(PatternType::compass_purification_II, 0);
 }
 
 void Generator::conjunction_distillation()
 {
-    add_pattern("Conjunction Distillation", -1);
+    add_pattern(PatternType::conjunction_distillation, -1);
 }
 
 void Generator::conjure_light()
 {
-    add_pattern("Conjure Light", -1);
+    add_pattern(PatternType::conjure_light, -1);
 }
 
 void Generator::create_water()
 {
-    add_pattern("Create Water", -1);
+    add_pattern(PatternType::conjure_water, -1);
 }
 
 void Generator::dioscuri_gambit()
 {
-    add_pattern("Dioscuri Gambit", 2);
+    add_pattern(PatternType::dioscuri_gambit, 2);
 }
 
 void Generator::disjunction_distillation()
 {
-    add_pattern("Disjunction Distillation", -1);
+    add_pattern(PatternType::disjunction_distillation, -1);
 }
 
 void Generator::division_distillation()
 {
-    add_pattern("Division Distillation", -1);
+    add_pattern(PatternType::division_distillation, -1);
 }
 
 void Generator::equality_distillation()
 {
-    add_pattern("Equality Distillation", -1);
+    add_pattern(PatternType::equality_distillation, -1);
 }
 
 void Generator::false_reflection()
 {
-    add_pattern("False Reflection", 1);
+    add_pattern(PatternType::false_reflection, 1);
 }
 
 void Generator::fishermans_gambit()
 {
-    add_pattern("Fisherman's Gambit", -1);
+    add_pattern(PatternType::fishermans_gambit, -1);
 }
 
 void Generator::fishermans_gambit_II()
 {
-    add_pattern("Fisherman's Gambit II", 0);
+    add_pattern(PatternType::fishermans_gambit_II, 0);
 }
 
 void Generator::flocks_gambit(int num_iotas_packed)
 {
-    add_pattern("Flock's Gambit", -num_iotas_packed);
+    add_pattern(PatternType::flocks_gambit, -num_iotas_packed);
 }
 
 void Generator::flocks_reflection()
 {
-    add_pattern("Flock's Reflection", 1);
+    add_pattern(PatternType::flocks_reflection, 1);
 }
 
 void Generator::gemini_decomposition()
 {
-    add_pattern("Gemini Decomposition", 1);
+    add_pattern(PatternType::gemini_decomposition, 1);
 }
 
 void Generator::huginns_gambit()
 {
-    add_pattern("Huginn's Gambit", -1);
+    add_pattern(PatternType::huginns_gambit, -1);
 }
 
 void Generator::inequality_distillation()
 {
-    add_pattern("Inequality Distillation", -1);
+    add_pattern(PatternType::inequality_distillation, -1);
 }
 
 void Generator::integration_distillation()
 {
-    add_pattern("Integration Distillation", -1);
+    add_pattern(PatternType::integration_distillation, -1);
 }
 
 void Generator::jesters_gambit()
 {
-    add_pattern("Jester's Gambit", 0);
+    add_pattern(PatternType::jesters_gambit, 0);
 }
 
 void Generator::length_purification()
 {
-    add_pattern("Length Purification", 0);
+    add_pattern(PatternType::length_purification, 0);
 }
 
 void Generator::locators_distillation()
 {
-    add_pattern("Locator's Distillation", -1);
+    add_pattern(PatternType::locators_distillation, -1);
 }
 
 void Generator::maximus_distillation()
 {
-    add_pattern("Maximus Distillation", -1);
+    add_pattern(PatternType::maximus_distillation, -1);
 }
 
 void Generator::maximus_distillation_II()
 {
-    add_pattern("Maximus Distillation II", -1);
+    add_pattern(PatternType::maximus_distillation_II, -1);
 }
 
 void Generator::minds_reflection()
 {
-    add_pattern("Mind's Reflection", 1);
+    add_pattern(PatternType::minds_reflection, 1);
 }
 
 void Generator::minimus_distillation()
 {
-    add_pattern("Minimus Distillation", -1);
+    add_pattern(PatternType::minimus_distillation, -1);
 }
 
 void Generator::minimus_distillation_II()
 {
-    add_pattern("Minimus Distillation II", -1);
+    add_pattern(PatternType::minimus_distillation_II, -1);
 }
 
 void Generator::modulus_distillation()
 {
-    add_pattern("Modulus Distillation", -1);
+    add_pattern(PatternType::modulus_distillation, -1);
 }
 
 void Generator::multiplicative_distillation()
 {
-    add_pattern("Multiplicative Distillation", -1);
+    add_pattern(PatternType::multiplicative_distillation, -1);
 }
 
 void Generator::muninns_reflection()
 {
-    add_pattern("Muninn's Reflection", 1);
+    add_pattern(PatternType::muninns_reflection, 1);
 }
 
 void Generator::negation_purification()
 {
-    add_pattern("Negation Purification", 0);
+    add_pattern(PatternType::negation_purification, 0);
 }
 
 void Generator::nullary_reflection()
 {
-    add_pattern("Nullary Reflection", 1);
+    add_pattern(PatternType::nullary_reflection, 1);
 }
 
 void Generator::numerical_reflection(std::string value)
@@ -1181,66 +1161,66 @@ void Generator::numerical_reflection(std::string value)
         has_non_integer_num = true;
     }
 
-    add_pattern(std::string("Numerical Reflection: ") + value, 1);
+    add_pattern(PatternType::numerical_reflection, 1, value);
 }
 
 void Generator::power_distillation()
 {
-    add_pattern("Power Distillation", -1);
+    add_pattern(PatternType::power_distillation, -1);
 }
 
 void Generator::reveal()
 {
-    add_pattern("Reveal", 0);
+    add_pattern(PatternType::reveal, 0);
 }
 
 void Generator::rotation_gambit()
 {
-    add_pattern("Rotation Gambit", 0);
+    add_pattern(PatternType::rotation_gambit, 0);
 }
 
 void Generator::rotation_gambit_II()
 {
-    add_pattern("Rotation Gambit II", 0);
+    add_pattern(PatternType::rotation_gambit_II, 0);
 }
 
 void Generator::singles_purification()
 {
-    add_pattern("Single's Purification", 0);
+    add_pattern(PatternType::singles_purification, 0);
 }
 
 void Generator::selection_distillation()
 {
-    add_pattern("Selection Distillation", -1);
+    add_pattern(PatternType::selection_distillation, -1);
 }
 
 void Generator::subtractive_distillation()
 {
-    add_pattern("Subtractive Distillation", -1);
+    add_pattern(PatternType::subtractive_distillation, -1);
 }
 
 void Generator::surgeons_exaltation()
 {
-    add_pattern("Surgeon's Exaltation", -2);
+    add_pattern(PatternType::surgeons_exaltation, -2);
 }
 
 void Generator::true_reflection()
 {
-    add_pattern("True Reflection", 1);
+    add_pattern(PatternType::true_reflection, 1);
 }
 
 void Generator::vacant_reflection()
 {
-    add_pattern("Vacant Reflection", 1);
+    add_pattern(PatternType::vacant_reflection, 1);
 }
 
 void Generator::vector_exaltation()
 {
-    add_pattern("Vector Exaltation", -2);
+    add_pattern(PatternType::vector_exaltation, -2);
 }
 
-void Generator::add_pattern(std::string pattern, size_t stack_size_net)
+void Generator::add_pattern(PatternType pattern_type, size_t stack_size_net, std::optional<std::string> value)
 {
-    m_output << std::string(m_indent_level, '\t') << pattern << '\n';
+    m_output.push_back(Pattern{.type = pattern_type, .value = value});
     m_stack_size += stack_size_net;
 }
