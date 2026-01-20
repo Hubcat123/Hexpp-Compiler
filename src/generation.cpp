@@ -1021,7 +1021,7 @@ void Generator::conjure_light()
 
 void Generator::create_water()
 {
-    add_pattern(PatternType::conjure_water, -1);
+    add_pattern(PatternType::create_water, -1);
 }
 
 void Generator::dioscuri_gambit()

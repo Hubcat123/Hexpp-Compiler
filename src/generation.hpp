@@ -7,12 +7,13 @@
 
 enum PatternType {
     additive_distillation, alidades_purification, archers_distillation, architects_distillation, augurs_exaltation, augurs_purification, bookkeepers_gambit, break_block, charons_gambit,
-    compass_purification, compass_purification_II, conjunction_distillation, conjure_light, conjure_water, dioscuri_gambit, disjunction_distillation, division_distillation, equality_distillation,
+    compass_purification, compass_purification_II, conjunction_distillation, conjure_light, consideration, create_water, dioscuri_gambit, disjunction_distillation, division_distillation, equality_distillation,
     false_reflection, fishermans_gambit, fishermans_gambit_II, flocks_disintegration, flocks_gambit, flocks_reflection, gemini_decomposition, hermes_gambit, huginns_gambit, inequality_distillation,
     integration_distillation, introspection, iris_gambit, jesters_gambit, length_purification, locators_distillation, maximus_distillation, maximus_distillation_II, minds_reflection,
     minimus_distillation, minimus_distillation_II, modulus_distillation, multiplicative_distillation, muninns_reflection, negation_purification, nullary_reflection, numerical_reflection,
-    power_distillation, retrospection, reveal, rotation_gambit, rotation_gambit_II, singles_purification, selection_distillation, subtractive_distillation, surgeons_exaltation, thoths_gambit,
-    true_reflection, vacant_reflection, vector_exaltation, num_patterns
+    power_distillation, prospectors_gambit, retrospection, reveal, rotation_gambit, rotation_gambit_II, singles_purification, selection_distillation, subtractive_distillation, surgeons_exaltation,
+    thoths_gambit, true_reflection, vacant_reflection, vector_exaltation, vector_reflection_zero, vector_reflection_PX, vector_reflection_NX, vector_reflection_PY, vector_reflection_NY,
+    vector_reflection_PZ, vector_reflection_NZ, num_patterns
 };
 
 struct Pattern {
