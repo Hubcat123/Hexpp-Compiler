@@ -739,37 +739,6 @@ void Generator::gen_stmt(const NodeStmt* stmt)
 
             // Remove leftover jump iota from stack
             gen.pop();
-
-            return;
-
-            gen.add_pattern(PatternType::introspection, 0);
-            ++gen.m_stack_size;
-            gen.gen_expr(stmt_while->expr);
-
-            // Exit loop if false
-            gen.augurs_purification();
-            gen.add_pattern(PatternType::vacant_reflection, 0);
-            gen.add_pattern(PatternType::introspection, 0);
-            gen.add_pattern(PatternType::charons_gambit, 0);
-            gen.add_pattern(PatternType::retrospection, 0);
-            gen.add_pattern(PatternType::flocks_disintegration, 0);
-            gen.add_pattern(PatternType::augurs_exaltation, 0);
-            gen.add_pattern(PatternType::hermes_gambit, 0);
-            
-            // Generate statement
-            --gen.m_stack_size;
-            gen.begin_scope();
-            gen.gen_stmt(stmt_while->stmt);
-            gen.end_scope();
-
-            // Execute next loop
-            gen.add_pattern(PatternType::gemini_decomposition, 0);
-            gen.add_pattern(PatternType::hermes_gambit, 0);
-            gen.add_pattern(PatternType::retrospection, 0);
-
-            gen.add_pattern(PatternType::gemini_decomposition, 0);
-            gen.add_pattern(PatternType::hermes_gambit, 0);
-            gen.pop();
         }
 
         void operator()(const NodeScope* stmt_scope)
