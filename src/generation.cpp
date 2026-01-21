@@ -711,6 +711,37 @@ void Generator::gen_stmt(const NodeStmt* stmt)
 
         void operator()(const NodeStmtWhile* stmt_while)
         {
+            // Add jump iota to stack for loop
+            gen.vacant_reflection();
+            gen.add_pattern(PatternType::iris_gambit, 0);
+
+            // Gen condition
+            gen.gen_expr(stmt_while->expr);
+
+            // Account for condition not being on stack when generating loop body
+            --gen.m_stack_size;
+
+            // If true, gen statements and loop
+            gen.add_pattern(PatternType::introspection, 0);
+            gen.begin_scope();
+            gen.gen_stmt(stmt_while->stmt);
+            gen.end_scope();
+            gen.gemini_decomposition();
+            gen.add_pattern(PatternType::hermes_gambit, 0);
+            gen.add_pattern(PatternType::retrospection, 0);
+
+            // If false, do nothing
+            gen.vacant_reflection();
+
+            // Actually make comparison and execute
+            gen.add_pattern(PatternType::augurs_exaltation, -2);
+            gen.add_pattern(PatternType::hermes_gambit, 0);
+
+            // Remove leftover jump iota from stack
+            gen.pop();
+
+            return;
+
             gen.add_pattern(PatternType::introspection, 0);
             ++gen.m_stack_size;
             gen.gen_expr(stmt_while->expr);
