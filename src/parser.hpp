@@ -27,11 +27,6 @@ struct NodeTermVar : Node {
     std::variant<NodeVarIdent*, NodeVarListSubscript*> var;
 };
 
-struct NodeFunc : Node {
-    TokenType_ func_type;
-    std::vector<NodeExpr*> exprs;
-};
-
 struct NodeDefinedFunc : Node {
     Token ident;
     std::vector<NodeExpr*> exprs;
@@ -43,11 +38,6 @@ struct NodeTermNumLit : Node {
 
 struct NodeTermListLit : Node {
     std::vector<NodeExpr*> exprs;
-};
-
-struct NodeTermInbuiltFunc : Node {
-    bool isMemberFunc;
-    NodeFunc* func;
 };
 
 struct NodeTermCallFunc : Node {
@@ -76,7 +66,7 @@ struct NodeTermNullLit : Node {
 };
 
 struct NodeTerm : Node {
-    std::variant<NodeTermUn*, NodeTermUnPost*, NodeTermNumLit*, NodeTermListLit*, NodeTermBoolLit*, NodeTermNullLit*, NodeTermVar*, NodeTermParen*, NodeTermInbuiltFunc*, NodeTermCallFunc*> var;
+    std::variant<NodeTermUn*, NodeTermUnPost*, NodeTermNumLit*, NodeTermListLit*, NodeTermBoolLit*, NodeTermNullLit*, NodeTermVar*, NodeTermParen*, NodeTermCallFunc*> var;
 };
 
 struct NodeExprBin : Node {
@@ -109,10 +99,6 @@ struct NodeStmtWhile : Node {
     NodeStmt* stmt;
 };
 
-struct NodeStmtInbuiltFunc : Node {
-    NodeFunc* func;
-};
-
 struct NodeStmtCallFunction : Node {
     NodeDefinedFunc* func;
 };
@@ -122,7 +108,7 @@ struct NodeStmtReturn : Node {
 };
 
 struct NodeStmt : Node {
-    std::variant<NodeStmtInbuiltFunc*, NodeStmtCallFunction*, NodeStmtReturn*, NodeExpr*, NodeStmtLet*, NodeStmtIf*, NodeStmtWhile*, NodeScope*> var;
+    std::variant<NodeStmtCallFunction*, NodeStmtReturn*, NodeExpr*, NodeStmtLet*, NodeStmtIf*, NodeStmtWhile*, NodeScope*> var;
 };
 
 struct NodeGlobalLet : Node {
@@ -159,7 +145,6 @@ public:
 
     std::optional<NodeProg*> parse();
 private:
-    std::optional<NodeFunc*> parse_func(std::vector<TokenType_> valid_types);
     std::optional<NodeDefinedFunc*> parse_defined_func();
     std::optional<NodeTerm*> parse_term();
     std::optional<NodeExpr*> parse_expr(int min_prec = 0, NodeTerm* first_term = nullptr);

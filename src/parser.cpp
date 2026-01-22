@@ -11,46 +11,6 @@ std::optional<NodeProg*> Parser::parse()
     return parse_prog();
 }
 
-std::optional<NodeFunc*> Parser::parse_func(std::vector<TokenType_> valid_types)
-{
-    // Check if function is valid type
-    if (peek().has_value() && std::find(valid_types.cbegin(), valid_types.cend(), peek().value().type) != valid_types.cend() &&
-        peek(1).has_value() && peek(1).value().type == TokenType_::paren_open)
-    {
-        size_t line = peek().value().line;
-
-        // Consume starting tokens
-        TokenType_ func_type = consume().type;
-        consume();
-
-        std::vector<NodeExpr*> exprs{};
-
-        // Parse expresion
-        while (std::optional<NodeExpr*> node_expr = parse_expr())
-        {
-            exprs.push_back(node_expr.value());
-
-            if (!peek().has_value() || peek().value().type != TokenType_::comma)
-            {
-                break;
-            }
-
-            consume();
-        }
-
-        // Check for closing tokens
-        try_consume(TokenType_::paren_close, ')');
-
-        NodeFunc* stmt_func = m_allocator.alloc<NodeFunc>();
-        stmt_func->func_type = func_type;
-        stmt_func->exprs = exprs;
-        stmt_func->line = line;
-        return stmt_func;
-    }
-
-    return {};
-}
-
 std::optional<NodeDefinedFunc*> Parser::parse_defined_func()
 {
     // Check if function is valid type
@@ -178,7 +138,7 @@ std::optional<NodeTerm*> Parser::parse_term()
             node_term->line = line;
             return node_term;
         }
-        // Check if term is a user-defined function
+        // Check if term is a function
         else if (std::optional<NodeDefinedFunc*> func = parse_defined_func())
         {
             NodeTermCallFunc* call_func = m_allocator.alloc<NodeTermCallFunc>();
@@ -288,21 +248,6 @@ std::optional<NodeTerm*> Parser::parse_term()
             {
                 compilation_error("Expected expression", peek(-1).has_value() ? peek(-1).value().line : 1);
             }
-        }
-        // Check if term is an inbuilt function
-        else if (std::optional<NodeFunc*> func = parse_func(
-            { TokenType_::pow, TokenType_::vec, TokenType_::self, TokenType_::block_raycast, TokenType_::block_raycast_from, TokenType_::block_normal_raycast, TokenType_::block_normal_raycast_from,
-            TokenType_::pos, TokenType_::forward, TokenType_::eye_pos, TokenType_::add, TokenType_::size, TokenType_::find, TokenType_::stack_size, TokenType_::dump_stack }))
-        {
-            const std::vector<TokenType_> memberFunctionTypes = { TokenType_::pos, TokenType_::forward, TokenType_::eye_pos, TokenType_::add, TokenType_::size, TokenType_::find };
-            NodeTermInbuiltFunc* node_term_func = m_allocator.alloc<NodeTermInbuiltFunc>();
-            node_term_func->isMemberFunc = std::find(memberFunctionTypes.cbegin(), memberFunctionTypes.cend(), func.value()->func_type) != memberFunctionTypes.cend();
-            node_term_func->func = func.value();
-            node_term_func->line = line;
-            NodeTerm* term = m_allocator.alloc<NodeTerm>();
-            term->var = node_term_func;
-            term->line = line;
-            return term;
         }
     }
 
@@ -417,22 +362,8 @@ std::optional<NodeStmt*> Parser::parse_stmt()
     {
         size_t line = peek().value().line;
 
-        // Check if statement is inbuilt function
-        if (std::optional<NodeFunc*> func = parse_func(
-            { TokenType_::print, TokenType_::mine, TokenType_::create_light, TokenType_::create_water }))
-        {
-            try_consume(TokenType_::semi, ';');
-
-            NodeStmtInbuiltFunc* node_stmt_func = m_allocator.alloc<NodeStmtInbuiltFunc>();
-            node_stmt_func->func = func.value();
-            node_stmt_func->line = line;
-            NodeStmt* node_stmt = m_allocator.alloc<NodeStmt>();
-            node_stmt->var = node_stmt_func;
-            node_stmt->line = line;
-            return node_stmt;
-        }
-        // Check if statement is user-defined function
-        else if (std::optional<NodeDefinedFunc*> defined_func = parse_defined_func())
+        // Check if statement is a function call
+        if (std::optional<NodeDefinedFunc*> defined_func = parse_defined_func())
         {
             // If has a semi, make it a stmt call
             if (peek().has_value() && peek().value().type == TokenType_::semi)
@@ -447,7 +378,7 @@ std::optional<NodeStmt*> Parser::parse_stmt()
                 stmt->line = line;
                 return stmt;
             }
-            // If no semi, make it an expr
+            // If no semi, make it an expr call
             else
             {
                 NodeTermCallFunc* call_func = m_allocator.alloc<NodeTermCallFunc>();

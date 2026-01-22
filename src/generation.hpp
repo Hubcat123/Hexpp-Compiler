@@ -143,7 +143,7 @@ public:
     std::vector<Pattern> generate();
 
     void gen_assignment(const NodeTermVar* var, const std::variant<const NodeExpr*, const float> value, TokenType_ op, size_t line, bool is_post = false);
-    void gen_func(const NodeFunc* func);
+    bool gen_inbuilt_func(const NodeDefinedFunc* func, bool is_void, bool is_member);
     // Returns whether func is void func
     bool gen_defined_func(const NodeDefinedFunc* func);
     void gen_bin_expr(const NodeExprBin* expr_bin);

@@ -170,92 +170,148 @@ void Generator::gen_assignment(const NodeTermVar* term_var, const std::variant<c
     }
 }
 
-void Generator::gen_func(const NodeFunc* func)
+bool Generator::gen_inbuilt_func(const NodeDefinedFunc* func, bool is_void, bool is_member)
 {
-    switch (func->func_type)
-    {
-    case TokenType_::print:
+    std::string func_name = func->ident.value.value();
+    if (func_name == "print") {
+        if (!is_void || is_member) {
+            return false;
+        }
         try_gen_x_exprs(func->exprs, 1, func->line);
         reveal();
         pop();
-        break;
-    case TokenType_::pow:
+        return true;
+    } else if (func_name == "pow") {
+        if (is_void || is_member) {
+            return false;
+        }
         try_gen_x_exprs(func->exprs, 2, func->line);
         power_distillation();
-        break;
-    case TokenType_::vec:
+        return true;
+    } else if (func_name == "vec") {
+        if (is_void || is_member) {
+            return false;
+        }
         try_gen_x_exprs(func->exprs, 3, func->line);
         vector_exaltation();
-        break;
-    case TokenType_::self:
+        return true;
+    } else if (func_name == "self") {
+        if (is_void || is_member) {
+            return false;
+        }
         try_gen_x_exprs(func->exprs, 0, func->line);
         minds_reflection();
-        break;
-    case TokenType_::pos:
+        return true;
+    } else if (func_name == "pos") {
+        if (is_void || !is_member) {
+            return false;
+        }
         try_gen_x_exprs(func->exprs, 0, func->line);
         compass_purification_II();
-        break;
-    case TokenType_::mine:
+        return true;
+    } else if (func_name == "mine") {
+        if (!is_void || is_member) {
+            return false;
+        }
         try_gen_x_exprs(func->exprs, 1, func->line);
         break_block();
-        break;
-    case TokenType_::forward:
+        return true;
+    } else if (func_name == "forward") {
+        if (is_void || !is_member) {
+            return false;
+        }
         try_gen_x_exprs(func->exprs, 0, func->line);
         alidades_purification();
-        break;
-    case TokenType_::eye_pos:
+        return true;
+    } else if (func_name == "eye_pos") {
+        if (is_void || !is_member) {
+            return false;
+        }
         try_gen_x_exprs(func->exprs, 0, func->line);
         compass_purification();
-        break;
-    case TokenType_::block_raycast:
+        return true;
+    } else if (func_name == "block_raycast") {
+        if (is_void || is_member) {
+            return false;
+        }
         try_gen_x_exprs(func->exprs, 2, func->line);
         archers_distillation();
-        break;
-    case TokenType_::block_raycast_from:
+        return true;
+    } else if (func_name == "block_raycast_from") {
+        if (is_void || is_member) {
+            return false;
+        }
         try_gen_x_exprs(func->exprs, 1, func->line);
         gemini_decomposition();
         compass_purification();
         jesters_gambit();
         alidades_purification();
         archers_distillation();
-        break;
-    case TokenType_::block_normal_raycast:
+        return true;
+    } else if (func_name == "block_normal_raycast") {
+        if (is_void || is_member) {
+            return false;
+        }
         try_gen_x_exprs(func->exprs, 2, func->line);
         architects_distillation();
-        break;
-    case TokenType_::block_normal_raycast_from:
+        return true;
+    } else if (func_name == "block_normal_raycast_from") {
+        if (is_void || is_member) {
+            return false;
+        }
         try_gen_x_exprs(func->exprs, 1, func->line);
         gemini_decomposition();
         compass_purification();
         jesters_gambit();
         alidades_purification();
         architects_distillation();
-        break;
-    case TokenType_::create_light:
+        return true;
+    } else if (func_name == "create_light") {
+        if (!is_void || is_member) {
+            return false;
+        }
         try_gen_x_exprs(func->exprs, 1, func->line);
         conjure_light();
-        break;
-    case TokenType_::create_water:
+        return true;
+    } else if (func_name == "create_water") {
+        if (!is_void || is_member) {
+            return false;
+        }
         try_gen_x_exprs(func->exprs, 1, func->line);
         create_water();
-        break;
-    case TokenType_::add:
+        return true;
+    } else if (func_name == "add") {
+        if (is_void || !is_member) {
+            return false;
+        }
         try_gen_x_exprs(func->exprs, 1, func->line);
         integration_distillation();
-        break;
-    case TokenType_::size:
+        return true;
+    } else if (func_name == "size" || func_name == "length" || func_name == "abs") {
+        if (is_void || !is_member) {
+            return false;
+        }
         try_gen_x_exprs(func->exprs, 0, func->line);
         length_purification();
-        break;
-    case TokenType_::find:
+        return true;
+    } else if (func_name == "find") {
+        if (is_void || !is_member) {
+            return false;
+        }
         try_gen_x_exprs(func->exprs, 1, func->line);
         locators_distillation();
-        break;
-    case TokenType_::stack_size:
+        return true;
+    } else if (func_name == "stack_size") {
+        if (is_void || is_member) {
+            return false;
+        }
         try_gen_x_exprs(func->exprs, 0, func->line);
         flocks_reflection();
-        break;
-    case TokenType_::dump_stack:
+        return true;
+    } else if (func_name == "dump_stack") {
+        if (is_void || is_member) {
+            return false;
+        }
         try_gen_x_exprs(func->exprs, 0, func->line);
         add_pattern(PatternType::introspection, 0);
         pop();
@@ -266,8 +322,9 @@ void Generator::gen_func(const NodeFunc* func)
         singles_purification();
         add_pattern(PatternType::thoths_gambit, 0);
         add_pattern(PatternType::flocks_disintegration, 0);
-        break;
+        return true;
     }
+    return false;
 }
 
 bool Generator::gen_defined_func(const NodeDefinedFunc* func)
@@ -337,16 +394,14 @@ void Generator::gen_bin_expr(const NodeExprBin* expr_bin)
         {
             NodeTerm* term = std::get<NodeTerm*>(expr_bin->rhs->var);
             // If term is a function
-            if (std::holds_alternative<NodeTermInbuiltFunc*>(term->var))
+            if (std::holds_alternative<NodeTermCallFunc*>(term->var))
             {
-                NodeTermInbuiltFunc* term_func = std::get<NodeTermInbuiltFunc*>(term->var);
+                NodeTermCallFunc* term_func = std::get<NodeTermCallFunc*>(term->var);
 
-                if (!term_func->isMemberFunc)
+                if (!gen_inbuilt_func(term_func->func, false, true))
                 {
                     compilation_error("Expected member function", expr_bin->line);
                 }
-
-                gen_func(term_func->func);
                 return;
             }
             else
@@ -564,21 +619,11 @@ void Generator::gen_term(const NodeTerm* term)
             gen.gen_expr(term_paren->expr);
         }
 
-        void operator()(const NodeTermInbuiltFunc* term_func)
-        {
-            if (term_func->isMemberFunc)
-            {
-                compilation_error("Must call member functions on a member", term_func->line);
-            }
-
-            gen.gen_func(term_func->func);
-        }
-
         void operator()(const NodeTermCallFunc* call_func)
         {
-            if (gen.gen_defined_func(call_func->func))
+            if (!gen.gen_inbuilt_func(call_func->func, false, false) && gen.gen_defined_func(call_func->func))
             {
-                compilation_error("Calling void function as return function", call_func->line);
+                compilation_error("Calling void function as non-void function", call_func->line);
             }
         }
     };
@@ -614,16 +659,15 @@ void Generator::gen_stmt(const NodeStmt* stmt)
         Generator& gen;
         StmtVisitor(Generator& _gen) :gen(_gen) {}
 
-        void operator()(const NodeStmtInbuiltFunc* stmt_func)
-        {
-            gen.gen_func(stmt_func->func);
-        }
-
         void operator()(const NodeStmtCallFunction* call_func)
         {
-            if (!gen.gen_defined_func(call_func->func))
+            // Try to gen void inbuilt func first, then non-void inbuilt func, then defined func
+            if (!gen.gen_inbuilt_func(call_func->func, true, false))
             {
-                gen.pop();
+                if (gen.gen_inbuilt_func(call_func->func, false, false) || !gen.gen_defined_func(call_func->func))
+                {
+                    gen.pop();
+                }
             }
         }
 

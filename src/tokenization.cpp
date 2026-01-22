@@ -50,7 +50,6 @@ std::vector<Token> Tokenizer::tokenize()
     };
 
     const std::map<std::string, TokenType_> identifierTokenMap {
-        {"print", TokenType_::print},
         {"let", TokenType_::let},
         {"if", TokenType_::if_},
         {"else", TokenType_::else_},
@@ -59,27 +58,6 @@ std::vector<Token> Tokenizer::tokenize()
         {"void", TokenType_::void_},
         {"ret", TokenType_::ret},
         {"return", TokenType_::return_},
-
-        {"pow", TokenType_::pow},
-        {"vec", TokenType_::vec},
-        {"self", TokenType_::self},
-        {"pos", TokenType_::pos},
-        {"mine", TokenType_::mine},
-        {"forward", TokenType_::forward},
-        {"eye_pos", TokenType_::eye_pos},
-        {"block_raycast", TokenType_::block_raycast},
-        {"block_raycast_from", TokenType_::block_raycast_from},
-        {"block_normal_raycast", TokenType_::block_normal_raycast},
-        {"block_normal_raycast_from", TokenType_::block_normal_raycast_from},
-        {"create_light", TokenType_::create_light},
-        {"create_water", TokenType_::create_water},
-        {"add", TokenType_::add},
-        {"size", TokenType_::size},
-        {"length", TokenType_::size},
-        {"abs", TokenType_::size},
-        {"find", TokenType_::find},
-        {"stack_size", TokenType_::stack_size},
-        {"dump_stack", TokenType_::dump_stack},
     };
 
     // Loop through all characters in string
