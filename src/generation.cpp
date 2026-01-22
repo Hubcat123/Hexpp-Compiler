@@ -234,37 +234,35 @@ bool Generator::gen_inbuilt_func(const NodeDefinedFunc* func, bool is_void, bool
         if (is_void || is_member) {
             return false;
         }
-        try_gen_x_exprs(func->exprs, 2, func->line);
-        archers_distillation();
-        return true;
-    } else if (func_name == "block_raycast_from") {
-        if (is_void || is_member) {
-            return false;
+        // Raycast from an entity
+        if (func->exprs.size() == 1) {
+            try_gen_x_exprs(func->exprs, 1, func->line);
+            gemini_decomposition();
+            compass_purification();
+            jesters_gambit();
+            alidades_purification();
+            archers_distillation();
+        } else {
+            try_gen_x_exprs(func->exprs, 2, func->line);
+            archers_distillation();
         }
-        try_gen_x_exprs(func->exprs, 1, func->line);
-        gemini_decomposition();
-        compass_purification();
-        jesters_gambit();
-        alidades_purification();
-        archers_distillation();
         return true;
     } else if (func_name == "block_normal_raycast") {
         if (is_void || is_member) {
             return false;
         }
-        try_gen_x_exprs(func->exprs, 2, func->line);
-        architects_distillation();
-        return true;
-    } else if (func_name == "block_normal_raycast_from") {
-        if (is_void || is_member) {
-            return false;
+        // Raycast from an entity
+        if (func->exprs.size() == 1) {
+            try_gen_x_exprs(func->exprs, 1, func->line);
+            gemini_decomposition();
+            compass_purification();
+            jesters_gambit();
+            alidades_purification();
+            architects_distillation();
+        } else {
+            try_gen_x_exprs(func->exprs, 2, func->line);
+            architects_distillation();
         }
-        try_gen_x_exprs(func->exprs, 1, func->line);
-        gemini_decomposition();
-        compass_purification();
-        jesters_gambit();
-        alidades_purification();
-        architects_distillation();
         return true;
     } else if (func_name == "create_light") {
         if (!is_void || is_member) {
@@ -280,7 +278,7 @@ bool Generator::gen_inbuilt_func(const NodeDefinedFunc* func, bool is_void, bool
         try_gen_x_exprs(func->exprs, 1, func->line);
         create_water();
         return true;
-    } else if (func_name == "add") {
+    } else if (func_name == "with") {
         if (is_void || !is_member) {
             return false;
         }
