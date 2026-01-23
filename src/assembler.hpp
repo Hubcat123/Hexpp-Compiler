@@ -22,7 +22,7 @@ private:
         "Logarithmic Distillation", "Make Note", "Maximus Distillation", "Maximus Distillation II", "Mind's Reflection", "Minimus Distillation",
         "Minimus Distillation II", "Modulus Distillation", "Multiplicative Distillation", "Muninn's Reflection", "Negation Purification", "Nullary Reflection",
         "Numerical Reflection", "Pace Purification", "Power Distillation", "Prospector's Gambit", "Retrospection", "Reveal", "Rotation Gambit", "Rotation Gambit II",
-        "Selection Distillation", "Selection Exaltation", "Speaker's Decomposition", "Speaker's Distillation", "Single's Purification", "Stadiometer's Purification",
+        "Scout's Distillation", "Selection Distillation", "Selection Exaltation", "Speaker's Decomposition", "Speaker's Distillation", "Single's Purification", "Stadiometer's Purification",
         "Subtractive Distillation", "Sine Purification", "Swindler's Gambit", "Summon Lightning", "Summon Rain", "Surgeon's Exaltation", "Thanatos' Reflection",
         "Thoth's Gambit", "True Reflection", "Vacant Reflection", "Vector Disintegration", "Vector Exaltation", "Vector Reflection -X", "Vector Reflection -Y",
         "Vector Reflection -Z", "Vector Reflection +X", "Vector Reflection +Y", "Vector Reflection +Z", "Vector Reflection Zero", "Wayfarer's Flight",

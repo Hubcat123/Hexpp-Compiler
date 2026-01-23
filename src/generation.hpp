@@ -91,6 +91,7 @@ enum PatternType {
     reveal,
     rotation_gambit,
     rotation_gambit_II,
+    scouts_distillation,
     selection_distillation,
     selection_exaltation,
     speakers_decomposition,
@@ -211,8 +212,9 @@ public:
     void rotation_gambit();
     // 1st becomes 3rd
     void rotation_gambit_II();
-    void singles_purification();
+    void scouts_distillation();
     void selection_distillation();
+    void singles_purification();
     void subtractive_distillation();
     void surgeons_exaltation();
     void true_reflection();

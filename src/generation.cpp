@@ -173,155 +173,139 @@ void Generator::gen_assignment(const NodeTermVar* term_var, const std::variant<c
 bool Generator::gen_inbuilt_func(const NodeDefinedFunc* func, bool is_void, bool is_member)
 {
     std::string func_name = func->ident.value.value();
-    if (func_name == "print") {
-        if (!is_void || is_member) {
-            return false;
+
+    if (is_void)
+    {
+        if (is_member)
+        { }
+        else
+        {
+            if (func_name == "print") {
+                try_gen_x_exprs(func->exprs, 1, func->line);
+                reveal();
+                pop();
+                return true;
+            } else if (func_name == "mine") {
+                try_gen_x_exprs(func->exprs, 1, func->line);
+                break_block();
+                return true;
+            } else if (func_name == "create_light") {
+                try_gen_x_exprs(func->exprs, 1, func->line);
+                conjure_light();
+                return true;
+            } else if (func_name == "create_water") {
+                try_gen_x_exprs(func->exprs, 1, func->line);
+                create_water();
+                return true;
+            }
         }
-        try_gen_x_exprs(func->exprs, 1, func->line);
-        reveal();
-        pop();
-        return true;
-    } else if (func_name == "pow") {
-        if (is_void || is_member) {
-            return false;
-        }
-        try_gen_x_exprs(func->exprs, 2, func->line);
-        power_distillation();
-        return true;
-    } else if (func_name == "vec") {
-        if (is_void || is_member) {
-            return false;
-        }
-        try_gen_x_exprs(func->exprs, 3, func->line);
-        vector_exaltation();
-        return true;
-    } else if (func_name == "self") {
-        if (is_void || is_member) {
-            return false;
-        }
-        try_gen_x_exprs(func->exprs, 0, func->line);
-        minds_reflection();
-        return true;
-    } else if (func_name == "pos") {
-        if (is_void || !is_member) {
-            return false;
-        }
-        try_gen_x_exprs(func->exprs, 0, func->line);
-        compass_purification_II();
-        return true;
-    } else if (func_name == "mine") {
-        if (!is_void || is_member) {
-            return false;
-        }
-        try_gen_x_exprs(func->exprs, 1, func->line);
-        break_block();
-        return true;
-    } else if (func_name == "forward") {
-        if (is_void || !is_member) {
-            return false;
-        }
-        try_gen_x_exprs(func->exprs, 0, func->line);
-        alidades_purification();
-        return true;
-    } else if (func_name == "eye_pos") {
-        if (is_void || !is_member) {
-            return false;
-        }
-        try_gen_x_exprs(func->exprs, 0, func->line);
-        compass_purification();
-        return true;
-    } else if (func_name == "block_raycast") {
-        if (is_void || is_member) {
-            return false;
-        }
-        // Raycast from an entity
-        if (func->exprs.size() == 1) {
-            try_gen_x_exprs(func->exprs, 1, func->line);
-            gemini_decomposition();
-            compass_purification();
-            jesters_gambit();
-            alidades_purification();
-            archers_distillation();
-        } else {
-            try_gen_x_exprs(func->exprs, 2, func->line);
-            archers_distillation();
-        }
-        return true;
-    } else if (func_name == "block_normal_raycast") {
-        if (is_void || is_member) {
-            return false;
-        }
-        // Raycast from an entity
-        if (func->exprs.size() == 1) {
-            try_gen_x_exprs(func->exprs, 1, func->line);
-            gemini_decomposition();
-            compass_purification();
-            jesters_gambit();
-            alidades_purification();
-            architects_distillation();
-        } else {
-            try_gen_x_exprs(func->exprs, 2, func->line);
-            architects_distillation();
-        }
-        return true;
-    } else if (func_name == "create_light") {
-        if (!is_void || is_member) {
-            return false;
-        }
-        try_gen_x_exprs(func->exprs, 1, func->line);
-        conjure_light();
-        return true;
-    } else if (func_name == "create_water") {
-        if (!is_void || is_member) {
-            return false;
-        }
-        try_gen_x_exprs(func->exprs, 1, func->line);
-        create_water();
-        return true;
-    } else if (func_name == "with") {
-        if (is_void || !is_member) {
-            return false;
-        }
-        try_gen_x_exprs(func->exprs, 1, func->line);
-        integration_distillation();
-        return true;
-    } else if (func_name == "size" || func_name == "length" || func_name == "abs") {
-        if (is_void || !is_member) {
-            return false;
-        }
-        try_gen_x_exprs(func->exprs, 0, func->line);
-        length_purification();
-        return true;
-    } else if (func_name == "find") {
-        if (is_void || !is_member) {
-            return false;
-        }
-        try_gen_x_exprs(func->exprs, 1, func->line);
-        locators_distillation();
-        return true;
-    } else if (func_name == "stack_size") {
-        if (is_void || is_member) {
-            return false;
-        }
-        try_gen_x_exprs(func->exprs, 0, func->line);
-        flocks_reflection();
-        return true;
-    } else if (func_name == "dump_stack") {
-        if (is_void || is_member) {
-            return false;
-        }
-        try_gen_x_exprs(func->exprs, 0, func->line);
-        add_pattern(PatternType::introspection, 0);
-        pop();
-        flocks_reflection();
-        add_pattern(PatternType::flocks_gambit, 0);
-        add_pattern(PatternType::retrospection, 0);
-        numerical_reflection("0");
-        singles_purification();
-        add_pattern(PatternType::thoths_gambit, 0);
-        add_pattern(PatternType::flocks_disintegration, 0);
-        return true;
     }
+    else
+    {
+        if (is_member)
+        {
+            if (func_name == "pos") {
+                try_gen_x_exprs(func->exprs, 0, func->line);
+                compass_purification_II();
+                return true;
+            } else if (func_name == "forward") {
+                try_gen_x_exprs(func->exprs, 0, func->line);
+                alidades_purification();
+                return true;
+            } else if (func_name == "eye_pos") {
+                try_gen_x_exprs(func->exprs, 0, func->line);
+                compass_purification();
+                return true;
+            } else if (func_name == "with") {
+                try_gen_x_exprs(func->exprs, 1, func->line);
+                integration_distillation();
+                return true;
+            } else if (func_name == "size" || func_name == "length" || func_name == "abs") {
+                try_gen_x_exprs(func->exprs, 0, func->line);
+                length_purification();
+                return true;
+            } else if (func_name == "find") {
+                try_gen_x_exprs(func->exprs, 1, func->line);
+                locators_distillation();
+                return true;
+            }
+        }
+        else
+        {
+            if (func_name == "pow") {
+                try_gen_x_exprs(func->exprs, 2, func->line);
+                power_distillation();
+                return true;
+            } else if (func_name == "vec") {
+                try_gen_x_exprs(func->exprs, 3, func->line);
+                vector_exaltation();
+                return true;
+            } else if (func_name == "self") {
+                try_gen_x_exprs(func->exprs, 0, func->line);
+                minds_reflection();
+                return true;
+            } else if (func_name == "block_raycast") {
+                // Raycast from an entity
+                if (func->exprs.size() == 1) {
+                    try_gen_x_exprs(func->exprs, 1, func->line);
+                    gemini_decomposition();
+                    compass_purification();
+                    jesters_gambit();
+                    alidades_purification();
+                    archers_distillation();
+                } else {
+                    try_gen_x_exprs(func->exprs, 2, func->line);
+                    archers_distillation();
+                }
+                return true;
+            } else if (func_name == "block_normal_raycast") {
+                // Raycast from an entity
+                if (func->exprs.size() == 1) {
+                    try_gen_x_exprs(func->exprs, 1, func->line);
+                    gemini_decomposition();
+                    compass_purification();
+                    jesters_gambit();
+                    alidades_purification();
+                    architects_distillation();
+                } else {
+                    try_gen_x_exprs(func->exprs, 2, func->line);
+                    architects_distillation();
+                }
+                return true;
+            } else if (func_name == "entity_raycast") {
+                // Raycast from an entity
+                if (func->exprs.size() == 1) {
+                    try_gen_x_exprs(func->exprs, 1, func->line);
+                    gemini_decomposition();
+                    compass_purification();
+                    jesters_gambit();
+                    alidades_purification();
+                    scouts_distillation();
+                } else {
+                    try_gen_x_exprs(func->exprs, 2, func->line);
+                    scouts_distillation();
+                }
+                return true;
+            } else if (func_name == "stack_size") {
+                try_gen_x_exprs(func->exprs, 0, func->line);
+                flocks_reflection();
+                return true;
+            } else if (func_name == "dump_stack") {
+                try_gen_x_exprs(func->exprs, 0, func->line);
+                add_pattern(PatternType::introspection, 0);
+                pop();
+                flocks_reflection();
+                add_pattern(PatternType::flocks_gambit, 0);
+                add_pattern(PatternType::retrospection, 0);
+                numerical_reflection("0");
+                singles_purification();
+                add_pattern(PatternType::thoths_gambit, 0);
+                add_pattern(PatternType::flocks_disintegration, 0);
+                return true;
+            }
+        }
+    }
+
     return false;
 }
 
@@ -1226,14 +1210,19 @@ void Generator::rotation_gambit_II()
     add_pattern(PatternType::rotation_gambit_II, 0);
 }
 
-void Generator::singles_purification()
+void Generator::scouts_distillation()
 {
-    add_pattern(PatternType::singles_purification, 0);
+    add_pattern(PatternType::scouts_distillation, -1);
 }
 
 void Generator::selection_distillation()
 {
     add_pattern(PatternType::selection_distillation, -1);
+}
+
+void Generator::singles_purification()
+{
+    add_pattern(PatternType::singles_purification, 0);
 }
 
 void Generator::subtractive_distillation()
