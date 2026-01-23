@@ -208,17 +208,70 @@ bool Generator::gen_inbuilt_func(const NodeDefinedFunc* func, bool is_void, bool
                 try_gen_x_exprs(func->exprs, 0, func->line);
                 compass_purification_II();
                 return true;
-            } else if (func_name == "forward") {
-                try_gen_x_exprs(func->exprs, 0, func->line);
-                alidades_purification();
-                return true;
             } else if (func_name == "eye_pos") {
                 try_gen_x_exprs(func->exprs, 0, func->line);
                 compass_purification();
                 return true;
-            } else if (func_name == "with") {
+            } else if (func_name == "height") {
+                try_gen_x_exprs(func->exprs, 0, func->line);
+                stadiometers_purification();
+                return true;
+            } else if (func_name == "velocity") {
+                try_gen_x_exprs(func->exprs, 0, func->line);
+                pace_purification();
+                return true;
+            } else if (func_name == "forward") {
+                try_gen_x_exprs(func->exprs, 0, func->line);
+                alidades_purification();
+                return true;
+            } else if (func_name == "with" || func_name == "with_back") {
                 try_gen_x_exprs(func->exprs, 1, func->line);
                 integration_distillation();
+                return true;
+            } else if (func_name == "sublist") {
+                try_gen_x_exprs(func->exprs, 2, func->line);
+                selection_exaltation();
+                return true;
+            } else if (func_name == "get_back") {
+                try_gen_x_exprs(func->exprs, 0, func->line);
+                derivation_decomposition();
+                add_pattern(PatternType::bookkeepers_gambit, -1, "v-");
+                return true;
+            } else if (func_name == "reversed") {
+                try_gen_x_exprs(func->exprs, 0, func->line);
+                retrograde_purification();
+                return true;
+            } else if (func_name == "without_at") {
+                try_gen_x_exprs(func->exprs, 1, func->line);
+                excisors_distillation();
+                return true;
+            } else if (func_name == "with_front") {
+                try_gen_x_exprs(func->exprs, 1, func->line);
+                speakers_distillation();
+                return true;
+            } else if (func_name == "get_front") {
+                try_gen_x_exprs(func->exprs, 0, func->line);
+                speakers_decomposition();
+                add_pattern(PatternType::bookkeepers_gambit, -1, "v-");
+                return true;
+            } else if (func_name == "x") {
+                try_gen_x_exprs(func->exprs, 0, func->line);
+                vector_disintegration();
+                pop(2);
+                return true;
+            } else if (func_name == "y") {
+                try_gen_x_exprs(func->exprs, 0, func->line);
+                vector_disintegration();
+                add_pattern(PatternType::bookkeepers_gambit, -2, "v-v");
+                return true;
+            } else if (func_name == "z") {
+                try_gen_x_exprs(func->exprs, 0, func->line);
+                vector_disintegration();
+                add_pattern(PatternType::bookkeepers_gambit, -2, "vv-");
+                return true;
+            } else if (func_name == "normalized" || func_name == "sign") {
+                try_gen_x_exprs(func->exprs, 0, func->line);
+                axial_purification();
                 return true;
             } else if (func_name == "size" || func_name == "length" || func_name == "abs") {
                 try_gen_x_exprs(func->exprs, 0, func->line);
@@ -236,9 +289,87 @@ bool Generator::gen_inbuilt_func(const NodeDefinedFunc* func, bool is_void, bool
                 try_gen_x_exprs(func->exprs, 2, func->line);
                 power_distillation();
                 return true;
+            } else if (func_name == "floor") {
+                try_gen_x_exprs(func->exprs, 1, func->line);
+                floor_purification();
+                return true;
+            } else if (func_name == "ceil") {
+                try_gen_x_exprs(func->exprs, 1, func->line);
+                ceiling_purification();
+                return true;
+            } else if (func_name == "min") {
+                try_gen_x_exprs(func->exprs, 2, func->line);
+                dioscuri_gambit();
+                minimus_distillation();
+                rotation_gambit_II();
+                augurs_exaltation();
+                return true;
+            } else if (func_name == "max") {
+                try_gen_x_exprs(func->exprs, 2, func->line);
+                dioscuri_gambit();
+                maximus_distillation();
+                rotation_gambit_II();
+                augurs_exaltation();
+                return true;
+            } else if (func_name == "as_bool") {
+                try_gen_x_exprs(func->exprs, 1, func->line);
+                augurs_purification();
+                return true;
+            } else if (func_name == "random") {
+                if (func->exprs.size() == 0) {
+                    entropy_reflection();
+                } else {
+                    try_gen_x_exprs(func->exprs, 2, func->line);
+                    prospectors_gambit();
+                    subtractive_distillation();
+                    entropy_reflection();
+                    multiplicative_distillation();
+                    additive_distillation();
+                }
+                return true;
+            } else if (func_name == "tau") {
+                try_gen_x_exprs(func->exprs, 0, func->line);
+                circle_reflection();
+                return true;
+            } else if (func_name == "pi") {
+                try_gen_x_exprs(func->exprs, 0, func->line);
+                arcs_reflection();
+                return true;
+            } else if (func_name == "e") {
+                try_gen_x_exprs(func->exprs, 0, func->line);
+                eulers_reflection();
+                return true;
             } else if (func_name == "vec") {
                 try_gen_x_exprs(func->exprs, 3, func->line);
                 vector_exaltation();
+                return true;
+            } else if (func_name == "vec0") {
+                try_gen_x_exprs(func->exprs, 0, func->line);
+                vector_reflection_zero();
+                return true;
+            } else if (func_name == "vecXP") {
+                try_gen_x_exprs(func->exprs, 0, func->line);
+                vector_reflection_PX();
+                return true;
+            } else if (func_name == "vecXN") {
+                try_gen_x_exprs(func->exprs, 0, func->line);
+                vector_reflection_NX();
+                return true;
+            } else if (func_name == "vecYP" || func_name == "vec_up") {
+                try_gen_x_exprs(func->exprs, 0, func->line);
+                vector_reflection_PY();
+                return true;
+            } else if (func_name == "vecYN" || func_name == "vec_down") {
+                try_gen_x_exprs(func->exprs, 0, func->line);
+                vector_reflection_NY();
+                return true;
+            } else if (func_name == "vecZP") {
+                try_gen_x_exprs(func->exprs, 0, func->line);
+                vector_reflection_PZ();
+                return true;
+            } else if (func_name == "vecZN") {
+                try_gen_x_exprs(func->exprs, 0, func->line);
+                vector_reflection_NZ();
                 return true;
             } else if (func_name == "self") {
                 try_gen_x_exprs(func->exprs, 0, func->line);
@@ -913,17 +1044,21 @@ void Generator::gen_prog()
         gen_func_def(func_def);
     }
 
-    // Store functions and global vars in list for raven's mind
+    // Store functions and global vars in list in raven's mind
     if (m_global_vars.size() + m_funcs.size() > 0)
     {
-        numerical_reflection(std::to_string(m_global_vars.size() + m_funcs.size()));
-        flocks_gambit(m_global_vars.size() + m_funcs.size());
+        if (m_global_vars.size() + m_funcs.size() == 1)
+        {
+            singles_purification();
+        }
+        else
+        {
+            numerical_reflection(std::to_string(m_global_vars.size() + m_funcs.size()));
+            flocks_gambit(m_global_vars.size() + m_funcs.size());
+        }
+
+        huginns_gambit();
     }
-    else
-    {
-        vacant_reflection();
-    }
-    huginns_gambit();
 
     // Remove accounting of jump iota so it isn't double counted
     --m_stack_size;
@@ -1015,14 +1150,39 @@ void Generator::architects_distillation()
     add_pattern(PatternType::architects_distillation, -1);
 }
 
+void Generator::arcs_reflection()
+{
+    add_pattern(PatternType::arcs_reflection, 1);
+}
+
+void Generator::augurs_exaltation()
+{
+    add_pattern(PatternType::augurs_exaltation, -2);
+}
+
 void Generator::augurs_purification()
 {
     add_pattern(PatternType::augurs_purification, 0);
 }
 
+void Generator::axial_purification()
+{
+    add_pattern(PatternType::axial_purification, 0);
+}
+
 void Generator::break_block()
 {
     add_pattern(PatternType::break_block, -1);
+}
+
+void Generator::ceiling_purification()
+{
+    add_pattern(PatternType::ceiling_purification, 0);
+}
+
+void Generator::circle_reflection()
+{
+    add_pattern(PatternType::circle_reflection, 1);
 }
 
 void Generator::compass_purification()
@@ -1050,6 +1210,11 @@ void Generator::create_water()
     add_pattern(PatternType::create_water, -1);
 }
 
+void Generator::derivation_decomposition()
+{
+    add_pattern(PatternType::derivation_decomposition, 1);
+}
+
 void Generator::dioscuri_gambit()
 {
     add_pattern(PatternType::dioscuri_gambit, 2);
@@ -1065,9 +1230,24 @@ void Generator::division_distillation()
     add_pattern(PatternType::division_distillation, -1);
 }
 
+void Generator::entropy_reflection()
+{
+    add_pattern(PatternType::entropy_reflection, 1);
+}
+
 void Generator::equality_distillation()
 {
     add_pattern(PatternType::equality_distillation, -1);
+}
+
+void Generator::eulers_reflection()
+{
+    add_pattern(PatternType::eulers_reflection, 1);
+}
+
+void Generator::excisors_distillation()
+{
+    add_pattern(PatternType::excisors_distillation, -1);
 }
 
 void Generator::false_reflection()
@@ -1093,6 +1273,11 @@ void Generator::flocks_gambit(int num_iotas_packed)
 void Generator::flocks_reflection()
 {
     add_pattern(PatternType::flocks_reflection, 1);
+}
+
+void Generator::floor_purification()
+{
+    add_pattern(PatternType::floor_purification, 0);
 }
 
 void Generator::gemini_decomposition()
@@ -1190,9 +1375,24 @@ void Generator::numerical_reflection(std::string value)
     add_pattern(PatternType::numerical_reflection, 1, value);
 }
 
+void Generator::pace_purification()
+{
+    add_pattern(PatternType::pace_purification, 0);
+}
+
 void Generator::power_distillation()
 {
     add_pattern(PatternType::power_distillation, -1);
+}
+
+void Generator::prospectors_gambit()
+{
+    add_pattern(PatternType::prospectors_gambit, 1);
+}
+
+void Generator::retrograde_purification()
+{
+    add_pattern(PatternType::retrograde_purification, 0);
 }
 
 void Generator::reveal()
@@ -1220,9 +1420,29 @@ void Generator::selection_distillation()
     add_pattern(PatternType::selection_distillation, -1);
 }
 
+void Generator::selection_exaltation()
+{
+    add_pattern(PatternType::selection_exaltation, -2);
+}
+
 void Generator::singles_purification()
 {
     add_pattern(PatternType::singles_purification, 0);
+}
+
+void Generator::speakers_decomposition()
+{
+    add_pattern(PatternType::speakers_decomposition, 1);
+}
+
+void Generator::speakers_distillation()
+{
+    add_pattern(PatternType::speakers_distillation, -1);
+}
+
+void Generator::stadiometers_purification()
+{
+    add_pattern(PatternType::stadiometers_prfn, 0);
 }
 
 void Generator::subtractive_distillation()
@@ -1245,9 +1465,49 @@ void Generator::vacant_reflection()
     add_pattern(PatternType::vacant_reflection, 1);
 }
 
+void Generator::vector_disintegration()
+{
+    add_pattern(PatternType::vector_disintegration, 2);
+}
+
 void Generator::vector_exaltation()
 {
     add_pattern(PatternType::vector_exaltation, -2);
+}
+
+void Generator::vector_reflection_NX()
+{
+    add_pattern(PatternType::vector_reflection_NX, 1);
+}
+
+void Generator::vector_reflection_NY()
+{
+    add_pattern(PatternType::vector_reflection_NY, 1);
+}
+
+void Generator::vector_reflection_NZ()
+{
+    add_pattern(PatternType::vector_reflection_NZ, 1);
+}
+
+void Generator::vector_reflection_PX()
+{
+    add_pattern(PatternType::vector_reflection_PX, 1);
+}
+
+void Generator::vector_reflection_PY()
+{
+    add_pattern(PatternType::vector_reflection_PY, 1);
+}
+
+void Generator::vector_reflection_PZ()
+{
+    add_pattern(PatternType::vector_reflection_PZ, 1);
+}
+
+void Generator::vector_reflection_zero()
+{
+    add_pattern(PatternType::vector_reflection_zero, 1);
 }
 
 void Generator::add_pattern(PatternType pattern_type, size_t stack_size_net, std::optional<std::string> value)

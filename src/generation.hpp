@@ -21,12 +21,14 @@ enum PatternType {
     assessors_purification,
     assessors_reflection,
     aviators_purification,
+    axial_purification,
     black_suns_nadir,
     black_suns_zenith,
     blue_suns_nadir,
     blue_suns_zenith,
     bookkeepers_gambit,
     break_block,
+    ceiling_purification,
     charons_gambit,
     chroniclers_gambit,
     chroniclers_prfn,
@@ -43,18 +45,20 @@ enum PatternType {
     disjunction_distillation,
     division_distillation,
     dispel_rain,
+    entropy_reflection,
     eulers_reflection,
     equality_distillation,
     evanition,
+    excisors_distillation,
     explosion,
     false_reflection,
     fireball,
-    floor_purification,
     fishermans_gambit,
     fishermans_gambit_II,
     flocks_disintegration,
     flocks_gambit,
     flocks_reflection,
+    floor_purification,
     gemini_decomposition,
     gemini_gambit,
     greater_fold_reflection,
@@ -87,6 +91,7 @@ enum PatternType {
     pace_purification,
     power_distillation,
     prospectors_gambit,
+    retrograde_purification,
     retrospection,
     reveal,
     rotation_gambit,
@@ -168,24 +173,34 @@ public:
     void alidades_purification();
     void archers_distillation();
     void architects_distillation();
+    void arcs_reflection();
+    void augurs_exaltation();
     void augurs_purification();
+    void axial_purification();
     void break_block();
+    void ceiling_purification();
+    void circle_reflection();
     void compass_purification();
     void compass_purification_II();
     // AND
     void conjunction_distillation();
     void conjure_light();
     void create_water();
+    void derivation_decomposition();
     void dioscuri_gambit();
     // OR
     void disjunction_distillation();
     void division_distillation();
+    void entropy_reflection();
     void equality_distillation();
+    void eulers_reflection();
+    void excisors_distillation();
     void false_reflection();
     void fishermans_gambit();
     void fishermans_gambit_II();
     void flocks_gambit(int num_iotas_packed);
     void flocks_reflection();
+    void floor_purification();
     void gemini_decomposition();
     // Store in Raven's Mind
     void huginns_gambit();
@@ -206,7 +221,10 @@ public:
     void negation_purification();
     void nullary_reflection();
     void numerical_reflection(std::string value);
+    void pace_purification();
     void power_distillation();
+    void prospectors_gambit();
+    void retrograde_purification();
     void reveal();
     // 3rd becomes 1st
     void rotation_gambit();
@@ -214,14 +232,26 @@ public:
     void rotation_gambit_II();
     void scouts_distillation();
     void selection_distillation();
+    void selection_exaltation();
     void singles_purification();
+    void speakers_decomposition();
+    void speakers_distillation();
+    void stadiometers_purification();
     void subtractive_distillation();
     void surgeons_exaltation();
     void true_reflection();
     void vacant_reflection();
+    void vector_disintegration();
     void vector_exaltation();
+    void vector_reflection_NX();
+    void vector_reflection_NY();
+    void vector_reflection_NZ();
+    void vector_reflection_PX();
+    void vector_reflection_PY();
+    void vector_reflection_PZ();
+    void vector_reflection_zero();
 
-    void add_pattern(PatternType pattern, size_t stack_size_net, std::optional<std::string> value = std::nullopt);
+    void add_pattern(PatternType pattern_type, size_t stack_size_net, std::optional<std::string> value = std::nullopt);
 
     bool has_non_integer_num = false;
 
