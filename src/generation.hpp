@@ -47,9 +47,16 @@ enum PatternType {
     dispel_rain,
     entropy_reflection,
     eulers_reflection,
+    entity_prfn,
+    entity_prfn_animal,
+    entity_prfn_item,
+    entity_prfn_living,
+    entity_prfn_monster,
+    entity_prfn_player,
     equality_distillation,
     evanition,
     excisors_distillation,
+    exclusion_distillation,
     explosion,
     false_reflection,
     fireball,
@@ -69,10 +76,12 @@ enum PatternType {
     inverse_cosine_purification,
     inverse_sine_purification,
     inverse_tangent_distillation,
+    inverse_tangent_purification,
     introspection,
     iris_gambit,
     jesters_gambit,
     length_purification,
+    lesser_fold_reflection,
     locators_distillation,
     lodestone_reflection,
     logarithmic_distillation,
@@ -97,6 +106,8 @@ enum PatternType {
     rotation_gambit,
     rotation_gambit_II,
     scouts_distillation,
+    scribes_gambit,
+    scribes_reflection,
     selection_distillation,
     selection_exaltation,
     speakers_decomposition,
@@ -109,9 +120,11 @@ enum PatternType {
     summon_lightning,
     summon_rain,
     surgeons_exaltation,
+    tangent_purification,
     thanatos_reflection,
     thoths_gambit,
     true_reflection,
+    uniqueness_purification,
     vacant_reflection,
     vector_disintegration,
     vector_exaltation,
@@ -126,6 +139,17 @@ enum PatternType {
     waystone_reflection,
     white_suns_nadir,
     white_suns_zenith,
+    zone_dstl_animal,
+    zone_dstl_any,
+    zone_dstl_item,
+    zone_dstl_living,
+    zone_dstl_monster,
+    zone_dstl_non_animal,
+    zone_dstl_non_item,
+    zone_dstl_non_living,
+    zone_dstl_non_monster,
+    zone_dstl_non_player,
+    zone_dstl_player,
     num_patterns
 };
 
@@ -169,19 +193,37 @@ public:
     void end_scopes_return(bool has_ret_value);
     void dec_func(bool is_void, std::string name, int num_params, size_t line);
 
+    void akashas_distillation();
+    void akashas_gambit();
     void additive_distillation();
+    void anchorites_flight();
     void alidades_purification();
+    void aviators_purification();
     void archers_distillation();
     void architects_distillation();
     void arcs_reflection();
+    void assessors_purification();
+    void assessors_reflection();
+    void auditors_purification();
+    void auditors_reflection();
     void augurs_exaltation();
     void augurs_purification();
     void axial_purification();
+    void black_suns_nadir();
+    void black_suns_zenith();
+    void blue_suns_nadir();
+    void blue_suns_zenith();
+    void bookkeepers_gambit(std::string value);
     void break_block();
     void ceiling_purification();
+    void charons_gambit();
+    void chroniclers_gambit();
+    void chroniclers_prfn();
+    void chroniclers_purification();
     void circle_reflection();
     void compass_purification();
     void compass_purification_II();
+    void cosine_purification();
     // AND
     void conjunction_distillation();
     void conjure_light();
@@ -191,24 +233,43 @@ public:
     // OR
     void disjunction_distillation();
     void division_distillation();
+    void dispel_rain();
     void entropy_reflection();
     void equality_distillation();
     void eulers_reflection();
+    void entity_prfn();
+    void entity_prfn_animal();
+    void entity_prfn_item();
+    void entity_prfn_living();
+    void entity_prfn_monster();
+    void entity_prfn_player();
     void excisors_distillation();
+    void exclusion_distillation();
+    void explosion();
     void false_reflection();
+    void fireball();
     void fishermans_gambit();
     void fishermans_gambit_II();
     void flocks_gambit(int num_iotas_packed);
     void flocks_reflection();
     void floor_purification();
     void gemini_decomposition();
+    void greater_fold_reflection();
     // Store in Raven's Mind
     void huginns_gambit();
     void inequality_distillation();
     void integration_distillation();
+    void inverse_cosine_purification();
+    void inverse_sine_purification();
+    void inverse_tangent_distillation();
+    void inverse_tangent_purification();
     void jesters_gambit();
     void length_purification();
+    void lesser_fold_reflection();
     void locators_distillation();
+    void lodestone_reflection();
+    void logarithmic_distillation();
+    void make_note();
     void maximus_distillation();
     void maximus_distillation_II();
     void minds_reflection();
@@ -231,6 +292,8 @@ public:
     // 1st becomes 3rd
     void rotation_gambit_II();
     void scouts_distillation();
+    void scribes_gambit();
+    void scribes_reflection();
     void selection_distillation();
     void selection_exaltation();
     void singles_purification();
@@ -238,8 +301,16 @@ public:
     void speakers_distillation();
     void stadiometers_purification();
     void subtractive_distillation();
+    void sine_purification();
+    void stadiometers_prfn();
+    void swindlers_gambit();
+    void summon_lightning();
+    void summon_rain();
     void surgeons_exaltation();
+    void tangent_purification();
+    void thanatos_reflection();
     void true_reflection();
+    void uniqueness_purification();
     void vacant_reflection();
     void vector_disintegration();
     void vector_exaltation();
@@ -250,6 +321,21 @@ public:
     void vector_reflection_PY();
     void vector_reflection_PZ();
     void vector_reflection_zero();
+    void zone_dstl_animal();
+    void zone_dstl_any();
+    void zone_dstl_item();
+    void zone_dstl_living();
+    void zone_dstl_monster();
+    void zone_dstl_non_animal();
+    void zone_dstl_non_item();
+    void zone_dstl_non_living();
+    void zone_dstl_non_monster();
+    void zone_dstl_non_player();
+    void zone_dstl_player();
+    void wayfarers_flight();
+    void waystone_reflection();
+    void white_suns_nadir();
+    void white_suns_zenith();
 
     void add_pattern(PatternType pattern_type, size_t stack_size_net, std::optional<std::string> value = std::nullopt);
 

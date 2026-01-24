@@ -31,6 +31,8 @@ std::vector<Token> Tokenizer::tokenize()
         {'%', TokenType_::modulus},
         {'[', TokenType_::square_open},
         {']', TokenType_::square_close},
+        {'^', TokenType_::caret},
+        {'~', TokenType_::tilde},
     };
 
     const std::map<std::string, TokenType_> doubleNonAlphaTokenMap {
@@ -192,23 +194,25 @@ std::optional<int> Tokenizer::bin_prec(TokenType_ type)
         return 1;
     case TokenType_::double_amp:
         return 2;
+    case TokenType_::caret:
+        return 3;
     case TokenType_::double_eq:
     case TokenType_::not_eq_:
-        return 3;
+        return 4;
     case TokenType_::angle_open:
     case TokenType_::angle_close:
     case TokenType_::oangle_eq:
     case TokenType_::cangle_eq:
-        return 4;
+        return 5;
     case TokenType_::plus:
     case TokenType_::dash:
-        return 5;
+        return 6;
     case TokenType_::star:
     case TokenType_::slash_forward:
     case TokenType_::modulus:
-        return 6;
-    case TokenType_::dot:
         return 7;
+    case TokenType_::dot:
+        return 8;
     default:
         return {};
     }

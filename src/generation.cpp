@@ -180,10 +180,37 @@ bool Generator::gen_inbuilt_func(const NodeDefinedFunc* func, bool is_void, bool
         { }
         else
         {
-            if (func_name == "print") {
+            if (func_name == "write") {
+                if (func->exprs.size() == 1) {
+                    try_gen_x_exprs(func->exprs, 1, func->line);
+                    scribes_gambit();
+                }
+                else
+                {
+                    try_gen_x_exprs(func->exprs, 2, func->line);
+                    chroniclers_gambit();
+                }
+                return true;
+            } else if (func_name == "write_akashic") {
+                try_gen_x_exprs(func->exprs, 3, func->line);
+                akashas_gambit();
+                return true;
+            } else if (func_name == "print") {
                 try_gen_x_exprs(func->exprs, 1, func->line);
                 reveal();
                 pop();
+                return true;
+            } else if (func_name == "execute_unsafe_no_ret") {
+                if (func->exprs.size() == 1) {
+                    try_gen_x_exprs(func->exprs, 1, func->line);
+                    add_pattern(PatternType::hermes_gambit, -1);
+                }
+                else
+                {
+                    try_gen_x_exprs(func->exprs, 2, func->line);
+                    jesters_gambit();
+                    add_pattern(PatternType::hermes_gambit, -2);
+                }
                 return true;
             } else if (func_name == "mine") {
                 try_gen_x_exprs(func->exprs, 1, func->line);
@@ -248,6 +275,10 @@ bool Generator::gen_inbuilt_func(const NodeDefinedFunc* func, bool is_void, bool
             } else if (func_name == "with_front") {
                 try_gen_x_exprs(func->exprs, 1, func->line);
                 speakers_distillation();
+                return true;
+            } else if (func_name == "without_duplicates") {
+                try_gen_x_exprs(func->exprs, 0, func->line);
+                uniqueness_purification();
                 return true;
             } else if (func_name == "get_front") {
                 try_gen_x_exprs(func->exprs, 0, func->line);
@@ -339,6 +370,43 @@ bool Generator::gen_inbuilt_func(const NodeDefinedFunc* func, bool is_void, bool
                 try_gen_x_exprs(func->exprs, 0, func->line);
                 eulers_reflection();
                 return true;
+            } else if (func_name == "sin") {
+                try_gen_x_exprs(func->exprs, 1, func->line);
+                sine_purification();
+                return true;
+            } else if (func_name == "cos") {
+                try_gen_x_exprs(func->exprs, 1, func->line);
+                cosine_purification();
+                return true;
+            } else if (func_name == "tan") {
+                try_gen_x_exprs(func->exprs, 1, func->line);
+                tangent_purification();
+                return true;
+            } else if (func_name == "arc_sin") {
+                try_gen_x_exprs(func->exprs, 1, func->line);
+                inverse_cosine_purification();
+                return true;
+            } else if (func_name == "arc_cos") {
+                try_gen_x_exprs(func->exprs, 1, func->line);
+                inverse_cosine_purification();
+                return true;
+            } else if (func_name == "arc_tan") {
+                try_gen_x_exprs(func->exprs, 1, func->line);
+                inverse_tangent_purification();
+                return true;
+            } else if (func_name == "angle") {
+                try_gen_x_exprs(func->exprs, 2, func->line);
+                inverse_tangent_distillation();
+                return true;
+            } else if (func_name == "log") {
+                try_gen_x_exprs(func->exprs, 2, func->line);
+                logarithmic_distillation();
+                return true;
+            } else if (func_name == "ln") {
+                try_gen_x_exprs(func->exprs, 1, func->line);
+                eulers_reflection();
+                logarithmic_distillation();
+                return true;
             } else if (func_name == "vec") {
                 try_gen_x_exprs(func->exprs, 3, func->line);
                 vector_exaltation();
@@ -374,6 +442,22 @@ bool Generator::gen_inbuilt_func(const NodeDefinedFunc* func, bool is_void, bool
             } else if (func_name == "self") {
                 try_gen_x_exprs(func->exprs, 0, func->line);
                 minds_reflection();
+                return true;
+            } else if (func_name == "circle_impetus_pos") {
+                try_gen_x_exprs(func->exprs, 0, func->line);
+                waystone_reflection();
+                return true;
+            } else if (func_name == "circle_impetus_forward") {
+                try_gen_x_exprs(func->exprs, 0, func->line);
+                lodestone_reflection();
+                return true;
+            } else if (func_name == "circle_LNW") {
+                try_gen_x_exprs(func->exprs, 0, func->line);
+                lesser_fold_reflection();
+                return true;
+            } else if (func_name == "circle_USE") {
+                try_gen_x_exprs(func->exprs, 0, func->line);
+                greater_fold_reflection();
                 return true;
             } else if (func_name == "block_raycast") {
                 // Raycast from an entity
@@ -417,6 +501,216 @@ bool Generator::gen_inbuilt_func(const NodeDefinedFunc* func, bool is_void, bool
                     scouts_distillation();
                 }
                 return true;
+            } else if (func_name == "get_entity") {
+                if (func->exprs.size() == 1) {
+                    try_gen_x_exprs(func->exprs, 1, func->line);
+                    entity_prfn();
+                } else {
+                    try_gen_x_exprs(func->exprs, 2, func->line);
+                    zone_dstl_any();
+                }
+                return true;
+            } else if (func_name == "get_animal") {
+                if (func->exprs.size() == 1) {
+                    try_gen_x_exprs(func->exprs, 1, func->line);
+                    entity_prfn_animal();
+                } else {
+                    try_gen_x_exprs(func->exprs, 2, func->line);
+                    zone_dstl_animal();
+                }
+                return true;
+            } else if (func_name == "get_monster") {
+                if (func->exprs.size() == 1) {
+                    try_gen_x_exprs(func->exprs, 1, func->line);
+                    entity_prfn_monster();
+                } else {
+                    try_gen_x_exprs(func->exprs, 2, func->line);
+                    zone_dstl_monster();
+                }
+                return true;
+            } else if (func_name == "get_item") {
+                if (func->exprs.size() == 1) {
+                    try_gen_x_exprs(func->exprs, 1, func->line);
+                    entity_prfn_item();
+                } else {
+                    try_gen_x_exprs(func->exprs, 2, func->line);
+                    zone_dstl_item();
+                }
+                return true;
+            } else if (func_name == "get_player") {
+                if (func->exprs.size() == 1) {
+                    try_gen_x_exprs(func->exprs, 1, func->line);
+                    entity_prfn_player();
+                } else {
+                    try_gen_x_exprs(func->exprs, 2, func->line);
+                    zone_dstl_player();
+                }
+                return true;
+            } else if (func_name == "get_living") {
+                if (func->exprs.size() == 1) {
+                    try_gen_x_exprs(func->exprs, 1, func->line);
+                    entity_prfn_living();
+                } else {
+                    try_gen_x_exprs(func->exprs, 2, func->line);
+                    zone_dstl_living();
+                }
+                return true;
+            } else if (func_name == "get_non_animal") {
+                try_gen_x_exprs(func->exprs, 2, func->line);
+                zone_dstl_non_animal();
+                return true;
+            } else if (func_name == "get_non_monster") {
+                try_gen_x_exprs(func->exprs, 2, func->line);
+                zone_dstl_non_monster();
+                return true;
+            } else if (func_name == "get_non_item") {
+                try_gen_x_exprs(func->exprs, 2, func->line);
+                zone_dstl_non_item();
+                return true;
+            } else if (func_name == "get_non_player") {
+                try_gen_x_exprs(func->exprs, 2, func->line);
+                zone_dstl_non_player();
+                return true;
+            } else if (func_name == "get_non_living") {
+                try_gen_x_exprs(func->exprs, 2, func->line);
+                zone_dstl_non_living();
+                return true;
+            } else if (func_name == "read") {
+                if (func->exprs.size() == 0) {
+                    scribes_reflection();
+                }
+                else
+                {
+                    try_gen_x_exprs(func->exprs, 1, func->line);
+                    chroniclers_purification();
+                }
+                return true;
+            } else if (func_name == "can_read") {
+                if (func->exprs.size() == 0) {
+                    auditors_reflection();
+                }
+                else
+                {
+                    try_gen_x_exprs(func->exprs, 1, func->line);
+                    auditors_purification();
+                }
+                return true;
+            } else if (func_name == "can_write") {
+                if (func->exprs.size() == 0) {
+                    assessors_reflection();
+                }
+                else
+                {
+                    try_gen_x_exprs(func->exprs, 1, func->line);
+                    assessors_purification();
+                }
+                return true;
+            } else if (func_name == "read_akashic") {
+                try_gen_x_exprs(func->exprs, 2, func->line);
+                akashas_distillation();
+                return true;
+            } else if (func_name == "execute") {
+                if (func->exprs.size() == 1) {
+                    try_gen_x_exprs(func->exprs, 1, func->line);
+                    singles_purification();
+                    muninns_reflection();
+                    nullary_reflection();
+                    huginns_gambit();
+                    add_pattern(PatternType::introspection, 0);
+                    flocks_reflection();
+                    add_pattern(PatternType::flocks_gambit, 0);
+                    derivation_decomposition();
+                    bookkeepers_gambit("v-");
+                    add_pattern(PatternType::hermes_gambit, 0);
+                    add_pattern(PatternType::retrospection, 0);
+                    rotation_gambit();
+                    add_pattern(PatternType::thoths_gambit, 0);
+                    jesters_gambit();
+                    huginns_gambit();
+                    // Account properly for stack size
+                    --m_stack_size;
+                }
+                else
+                {
+                    try_gen_x_exprs(func->exprs, 2, func->line);
+                    numerical_reflection("2");
+                    flocks_gambit(2);
+                    singles_purification();
+                    muninns_reflection();
+                    nullary_reflection();
+                    huginns_gambit();
+                    add_pattern(PatternType::introspection, 0);
+                    flocks_reflection();
+                    add_pattern(PatternType::flocks_gambit, 0);
+                    derivation_decomposition();
+                    bookkeepers_gambit("v-");
+                    add_pattern(PatternType::flocks_disintegration, 0);
+                    jesters_gambit();
+                    add_pattern(PatternType::hermes_gambit, 0);
+                    add_pattern(PatternType::retrospection, 0);
+                    rotation_gambit();
+                    add_pattern(PatternType::thoths_gambit, 0);
+                    jesters_gambit();
+                    huginns_gambit();
+                    // Account properly for stack size
+                    --m_stack_size;
+                }
+                return true;
+            } else if (func_name == "execute_no_ravens_mind") {
+                if (func->exprs.size() == 1) {
+                    try_gen_x_exprs(func->exprs, 1, func->line);
+                    singles_purification();
+                    add_pattern(PatternType::introspection, 0);
+                    flocks_reflection();
+                    add_pattern(PatternType::flocks_gambit, 0);
+                    derivation_decomposition();
+                    bookkeepers_gambit("v-");
+                    add_pattern(PatternType::hermes_gambit, 0);
+                    add_pattern(PatternType::retrospection, 0);
+                    rotation_gambit();
+                    add_pattern(PatternType::thoths_gambit, 0);
+                    jesters_gambit();
+                    // Account properly for stack size
+                    --m_stack_size;
+                }
+                else
+                {
+                    try_gen_x_exprs(func->exprs, 2, func->line);
+                    numerical_reflection("2");
+                    flocks_gambit(2);
+                    singles_purification();
+                    add_pattern(PatternType::introspection, 0);
+                    flocks_reflection();
+                    add_pattern(PatternType::flocks_gambit, 0);
+                    derivation_decomposition();
+                    bookkeepers_gambit("v-");
+                    add_pattern(PatternType::flocks_disintegration, 0);
+                    jesters_gambit();
+                    add_pattern(PatternType::hermes_gambit, 0);
+                    add_pattern(PatternType::retrospection, 0);
+                    rotation_gambit();
+                    add_pattern(PatternType::thoths_gambit, 0);
+                    jesters_gambit();
+                    // Account properly for stack size
+                    --m_stack_size;
+                }
+                return true;
+            } else if (func_name == "execute_unsafe") {
+                if (func->exprs.size() == 1) {
+                    try_gen_x_exprs(func->exprs, 1, func->line);
+                    add_pattern(PatternType::hermes_gambit, 0);
+                }
+                else
+                {
+                    try_gen_x_exprs(func->exprs, 2, func->line);
+                    jesters_gambit();
+                    add_pattern(PatternType::hermes_gambit, -1);
+                }
+                return true;
+            } else if (func_name == "patterns_remaining") {
+                try_gen_x_exprs(func->exprs, 0, func->line);
+                thanatos_reflection();
+                return true;
             } else if (func_name == "stack_size") {
                 try_gen_x_exprs(func->exprs, 0, func->line);
                 flocks_reflection();
@@ -432,6 +726,10 @@ bool Generator::gen_inbuilt_func(const NodeDefinedFunc* func, bool is_void, bool
                 singles_purification();
                 add_pattern(PatternType::thoths_gambit, 0);
                 add_pattern(PatternType::flocks_disintegration, 0);
+                return true;
+            } else if (func_name == "dump_ravens_mind") {
+                try_gen_x_exprs(func->exprs, 0, func->line);
+                muninns_reflection();
                 return true;
             }
         }
@@ -571,6 +869,9 @@ void Generator::gen_bin_expr(const NodeExprBin* expr_bin)
     case TokenType_::double_bar:
         disjunction_distillation();
         break;
+    case TokenType_::caret:
+        exclusion_distillation();
+        break;
     }
 }
 
@@ -671,6 +972,7 @@ void Generator::gen_term(const NodeTerm* term)
                 gen.numerical_reflection("-1");
                 gen.multiplicative_distillation();
                 break;
+            case TokenType_::tilde:
             case TokenType_::not_:
                 gen.negation_purification();
                 break;
@@ -1130,14 +1432,34 @@ void Generator::dec_func(bool is_void, std::string name, int num_params, size_t 
 
 
 
+void Generator::akashas_distillation()
+{
+    add_pattern(PatternType::akashas_distillation, -1);
+}
+
+void Generator::akashas_gambit()
+{
+    add_pattern(PatternType::akashas_gambit, -3);
+}
+
 void Generator::additive_distillation()
 {
     add_pattern(PatternType::additive_distillation, -1);
 }
 
+void Generator::anchorites_flight()
+{
+    add_pattern(PatternType::anchorites_flight, -2);
+}
+
 void Generator::alidades_purification()
 {
     add_pattern(PatternType::alidades_purification, 0);
+}
+
+void Generator::aviators_purification()
+{
+    add_pattern(PatternType::aviators_purification, 0);
 }
 
 void Generator::archers_distillation()
@@ -1155,6 +1477,26 @@ void Generator::arcs_reflection()
     add_pattern(PatternType::arcs_reflection, 1);
 }
 
+void Generator::assessors_purification()
+{
+    add_pattern(PatternType::assessors_purification, 0);
+}
+
+void Generator::assessors_reflection()
+{
+    add_pattern(PatternType::assessors_reflection, 1);
+}
+
+void Generator::auditors_purification()
+{
+    add_pattern(PatternType::auditors_purification, 0);
+}
+
+void Generator::auditors_reflection()
+{
+    add_pattern(PatternType::auditors_reflection, 1);
+}
+
 void Generator::augurs_exaltation()
 {
     add_pattern(PatternType::augurs_exaltation, -2);
@@ -1170,6 +1512,31 @@ void Generator::axial_purification()
     add_pattern(PatternType::axial_purification, 0);
 }
 
+void Generator::black_suns_nadir()
+{
+    add_pattern(PatternType::black_suns_nadir, -3);
+}
+
+void Generator::black_suns_zenith()
+{
+    add_pattern(PatternType::black_suns_zenith, -3);
+}
+
+void Generator::blue_suns_nadir()
+{
+    add_pattern(PatternType::blue_suns_nadir, -2);
+}
+
+void Generator::blue_suns_zenith()
+{
+    add_pattern(PatternType::blue_suns_zenith, -2);
+}
+
+void Generator::bookkeepers_gambit(std::string value)
+{
+    add_pattern(PatternType::bookkeepers_gambit, -std::count(value.cbegin(), value.cend(), 'v'), value);
+}
+
 void Generator::break_block()
 {
     add_pattern(PatternType::break_block, -1);
@@ -1178,6 +1545,21 @@ void Generator::break_block()
 void Generator::ceiling_purification()
 {
     add_pattern(PatternType::ceiling_purification, 0);
+}
+
+void Generator::chroniclers_gambit()
+{
+    add_pattern(PatternType::chroniclers_gambit, 1);
+}
+
+void Generator::chroniclers_prfn()
+{
+    add_pattern(PatternType::chroniclers_prfn, 0);
+}
+
+void Generator::chroniclers_purification()
+{
+    add_pattern(PatternType::chroniclers_prfn, 1);
 }
 
 void Generator::circle_reflection()
@@ -1193,6 +1575,11 @@ void Generator::compass_purification()
 void Generator::compass_purification_II()
 {
     add_pattern(PatternType::compass_purification_II, 0);
+}
+
+void Generator::cosine_purification()
+{
+    add_pattern(PatternType::cosine_purification, 0);
 }
 
 void Generator::conjunction_distillation()
@@ -1230,6 +1617,11 @@ void Generator::division_distillation()
     add_pattern(PatternType::division_distillation, -1);
 }
 
+void Generator::dispel_rain()
+{
+    add_pattern(PatternType::dispel_rain, 0);
+}
+
 void Generator::entropy_reflection()
 {
     add_pattern(PatternType::entropy_reflection, 1);
@@ -1245,14 +1637,59 @@ void Generator::eulers_reflection()
     add_pattern(PatternType::eulers_reflection, 1);
 }
 
+void Generator::entity_prfn()
+{
+    add_pattern(PatternType::entity_prfn, 0);
+}
+
+void Generator::entity_prfn_animal()
+{
+    add_pattern(PatternType::entity_prfn_animal, 0);
+}
+
+void Generator::entity_prfn_item()
+{
+    add_pattern(PatternType::entity_prfn_item, 0);
+}
+
+void Generator::entity_prfn_living()
+{
+    add_pattern(PatternType::entity_prfn_living, 0);
+}
+
+void Generator::entity_prfn_monster()
+{
+    add_pattern(PatternType::entity_prfn_monster, 0);
+}
+
+void Generator::entity_prfn_player()
+{
+    add_pattern(PatternType::entity_prfn_player, 0);
+}
+
 void Generator::excisors_distillation()
 {
     add_pattern(PatternType::excisors_distillation, -1);
 }
 
+void Generator::exclusion_distillation()
+{
+    add_pattern(PatternType::exclusion_distillation, -1);
+}
+
+void Generator::explosion()
+{
+    add_pattern(PatternType::explosion, -2);
+}
+
 void Generator::false_reflection()
 {
     add_pattern(PatternType::false_reflection, 1);
+}
+
+void Generator::fireball()
+{
+    add_pattern(PatternType::fireball, -2);
 }
 
 void Generator::fishermans_gambit()
@@ -1285,6 +1722,11 @@ void Generator::gemini_decomposition()
     add_pattern(PatternType::gemini_decomposition, 1);
 }
 
+void Generator::greater_fold_reflection()
+{
+    add_pattern(PatternType::greater_fold_reflection, 1);
+}
+
 void Generator::huginns_gambit()
 {
     add_pattern(PatternType::huginns_gambit, -1);
@@ -1300,6 +1742,26 @@ void Generator::integration_distillation()
     add_pattern(PatternType::integration_distillation, -1);
 }
 
+void Generator::inverse_cosine_purification()
+{
+    add_pattern(PatternType::inverse_cosine_purification, 0);
+}
+
+void Generator::inverse_sine_purification()
+{
+    add_pattern(PatternType::inverse_sine_purification, 0);
+}
+
+void Generator::inverse_tangent_distillation()
+{
+    add_pattern(PatternType::inverse_tangent_distillation, -1);
+}
+
+void Generator::inverse_tangent_purification()
+{
+    add_pattern(PatternType::inverse_tangent_purification, 0);
+}
+
 void Generator::jesters_gambit()
 {
     add_pattern(PatternType::jesters_gambit, 0);
@@ -1310,9 +1772,29 @@ void Generator::length_purification()
     add_pattern(PatternType::length_purification, 0);
 }
 
+void Generator::lesser_fold_reflection()
+{
+    add_pattern(PatternType::lesser_fold_reflection, 1);
+}
+
 void Generator::locators_distillation()
 {
     add_pattern(PatternType::locators_distillation, -1);
+}
+
+void Generator::lodestone_reflection()
+{
+    add_pattern(PatternType::lodestone_reflection, 1);
+}
+
+void Generator::logarithmic_distillation()
+{
+    add_pattern(PatternType::logarithmic_distillation, -1);
+}
+
+void Generator::make_note()
+{
+    add_pattern(PatternType::make_note, -3);
 }
 
 void Generator::maximus_distillation()
@@ -1415,6 +1897,16 @@ void Generator::scouts_distillation()
     add_pattern(PatternType::scouts_distillation, -1);
 }
 
+void Generator::scribes_gambit()
+{
+    add_pattern(PatternType::scribes_gambit, 0);
+}
+
+void Generator::scribes_reflection()
+{
+    add_pattern(PatternType::scribes_reflection, 1);
+}
+
 void Generator::selection_distillation()
 {
     add_pattern(PatternType::selection_distillation, -1);
@@ -1450,14 +1942,54 @@ void Generator::subtractive_distillation()
     add_pattern(PatternType::subtractive_distillation, -1);
 }
 
+void Generator::sine_purification()
+{
+    add_pattern(PatternType::sine_purification, 0);
+}
+
+void Generator::stadiometers_prfn()
+{
+    add_pattern(PatternType::stadiometers_prfn, 0);
+}
+
+void Generator::swindlers_gambit()
+{
+    add_pattern(PatternType::swindlers_gambit, -1);
+}
+
+void Generator::summon_lightning()
+{
+    add_pattern(PatternType::summon_lightning, -1);
+}
+
+void Generator::summon_rain()
+{
+    add_pattern(PatternType::summon_rain, 0);
+}
+
 void Generator::surgeons_exaltation()
 {
     add_pattern(PatternType::surgeons_exaltation, -2);
 }
 
+void Generator::tangent_purification()
+{
+    add_pattern(PatternType::tangent_purification, 0);
+}
+
+void Generator::thanatos_reflection()
+{
+    add_pattern(PatternType::thanatos_reflection, 1);
+}
+
 void Generator::true_reflection()
 {
     add_pattern(PatternType::true_reflection, 1);
+}
+
+void Generator::uniqueness_purification()
+{
+    add_pattern(PatternType::uniqueness_purification, 0);
 }
 
 void Generator::vacant_reflection()
@@ -1508,6 +2040,81 @@ void Generator::vector_reflection_PZ()
 void Generator::vector_reflection_zero()
 {
     add_pattern(PatternType::vector_reflection_zero, 1);
+}
+
+void Generator::zone_dstl_animal()
+{
+    add_pattern(PatternType::zone_dstl_animal, -1);
+}
+
+void Generator::zone_dstl_any()
+{
+    add_pattern(PatternType::zone_dstl_any, -1);
+}
+
+void Generator::zone_dstl_item()
+{
+    add_pattern(PatternType::zone_dstl_item, -1);
+}
+
+void Generator::zone_dstl_living()
+{
+    add_pattern(PatternType::zone_dstl_living, -1);
+}
+
+void Generator::zone_dstl_monster()
+{
+    add_pattern(PatternType::zone_dstl_monster, -1);
+}
+
+void Generator::zone_dstl_non_animal()
+{
+    add_pattern(PatternType::zone_dstl_non_animal, -1);
+}
+
+void Generator::zone_dstl_non_item()
+{
+    add_pattern(PatternType::zone_dstl_non_item, -1);
+}
+
+void Generator::zone_dstl_non_living()
+{
+    add_pattern(PatternType::zone_dstl_non_living, -1);
+}
+
+void Generator::zone_dstl_non_monster()
+{
+    add_pattern(PatternType::zone_dstl_non_monster, -1);
+}
+
+void Generator::zone_dstl_non_player()
+{
+    add_pattern(PatternType::zone_dstl_non_player, -1);
+}
+
+void Generator::zone_dstl_player()
+{
+    add_pattern(PatternType::zone_dstl_player, -1);
+}
+
+void Generator::wayfarers_flight()
+{
+    add_pattern(PatternType::wayfarers_flight, -2);
+}
+
+void Generator::waystone_reflection()
+{
+    add_pattern(PatternType::waystone_reflection, 1);
+}
+
+void Generator::white_suns_nadir()
+{
+    add_pattern(PatternType::white_suns_nadir, -3);
+}
+
+void Generator::white_suns_zenith()
+{
+    add_pattern(PatternType::white_suns_zenith, -3);
 }
 
 void Generator::add_pattern(PatternType pattern_type, size_t stack_size_net, std::optional<std::string> value)

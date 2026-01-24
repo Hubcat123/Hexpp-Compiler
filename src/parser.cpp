@@ -54,7 +54,7 @@ std::optional<NodeTerm*> Parser::parse_term()
     {
         size_t line = peek().value().line;
         
-        const std::vector<TokenType_> unaryOperandTypes = { TokenType_::dash, TokenType_::not_, TokenType_::double_dash, TokenType_::double_plus };
+        const std::vector<TokenType_> unaryOperandTypes = { TokenType_::dash, TokenType_::not_, TokenType_::double_dash, TokenType_::double_plus, TokenType_::tilde };
         // Check if term is pre unary operator
         if (std::find(unaryOperandTypes.cbegin(), unaryOperandTypes.cend(), peek().value().type) != unaryOperandTypes.end())
         {

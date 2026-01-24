@@ -1,7 +1,7 @@
 #include "assembler.hpp"
 
-Assembler::Assembler(std::vector<Pattern> patterns)
-    :m_patterns(patterns)
+Assembler::Assembler(std::vector<Pattern> patterns, bool use_hexagon_alternatives)
+    :m_patterns(patterns), m_using_hexagon(use_hexagon_alternatives)
 { }
 
 std::string Assembler::assemble()
@@ -18,7 +18,15 @@ std::string Assembler::assemble()
             --m_indent_level;
         }
 
-        stream << std::string(m_indent_level, '\t') << m_pattern_strings[p.type] << (p.value.has_value() ? (std::string(": ") + p.value.value()) : "") << '\n';
+        // If we're using hexagon alternatives and one exists, use it
+        if (m_using_hexagon && m_hexagon_alternatives.find(p.type) != m_hexagon_alternatives.end())
+        {
+            stream << std::string(m_indent_level, '\t') << m_hexagon_alternatives.at(p.type) << (p.value.has_value() ? (std::string(": ") + p.value.value()) : "") << '\n';
+        }
+        else
+        {
+            stream << std::string(m_indent_level, '\t') << m_pattern_strings[p.type] << (p.value.has_value() ? (std::string(": ") + p.value.value()) : "") << '\n';
+        }
 
         // Indent if introspection
         if (p.type == PatternType::introspection)
