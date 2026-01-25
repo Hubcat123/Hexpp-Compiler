@@ -52,6 +52,7 @@ private:
         "Craft Artifact",
         "Craft Cypher",
         "Craft Trinket",
+        "Craft Phial",
         "Create Water",
         "Create Lava",
         "Derivation Decomposition",

@@ -114,7 +114,7 @@ int main(int argc, char** argv)
         char args[256];
         strcpy(args, ".\\hexagon.exe build \"");
         strcat(args, argv[2]);
-        strcat(args, "\"");
+        strcat(args, "\" hexagon_config.toml");
 
         // Process output with hexagon
         if (CreateProcessA(

@@ -336,6 +336,19 @@ bool Generator::gen_inbuilt_func(const NodeDefinedFunc* func, bool is_void, bool
                 try_gen_x_exprs(func->exprs, 1, func->line);
                 create_water();
                 return true;
+            // Great Spells
+            } else if (func_name == "craft_phial") {
+                try_gen_x_exprs(func->exprs, 1, func->line);
+                craft_phial();
+                return true;
+            } else if (func_name == "create_lightning") {
+                try_gen_x_exprs(func->exprs, 1, func->line);
+                summon_lightning();
+                return true;
+            } else if (func_name == "create_lava") {
+                try_gen_x_exprs(func->exprs, 1, func->line);
+                create_lava();
+                return true;
             }
         }
     }
@@ -1699,6 +1712,11 @@ void Generator::compass_purification_II()
 void Generator::cosine_purification()
 {
     add_pattern(PatternType::cosine_purification, 0);
+}
+
+void Generator::craft_phial()
+{
+    add_pattern(PatternType::craft_phial, -1);
 }
 
 void Generator::conjunction_distillation()

@@ -47,6 +47,7 @@ enum PatternType {
     craft_artifact,
     craft_cypher,
     craft_trinket,
+    craft_phial,
     create_water,
     create_lava,
     derivation_decomposition,
@@ -259,6 +260,7 @@ public:
     void craft_artifact();
     void craft_cypher();
     void craft_trinket();
+    void craft_phial();
     // AND
     void conjunction_distillation();
     void conjure_light();
