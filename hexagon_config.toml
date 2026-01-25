@@ -1,1 +1,15 @@
-Great_Spells = { "craft/battery" = "aqqqaqwwaqqqqqeqaqqqawwqwqwqwqwqw", "potion/regeneration" = "qqqqaawawaedd", "potion/night_vision" = "qqqaawawaeqdd", "potion/absorption" = "qqaawawaeqqdd", "potion/haste" = "qaawawaeqqqdd", "potion/strength" = "aawawaeqqqqdd", "lightning" = "waadwawdaaweewq", "flight" = "eawwaeawawaa", "create_lava" = "eaqawqadaqd", "teleport" = "wwwqqqwwwqqeqqwwwqqwqqdqqqqqdqq", "sentinel/create/great" = "waeawaeqqqwqwqqwq", "dispel_rain" = "eeewwweeewwaqqddqdqd", "summon_rain" = "wwweeewwweewdawdwad", "brainsweep" = "qeqwqwqwqwqeqaeqeaqeqaeqaqded" }
+[Great_Spells]
+"craft/battery" = "aqqqaqwwaqqqqqeqaqqqawwqwqwqwqwqw"
+"potion/regeneration" = "qqqqaawawaedd"
+"potion/night_vision" = "qqqaawawaeqdd"
+"potion/absorption" = "qqaawawaeqqdd"
+"potion/haste" = "qaawawaeqqqdd"
+"potion/strength" = "aawawaeqqqqdd"
+"lightning" = "waadwawdaaweewq"
+"flight" = "eawwaeawawaa"
+"create_lava" = "eaqawqadaqd"
+"teleport" = "wwwqqqwwwqqeqqwwwqqwqqdqqqqqdqq"
+"sentinel/create/great" = "waeawaeqqqwqwqqwq"
+"dispel_rain" = "eeewwweeewwaqqddqdqd"
+"summon_rain" = "wwweeewwweewdawdwad"
+"brainsweep" = "qeqwqwqwqwqeqaeqeaqeqaeqaqded"
