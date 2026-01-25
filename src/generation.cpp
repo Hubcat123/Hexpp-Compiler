@@ -268,7 +268,7 @@ bool Generator::gen_inbuilt_func(const NodeDefinedFunc* func, bool is_void, bool
                 try_gen_x_exprs(func->exprs, 2, func->line);
                 impulse();
                 return true;
-            } else if (func_name == "tele_forward") {
+            } else if (func_name == "teleport_forward") {
                 try_gen_x_exprs(func->exprs, 2, func->line);
                 blink();
                 return true;
@@ -340,6 +340,57 @@ bool Generator::gen_inbuilt_func(const NodeDefinedFunc* func, bool is_void, bool
             } else if (func_name == "craft_phial") {
                 try_gen_x_exprs(func->exprs, 1, func->line);
                 craft_phial();
+                return true;
+            } else if (func_name == "flay_mind") {
+                try_gen_x_exprs(func->exprs, 2, func->line);
+                flay_mind();
+                return true;
+            } else if (func_name == "weather_rain") {
+                try_gen_x_exprs(func->exprs, 0, func->line);
+                summon_rain();
+                return true;
+            } else if (func_name == "weather_clear") {
+                try_gen_x_exprs(func->exprs, 0, func->line);
+                dispel_rain();
+                return true;
+            } else if (func_name == "fly_wings") {
+                try_gen_x_exprs(func->exprs, 1, func->line);
+                altiora();
+                return true;
+            } else if (func_name == "teleport_relative") {
+                try_gen_x_exprs(func->exprs, 2, func->line);
+                greater_teleport();
+                return true;
+            } else if (func_name == "teleport_to") {
+                try_gen_x_exprs(func->exprs, 2, func->line);
+                prospectors_gambit();
+                compass_purification_II();
+                subtractive_distillation();
+                greater_teleport();
+                return true;
+            } else if (func_name == "effect_regeneration") {
+                try_gen_x_exprs(func->exprs, 3, func->line);
+                white_suns_zenith();
+                return true;
+            } else if (func_name == "effect_night_vision") {
+                try_gen_x_exprs(func->exprs, 2, func->line);
+                blue_suns_zenith();
+                return true;
+            } else if (func_name == "effect_absorption") {
+                try_gen_x_exprs(func->exprs, 3, func->line);
+                black_suns_zenith();
+                return true;
+            } else if (func_name == "effect_haste") {
+                try_gen_x_exprs(func->exprs, 3, func->line);
+                red_suns_zenith();
+                return true;
+            } else if (func_name == "effect_strength") {
+                try_gen_x_exprs(func->exprs, 3, func->line);
+                green_suns_zenith();
+                return true;
+            } else if (func_name == "create_greater_sentinel") {
+                try_gen_x_exprs(func->exprs, 1, func->line);
+                summon_greater_sentinel();
                 return true;
             } else if (func_name == "create_lightning") {
                 try_gen_x_exprs(func->exprs, 1, func->line);
