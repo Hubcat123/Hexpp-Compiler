@@ -502,49 +502,44 @@ bool Generator::gen_inbuilt_func(const NodeDefinedFunc* func, bool is_void, bool
                 }
                 return true;
             } else if (func_name == "get_entity") {
-                if (func->exprs.size() == 1) {
-                    try_gen_x_exprs(func->exprs, 1, func->line);
-                    entity_prfn();
-                } else {
-                    try_gen_x_exprs(func->exprs, 2, func->line);
-                    zone_dstl_any();
-                }
+                try_gen_x_exprs(func->exprs, 1, func->line);
+                entity_prfn();
+                return true;
+            } else if (func_name == "get_entities") {
+                try_gen_x_exprs(func->exprs, 2, func->line);
+                zone_dstl_any();
                 return true;
             } else if (func_name == "get_animal") {
-                if (func->exprs.size() == 1) {
-                    try_gen_x_exprs(func->exprs, 1, func->line);
-                    entity_prfn_animal();
-                } else {
-                    try_gen_x_exprs(func->exprs, 2, func->line);
-                    zone_dstl_animal();
-                }
+                try_gen_x_exprs(func->exprs, 1, func->line);
+                entity_prfn_animal();
+                return true;
+            } else if (func_name == "get_animals") {
+                try_gen_x_exprs(func->exprs, 2, func->line);
+                zone_dstl_animal();
                 return true;
             } else if (func_name == "get_monster") {
-                if (func->exprs.size() == 1) {
-                    try_gen_x_exprs(func->exprs, 1, func->line);
-                    entity_prfn_monster();
-                } else {
-                    try_gen_x_exprs(func->exprs, 2, func->line);
-                    zone_dstl_monster();
-                }
+                try_gen_x_exprs(func->exprs, 1, func->line);
+                entity_prfn_monster();
+                return true;
+            } else if (func_name == "get_monsters") {
+                try_gen_x_exprs(func->exprs, 2, func->line);
+                zone_dstl_monster();
                 return true;
             } else if (func_name == "get_item") {
-                if (func->exprs.size() == 1) {
-                    try_gen_x_exprs(func->exprs, 1, func->line);
-                    entity_prfn_item();
-                } else {
-                    try_gen_x_exprs(func->exprs, 2, func->line);
-                    zone_dstl_item();
-                }
+                try_gen_x_exprs(func->exprs, 1, func->line);
+                entity_prfn_item();
+                return true;
+            } else if (func_name == "get_items") {
+                try_gen_x_exprs(func->exprs, 2, func->line);
+                zone_dstl_item();
                 return true;
             } else if (func_name == "get_player") {
-                if (func->exprs.size() == 1) {
-                    try_gen_x_exprs(func->exprs, 1, func->line);
-                    entity_prfn_player();
-                } else {
-                    try_gen_x_exprs(func->exprs, 2, func->line);
-                    zone_dstl_player();
-                }
+                try_gen_x_exprs(func->exprs, 1, func->line);
+                entity_prfn_player();
+                return true;
+            } else if (func_name == "get_players") {
+                try_gen_x_exprs(func->exprs, 2, func->line);
+                zone_dstl_player();
                 return true;
             } else if (func_name == "get_living") {
                 if (func->exprs.size() == 1) {
@@ -555,19 +550,19 @@ bool Generator::gen_inbuilt_func(const NodeDefinedFunc* func, bool is_void, bool
                     zone_dstl_living();
                 }
                 return true;
-            } else if (func_name == "get_non_animal") {
+            } else if (func_name == "get_non_animals") {
                 try_gen_x_exprs(func->exprs, 2, func->line);
                 zone_dstl_non_animal();
                 return true;
-            } else if (func_name == "get_non_monster") {
+            } else if (func_name == "get_non_monsters") {
                 try_gen_x_exprs(func->exprs, 2, func->line);
                 zone_dstl_non_monster();
                 return true;
-            } else if (func_name == "get_non_item") {
+            } else if (func_name == "get_non_items") {
                 try_gen_x_exprs(func->exprs, 2, func->line);
                 zone_dstl_non_item();
                 return true;
-            } else if (func_name == "get_non_player") {
+            } else if (func_name == "get_non_players") {
                 try_gen_x_exprs(func->exprs, 2, func->line);
                 zone_dstl_non_player();
                 return true;
