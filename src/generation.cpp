@@ -216,6 +216,118 @@ bool Generator::gen_inbuilt_func(const NodeDefinedFunc* func, bool is_void, bool
                 try_gen_x_exprs(func->exprs, 1, func->line);
                 break_block();
                 return true;
+            } else if (func_name == "effect_weakness") {
+                try_gen_x_exprs(func->exprs, 3, func->line);
+                white_suns_nadir();
+                return true;
+            } else if (func_name == "effect_levitation") {
+                try_gen_x_exprs(func->exprs, 2, func->line);
+                black_suns_nadir();
+                return true;
+            } else if (func_name == "effect_withering") {
+                try_gen_x_exprs(func->exprs, 3, func->line);
+                black_suns_nadir();
+                return true;
+            } else if (func_name == "effect_poison") {
+                try_gen_x_exprs(func->exprs, 3, func->line);
+                red_suns_nadir();
+                return true;
+            } else if (func_name == "effect_slowness") {
+                try_gen_x_exprs(func->exprs, 3, func->line);
+                green_suns_nadir();
+                return true;
+            } else if (func_name == "craft_cypher") {
+                try_gen_x_exprs(func->exprs, 2, func->line);
+                craft_cypher();
+                return true;
+            } else if (func_name == "craft_trinket") {
+                try_gen_x_exprs(func->exprs, 2, func->line);
+                craft_trinket();
+                return true;
+            } else if (func_name == "craft_artifact") {
+                try_gen_x_exprs(func->exprs, 2, func->line);
+                craft_artifact();
+                return true;
+            } else if (func_name == "recharge_item") {
+                try_gen_x_exprs(func->exprs, 1, func->line);
+                recharge_item();
+                return true;
+            } else if (func_name == "erase_item") {
+                try_gen_x_exprs(func->exprs, 1, func->line);
+                erase_item();
+                return true;
+            } else if (func_name == "grow") {
+                try_gen_x_exprs(func->exprs, 1, func->line);
+                overgrow();
+                return true;
+            } else if (func_name == "edify") {
+                try_gen_x_exprs(func->exprs, 1, func->line);
+                edify_sapling();
+                return true;
+            } else if (func_name == "add_vel") {
+                try_gen_x_exprs(func->exprs, 2, func->line);
+                impulse();
+                return true;
+            } else if (func_name == "tele_forward") {
+                try_gen_x_exprs(func->exprs, 2, func->line);
+                blink();
+                return true;
+            } else if (func_name == "play_note") {
+                try_gen_x_exprs(func->exprs, 3, func->line);
+                make_note();
+                return true;
+            } else if (func_name == "fly_range") {
+                try_gen_x_exprs(func->exprs, 2, func->line);
+                anchorites_flight();
+                return true;
+            } else if (func_name == "fly_duration") {
+                try_gen_x_exprs(func->exprs, 2, func->line);
+                wayfarers_flight();
+                return true;
+            } else if (func_name == "change_color") {
+                try_gen_x_exprs(func->exprs, 0, func->line);
+                internalize_pigment();
+                return true;
+            } else if (func_name == "change_shape") {
+                try_gen_x_exprs(func->exprs, 0, func->line);
+                casters_glamour();
+                return true;
+            } else if (func_name == "place_block") {
+                try_gen_x_exprs(func->exprs, 1, func->line);
+                place_block();
+                return true;
+            } else if (func_name == "destroy_liquid") {
+                try_gen_x_exprs(func->exprs, 1, func->line);
+                destroy_liquid();
+                return true;
+            } else if (func_name == "destroy_fire") {
+                try_gen_x_exprs(func->exprs, 1, func->line);
+                extinguish_area();
+                return true;
+            } else if (func_name == "destroy_sentinel") {
+                try_gen_x_exprs(func->exprs, 0, func->line);
+                banish_sentinel();
+                return true;
+            } else if (func_name == "create_sentinel") {
+                try_gen_x_exprs(func->exprs, 1, func->line);
+                summon_sentinel();
+                return true;
+            } else if (func_name == "create_block") {
+                try_gen_x_exprs(func->exprs, 1, func->line);
+                conjure_block();
+                return true;
+            } else if (func_name == "create_fire") {
+                try_gen_x_exprs(func->exprs, 1, func->line);
+                ignite();
+                return true;
+            } else if (func_name == "create_explosion") {
+                try_gen_x_exprs(func->exprs, 2, func->line);
+                explosion();
+                return true;
+            } else if (func_name == "create_explosion_fire") {
+                try_gen_x_exprs(func->exprs, 2, func->line);
+                fireball();
+                return true;
             } else if (func_name == "create_light") {
                 try_gen_x_exprs(func->exprs, 1, func->line);
                 conjure_light();
@@ -438,6 +550,18 @@ bool Generator::gen_inbuilt_func(const NodeDefinedFunc* func, bool is_void, bool
             } else if (func_name == "vecZN") {
                 try_gen_x_exprs(func->exprs, 0, func->line);
                 vector_reflection_NZ();
+                return true;
+            } else if (func_name == "sentinel_pos") {
+                try_gen_x_exprs(func->exprs, 0, func->line);
+                locate_sentinel();
+                return true;
+            } else if (func_name == "sentinel_dir_from") {
+                try_gen_x_exprs(func->exprs, 1, func->line);
+                wayfind_sentinel();
+                return true;
+            } else if (func_name == "is_flying") {
+                try_gen_x_exprs(func->exprs, 1, func->line);
+                aviators_purification();
                 return true;
             } else if (func_name == "self") {
                 try_gen_x_exprs(func->exprs, 0, func->line);
@@ -2090,6 +2214,151 @@ void Generator::zone_dstl_non_player()
 void Generator::zone_dstl_player()
 {
     add_pattern(PatternType::zone_dstl_player, -1);
+}
+
+void Generator::altiora()
+{
+    add_pattern(PatternType::altiora, -1);
+}
+
+void Generator::banish_sentinel()
+{
+    add_pattern(PatternType::banish_sentinel, 0);
+}
+
+void Generator::blink()
+{
+    add_pattern(PatternType::blink, -2);
+}
+
+void Generator::casters_glamour()
+{
+    add_pattern(PatternType::casters_glamour, 0);
+}
+
+void Generator::conjure_block()
+{
+    add_pattern(PatternType::conjure_block, -1);
+}
+
+void Generator::craft_artifact()
+{
+    add_pattern(PatternType::craft_artifact, -2);
+}
+
+void Generator::craft_cypher()
+{
+    add_pattern(PatternType::craft_cypher, -2);
+}
+
+void Generator::craft_trinket()
+{
+    add_pattern(PatternType::craft_trinket, -2);
+}
+
+void Generator::create_lava()
+{
+    add_pattern(PatternType::create_lava, -1);
+}
+
+void Generator::destroy_liquid()
+{
+    add_pattern(PatternType::destroy_liquid, -1);
+}
+
+void Generator::edify_sapling()
+{
+    add_pattern(PatternType::edify_sapling, -1);
+}
+
+void Generator::erase_item()
+{
+    add_pattern(PatternType::erase_item, 0);
+}
+
+void Generator::extinguish_area()
+{
+    add_pattern(PatternType::extinguish_area, -1);
+}
+
+void Generator::flay_mind()
+{
+    add_pattern(PatternType::flay_mind, -2);
+}
+
+void Generator::greater_teleport()
+{
+    add_pattern(PatternType::greater_teleport, -2);
+}
+
+void Generator::green_suns_nadir()
+{
+    add_pattern(PatternType::green_suns_nadir, -3);
+}
+
+void Generator::green_suns_zenith()
+{
+    add_pattern(PatternType::green_suns_zenith, -3);
+}
+
+void Generator::ignite()
+{
+    add_pattern(PatternType::ignite, -1);
+}
+
+void Generator::impulse()
+{
+    add_pattern(PatternType::impulse, -2);
+}
+
+void Generator::internalize_pigment()
+{
+    add_pattern(PatternType::internalize_pigment, 0);
+}
+
+void Generator::locate_sentinel()
+{
+    add_pattern(PatternType::locate_sentinel, 1);
+}
+
+void Generator::overgrow()
+{
+    add_pattern(PatternType::overgrow, -1);
+}
+
+void Generator::place_block()
+{
+    add_pattern(PatternType::place_block, -1);
+}
+
+void Generator::recharge_item()
+{
+    add_pattern(PatternType::recharge_item, -1);
+}
+
+void Generator::red_suns_nadir()
+{
+    add_pattern(PatternType::red_suns_nadir, -3);
+}
+
+void Generator::red_suns_zenith()
+{
+    add_pattern(PatternType::red_suns_zenith, -3);
+}
+
+void Generator::summon_greater_sentinel()
+{
+    add_pattern(PatternType::summon_greater_sentinel, -1);
+}
+
+void Generator::summon_sentinel()
+{
+    add_pattern(PatternType::summon_sentinel, -1);
+}
+
+void Generator::wayfind_sentinel()
+{
+    add_pattern(PatternType::wayfind_sentinel, 0);
 }
 
 void Generator::wayfarers_flight()

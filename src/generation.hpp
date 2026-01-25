@@ -8,6 +8,7 @@
 enum PatternType {
     akashas_distillation,
     akashas_gambit,
+    altiora,
     additive_distillation,
     alidades_purification,
     anchorites_flight,
@@ -21,15 +22,18 @@ enum PatternType {
     assessors_purification,
     assessors_reflection,
     aviators_purification,
+    banish_sentinel,
     axial_purification,
     black_suns_nadir,
     black_suns_zenith,
+    blink,
     blue_suns_nadir,
     blue_suns_zenith,
     bookkeepers_gambit,
     break_block,
     ceiling_purification,
     charons_gambit,
+    casters_glamour,
     chroniclers_gambit,
     chroniclers_prfn,
     circle_reflection,
@@ -37,16 +41,23 @@ enum PatternType {
     compass_purification_II,
     conjunction_distillation,
     conjure_light,
+    conjure_block,
     consideration,
     cosine_purification,
+    craft_artifact,
+    craft_cypher,
+    craft_trinket,
     create_water,
+    create_lava,
     derivation_decomposition,
+    destroy_liquid,
     dioscuri_gambit,
     disjunction_distillation,
     division_distillation,
     dispel_rain,
     entropy_reflection,
     eulers_reflection,
+    edify_sapling,
     entity_prfn,
     entity_prfn_animal,
     entity_prfn_item,
@@ -54,7 +65,8 @@ enum PatternType {
     entity_prfn_monster,
     entity_prfn_player,
     equality_distillation,
-    evanition,
+    erase_item,
+    extinguish_area,
     excisors_distillation,
     exclusion_distillation,
     explosion,
@@ -65,22 +77,30 @@ enum PatternType {
     flocks_disintegration,
     flocks_gambit,
     flocks_reflection,
+    flay_mind,
     floor_purification,
     gemini_decomposition,
     gemini_gambit,
+    green_suns_nadir,
+    green_suns_zenith,
     greater_fold_reflection,
+    greater_teleport,
     hermes_gambit,
     huginns_gambit,
+    ignite,
     inequality_distillation,
+    impulse,
     integration_distillation,
     inverse_cosine_purification,
     inverse_sine_purification,
     inverse_tangent_distillation,
     inverse_tangent_purification,
+    internalize_pigment,
     introspection,
     iris_gambit,
     jesters_gambit,
     length_purification,
+    locate_sentinel,
     lesser_fold_reflection,
     locators_distillation,
     lodestone_reflection,
@@ -97,12 +117,17 @@ enum PatternType {
     negation_purification,
     nullary_reflection,
     numerical_reflection,
+    overgrow,
     pace_purification,
+    place_block,
     power_distillation,
     prospectors_gambit,
     retrograde_purification,
+    recharge_item,
     retrospection,
     reveal,
+    red_suns_nadir,
+    red_suns_zenith,
     rotation_gambit,
     rotation_gambit_II,
     scouts_distillation,
@@ -119,6 +144,8 @@ enum PatternType {
     swindlers_gambit,
     summon_lightning,
     summon_rain,
+    summon_greater_sentinel,
+    summon_sentinel,
     surgeons_exaltation,
     tangent_purification,
     thanatos_reflection,
@@ -136,6 +163,7 @@ enum PatternType {
     vector_reflection_PZ,
     vector_reflection_zero,
     wayfarers_flight,
+    wayfind_sentinel,
     waystone_reflection,
     white_suns_nadir,
     white_suns_zenith,
@@ -195,10 +223,12 @@ public:
 
     void akashas_distillation();
     void akashas_gambit();
+    void altiora();
     void additive_distillation();
     void anchorites_flight();
     void alidades_purification();
     void aviators_purification();
+    void banish_sentinel();
     void archers_distillation();
     void architects_distillation();
     void arcs_reflection();
@@ -211,12 +241,14 @@ public:
     void axial_purification();
     void black_suns_nadir();
     void black_suns_zenith();
+    void blink();
     void blue_suns_nadir();
     void blue_suns_zenith();
     void bookkeepers_gambit(std::string value);
     void break_block();
     void ceiling_purification();
     void charons_gambit();
+    void casters_glamour();
     void chroniclers_gambit();
     void chroniclers_prfn();
     void chroniclers_purification();
@@ -224,11 +256,17 @@ public:
     void compass_purification();
     void compass_purification_II();
     void cosine_purification();
+    void craft_artifact();
+    void craft_cypher();
+    void craft_trinket();
     // AND
     void conjunction_distillation();
     void conjure_light();
+    void conjure_block();
     void create_water();
+    void create_lava();
     void derivation_decomposition();
+    void destroy_liquid();
     void dioscuri_gambit();
     // OR
     void disjunction_distillation();
@@ -236,7 +274,10 @@ public:
     void dispel_rain();
     void entropy_reflection();
     void equality_distillation();
+    void erase_item();
+    void extinguish_area();
     void eulers_reflection();
+    void edify_sapling();
     void entity_prfn();
     void entity_prfn_animal();
     void entity_prfn_item();
@@ -252,19 +293,27 @@ public:
     void fishermans_gambit_II();
     void flocks_gambit(int num_iotas_packed);
     void flocks_reflection();
+    void flay_mind();
     void floor_purification();
     void gemini_decomposition();
+    void green_suns_nadir();
+    void green_suns_zenith();
     void greater_fold_reflection();
+    void greater_teleport();
     // Store in Raven's Mind
     void huginns_gambit();
+    void ignite();
     void inequality_distillation();
+    void impulse();
     void integration_distillation();
     void inverse_cosine_purification();
     void inverse_sine_purification();
     void inverse_tangent_distillation();
     void inverse_tangent_purification();
+    void internalize_pigment();
     void jesters_gambit();
     void length_purification();
+    void locate_sentinel();
     void lesser_fold_reflection();
     void locators_distillation();
     void lodestone_reflection();
@@ -282,11 +331,16 @@ public:
     void negation_purification();
     void nullary_reflection();
     void numerical_reflection(std::string value);
+    void overgrow();
     void pace_purification();
+    void place_block();
     void power_distillation();
     void prospectors_gambit();
     void retrograde_purification();
+    void recharge_item();
     void reveal();
+    void red_suns_nadir();
+    void red_suns_zenith();
     // 3rd becomes 1st
     void rotation_gambit();
     // 1st becomes 3rd
@@ -306,6 +360,8 @@ public:
     void swindlers_gambit();
     void summon_lightning();
     void summon_rain();
+    void summon_greater_sentinel();
+    void summon_sentinel();
     void surgeons_exaltation();
     void tangent_purification();
     void thanatos_reflection();
@@ -333,6 +389,7 @@ public:
     void zone_dstl_non_player();
     void zone_dstl_player();
     void wayfarers_flight();
+    void wayfind_sentinel();
     void waystone_reflection();
     void white_suns_nadir();
     void white_suns_zenith();
