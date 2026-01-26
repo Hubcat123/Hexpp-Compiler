@@ -187,7 +187,16 @@ private:
     };
 
     const std::unordered_map<PatternType, std::string> m_hexagon_alternatives = {
-        {PatternType::derivation_decomposition, "Combination Distillation"},
+        {PatternType::derivation_decomposition, "<WEST qaeaq>"},
+        {PatternType::inverse_tangent_distillation, "<WEST deadeeeeewd>"},
+        {PatternType::thanatos_reflection, "<WEST qqaed>"},
+        {PatternType::ignite, "Ignite Block"},
+        {PatternType::casters_glamour, "<WEST dwaawedwewdwe>"},
+        {PatternType::aviators_purification, "<WEST dwdwdeweaqa>"},
+        {PatternType::anchorites_flight, "<WEST awawaawq>"},
+        {PatternType::wayfarers_flight, "<WEST dwdwdewq>"},
+        {PatternType::altiora, "Flight"},
+        {PatternType::zone_dstl_any, "<WEST qqqqqwded>"},
     };
 
     bool m_using_hexagon;

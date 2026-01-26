@@ -222,7 +222,7 @@ bool Generator::gen_inbuilt_func(const NodeDefinedFunc* func, bool is_void, bool
                 return true;
             } else if (func_name == "effect_levitation") {
                 try_gen_x_exprs(func->exprs, 2, func->line);
-                black_suns_nadir();
+                blue_suns_nadir();
                 return true;
             } else if (func_name == "effect_withering") {
                 try_gen_x_exprs(func->exprs, 3, func->line);
@@ -253,7 +253,7 @@ bool Generator::gen_inbuilt_func(const NodeDefinedFunc* func, bool is_void, bool
                 recharge_item();
                 return true;
             } else if (func_name == "erase_item") {
-                try_gen_x_exprs(func->exprs, 1, func->line);
+                try_gen_x_exprs(func->exprs, 0, func->line);
                 erase_item();
                 return true;
             } else if (func_name == "grow") {
@@ -435,7 +435,7 @@ bool Generator::gen_inbuilt_func(const NodeDefinedFunc* func, bool is_void, bool
                 try_gen_x_exprs(func->exprs, 2, func->line);
                 selection_exaltation();
                 return true;
-            } else if (func_name == "get_back") {
+            } else if (func_name == "back") {
                 try_gen_x_exprs(func->exprs, 0, func->line);
                 derivation_decomposition();
                 add_pattern(PatternType::bookkeepers_gambit, -1, "v-");
@@ -456,7 +456,7 @@ bool Generator::gen_inbuilt_func(const NodeDefinedFunc* func, bool is_void, bool
                 try_gen_x_exprs(func->exprs, 0, func->line);
                 uniqueness_purification();
                 return true;
-            } else if (func_name == "get_front") {
+            } else if (func_name == "front") {
                 try_gen_x_exprs(func->exprs, 0, func->line);
                 speakers_decomposition();
                 add_pattern(PatternType::bookkeepers_gambit, -1, "v-");
@@ -476,7 +476,7 @@ bool Generator::gen_inbuilt_func(const NodeDefinedFunc* func, bool is_void, bool
                 vector_disintegration();
                 add_pattern(PatternType::bookkeepers_gambit, -2, "vv-");
                 return true;
-            } else if (func_name == "normalized" || func_name == "sign") {
+            } else if (func_name == "sign") {
                 try_gen_x_exprs(func->exprs, 0, func->line);
                 axial_purification();
                 return true;
@@ -560,7 +560,7 @@ bool Generator::gen_inbuilt_func(const NodeDefinedFunc* func, bool is_void, bool
                 return true;
             } else if (func_name == "arc_sin") {
                 try_gen_x_exprs(func->exprs, 1, func->line);
-                inverse_cosine_purification();
+                inverse_sine_purification();
                 return true;
             } else if (func_name == "arc_cos") {
                 try_gen_x_exprs(func->exprs, 1, func->line);
@@ -841,8 +841,6 @@ bool Generator::gen_inbuilt_func(const NodeDefinedFunc* func, bool is_void, bool
                 return true;
             } else if (func_name == "execute_no_ravens_mind") {
                 if (func->exprs.size() == 1) {
-                    try_gen_x_exprs(func->exprs, 1, func->line);
-                    singles_purification();
                     add_pattern(PatternType::introspection, 0);
                     flocks_reflection();
                     add_pattern(PatternType::flocks_gambit, 0);
@@ -850,18 +848,14 @@ bool Generator::gen_inbuilt_func(const NodeDefinedFunc* func, bool is_void, bool
                     bookkeepers_gambit("v-");
                     add_pattern(PatternType::hermes_gambit, 0);
                     add_pattern(PatternType::retrospection, 0);
-                    rotation_gambit();
+                    try_gen_x_exprs(func->exprs, 1, func->line);
+                    singles_purification();
                     add_pattern(PatternType::thoths_gambit, 0);
-                    jesters_gambit();
                     // Account properly for stack size
                     --m_stack_size;
                 }
                 else
                 {
-                    try_gen_x_exprs(func->exprs, 2, func->line);
-                    numerical_reflection("2");
-                    flocks_gambit(2);
-                    singles_purification();
                     add_pattern(PatternType::introspection, 0);
                     flocks_reflection();
                     add_pattern(PatternType::flocks_gambit, 0);
@@ -871,9 +865,11 @@ bool Generator::gen_inbuilt_func(const NodeDefinedFunc* func, bool is_void, bool
                     jesters_gambit();
                     add_pattern(PatternType::hermes_gambit, 0);
                     add_pattern(PatternType::retrospection, 0);
-                    rotation_gambit();
+                    try_gen_x_exprs(func->exprs, 2, func->line);
+                    numerical_reflection("2");
+                    flocks_gambit(2);
+                    singles_purification();
                     add_pattern(PatternType::thoths_gambit, 0);
-                    jesters_gambit();
                     // Account properly for stack size
                     --m_stack_size;
                 }
@@ -1732,7 +1728,7 @@ void Generator::ceiling_purification()
 
 void Generator::chroniclers_gambit()
 {
-    add_pattern(PatternType::chroniclers_gambit, 1);
+    add_pattern(PatternType::chroniclers_gambit, -2);
 }
 
 void Generator::chroniclers_prfn()
@@ -1742,7 +1738,7 @@ void Generator::chroniclers_prfn()
 
 void Generator::chroniclers_purification()
 {
-    add_pattern(PatternType::chroniclers_prfn, 1);
+    add_pattern(PatternType::chroniclers_prfn, 0);
 }
 
 void Generator::circle_reflection()
@@ -2087,7 +2083,7 @@ void Generator::scouts_distillation()
 
 void Generator::scribes_gambit()
 {
-    add_pattern(PatternType::scribes_gambit, 0);
+    add_pattern(PatternType::scribes_gambit, -1);
 }
 
 void Generator::scribes_reflection()
