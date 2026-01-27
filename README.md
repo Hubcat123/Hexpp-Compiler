@@ -8,8 +8,10 @@ How to Use
 
 1. Download: Download Hex++Compiler.exe
 2. Open cmd: Open a Command Prompt and navigate to the directory containing the exe, or right-click in the folder containing the exe and click "Open in Terminal"
-3. Run Compiler: In the terminal, type "./Hex++Compiler.exe <input> <output>", where <input> is the file path of the file containing your Hex++ code, and <output> is the file path of the file you want to output to (It will create a new file if one does not exist). The file path of both is just the name of the file, with the extension, if the files are in the same folder as the exe.
+3. Run Compiler: In the terminal, type "./Hex++Compiler.exe \<input> \<output>", where \<input> is the file path of the file containing your Hex++ code, and \<output> is the file path of the file you want to output to (It will create a new file if one does not exist). The file path of both is just the name of the file, with the extension, if the files are in the same folder as the exe.
 4. Get Output: The terminal will print out the /give command needed to get a focus with your spell if it can find hexagon as described below, which may be copied by selecting, then using RMB (instead of CTRL + C). The output file you specified will contain the hexpattern code of your program.
+
+Details on how to make a program are in the docs folder Hex++'s github. This includes grammer, syntax, functions, examples, etc. It is recommended you start with overview.md and continue from there if you're not already familiar with C-type languages. If you are, then examples.md may have enough information for you to learn the language quickly, and functions.md has a comprehensive list of the inbuilt functions provided.
 
 Hexagon
 
