@@ -2,6 +2,17 @@
 
 Hex++ is a high-level language that compiles into patterns for Hex Casting, a Minecraft mod. This document will give a basic overview of how writting a program in Hex++ works.
 
+## Documentation
+
+This sections contains a list of all docs and what they contain.
+
+* overview.md: This document, described above.
+* statements.md: A list of all statements that are valid code, including if, while, return, etc.
+* expressions.md: A list of all operators that are used in expressions, as well as other information involved in evaluating expressions.
+* functions.md: Information on declaring functions and a list of all inbuilt functions.
+* examples.md: A collection of example programs along with descriptions of what they do.
+* grammer.pdf: The basic grammer used in composing a program, describes what is or is not valid syntax.
+
 ## Making a program
 
 Hex++ programs start with their main functions. Here's what the definiion of one looks like:
