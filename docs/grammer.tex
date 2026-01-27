@@ -1,0 +1,101 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\allowdisplaybreaks{}
+\begin{document}
+\begin{align}
+{[\text{Prog}]} &\to {[\text{GlobalDec}]}^* \\
+\text{[GlobalDec]} &\to
+\begin{cases}
+    \text{let ident} = [\text{Expr}]; \\
+    \text{void ident}(ident,^*) \text{[Scope]} \\
+    \text{ret ident}(ident,^*) \text{[Scope]} \\
+\end{cases} \\
+[\text{Stmt}] &\to
+\begin{cases}
+    [\text{FuncCall}]; \\
+    [\text{ReturnStmt}] \\
+    \text{while} ([\text{Expr}]) [\text{Stmt}] \\
+    \text{let } ident = [\text{Expr}]; \\
+    \text{if} ([\text{Expr}])[\text{Stmt}]\text{[IfPred]}\\
+    [\text{Expr}]; \\
+    [\text{Scope}]
+\end{cases} \\
+\text{[Scope]} &\to {\{{[\text{Stmt}]}^*\}} \\
+[\text{FuncCall}] &\to ident([\text{Expr}],^*) \\
+\text{[ReturnStmt]} &\to
+\begin{cases}
+    \text{return;} \\
+    \text{return } [\text{Expr}];
+\end{cases} \\
+\text{[IfPred]} &\to
+\begin{cases}
+    \text{else}\text{[Stmt]} \\
+    \epsilon
+\end{cases} \\
+[\text{Expr}] &\to
+\begin{cases}
+    [\text{Term}] \\
+    [\text{BinExpr}]
+\end{cases} \\
+[\text{BinExpr}] &\to
+\begin{cases}
+    [\text{Expr}] . [\text{Expr}] & \text{prec} = 8 \\
+    [\text{Expr}] \% [\text{Expr}] & \text{prec} = 7 \\
+    [\text{Expr}] * [\text{Expr}] & \text{prec} = 7 \\
+    [\text{Expr}] / [\text{Expr}] & \text{prec} = 7 \\
+    [\text{Expr}] + [\text{Expr}] & \text{prec} = 6 \\
+    [\text{Expr}] - [\text{Expr}] & \text{prec} = 6 \\
+    [\text{Expr}] > [\text{Expr}] & \text{prec} = 5 \\
+    [\text{Expr}] < [\text{Expr}] & \text{prec} = 5 \\
+    [\text{Expr}] >= [\text{Expr}] & \text{prec} = 5 \\
+    [\text{Expr}] <= [\text{Expr}] & \text{prec} = 5 \\
+    [\text{Expr}] != [\text{Expr}] & \text{prec} = 4 \\
+    [\text{Expr}] == [\text{Expr}] & \text{prec} = 4 \\
+    [\text{Expr}] \wedge [\text{Expr}] & \text{prec} = 3 \\
+    [\text{Expr}] \&\& [\text{Expr}] & \text{prec} = 2 \\
+    [\text{Expr}] || [\text{Expr}] & \text{prec} = 1 \\
+    [\text{Var}] += [\text{Expr}] & \text{prec} = 0 \\
+    [\text{Var}] -= [\text{Expr}] & \text{prec} = 0 \\
+    [\text{Var}] *= [\text{Expr}] & \text{prec} = 0 \\
+    [\text{Var}] /= [\text{Expr}] & \text{prec} = 0 \\
+    [\text{Var}] \%= [\text{Expr}] & \text{prec} = 0 \\
+    [\text{Var}] = [\text{Expr}] & \text{prec} = 0 \\
+\end{cases} \\
+[\text{Var}] &\to
+\begin{cases}
+    ident \\
+    ident[\text{Expr}]
+\end{cases} \\
+[\text{Term}] &\to
+\begin{cases}
+    \text{num\_lit} \\
+    \text{null} \\
+    [\text{BoolLit}] \\
+    [\text{FuncCall}] \\
+    [\text{UnExpr}] \\
+    [\text{PostUnExpr}] \\
+    [[\text{Expr}],^*] \\
+    ([\text{Expr}]) \\
+    [\text{Var}] \\
+\end{cases} \\
+[\text{BoolLit}] &\to
+\begin{cases}
+    \text{true} \\
+    \text{false} \\
+\end{cases} \\
+[\text{UnExpr}] &\to
+\begin{cases}
+    -[\text{Term}] \\
+    ![\text{Term}] \\
+    \backsim[\text{Term}] \\
+    --[\text{Term}] \\
+    ++[\text{Term}] \\
+\end{cases} \\
+[\text{PostUnExpr}] &\to
+\begin{cases}
+    [\text{Term}]-- \\
+    [\text{Term}]++ \\
+\end{cases}
+\end{align}
+\end{document}

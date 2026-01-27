@@ -37,3 +37,8 @@ text.txt
 FunctionsToAdd.txt
 *.ilk
 *.pdb
+*.aux
+*.fdb_latexmk
+*.fls
+*.log
+*.gz
