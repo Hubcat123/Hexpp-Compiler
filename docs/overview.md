@@ -41,23 +41,24 @@ Global variables can reference inbuilt functions and other global variables that
 ```
 let foo = 1;
 
-void break_above(position){
-    mine(position + vec(0, 1, 0));
+void foo_bar(num){
+    return num / 2;
 }
 
 let bar = foo + 1;
 
-ret double(num) {
+ret bar_foo(num) {
     return num * 2;
 }
 
 void main() {
-    break_above(vec(double(bar), 60, foo));
+    print (foo_bar(bar) * bar_foo(foo));
 }
 ```
-This function doesn't do much useful, what it ends up doing is breaking whatever block is at (4, 61, 1) in the world, as long as it's within your spell's ambit(range). This is simply an example to show you what a program looks like. If you want more practical examples, you can see some in examples.md.
+This spell prints out the number 2 into chat. This is simply an example to show you what a program looks like, if you want more practical examples, you can see some in examples.md.
 
 ## Comments
+
 At almost any point in a program, you may insert comments like so:
 ```
 void main() {
@@ -70,13 +71,13 @@ Comments are not considered as part of the code, the compiler will ignore them c
 There are two kinds of comments, single-line comments as shown above, and multi-line comments. Single-line comments start at a //, and end at the next new line. Multi-line comments start at a /*, and end at */. This allows your comment to span multiple lines, like so:
 ```
 void main() {
-    /*
-    This is a long comment,
+    /* This is a long comment,
     so I decided to split it
     up into multiple lines.
-    I could also do this if
-    I lines of code I wanted
-    to comment out temporarily. */
+    I could also comment like
+    this if I had lines of
+    code I wanted to comment
+    out temporarily. */
     print (1);
 }
 ```
@@ -84,6 +85,6 @@ Comments are a helpful tool for making your code easy for yourself and others to
 
 ## Pattern Usage
 
-For the sake of allowing you to make more efficient spells, every feature of this language will tell you how many patterns it costs to use. A single spell cannot evaluate more than 100,000 patterns. Every program will evaluate 1 pattern base, with more being generated depending on what code you write. Some things may not use patterns, and so will not list how many they use, such as variable or function declaration. However, this is only for that bit of the code itself, for example declaring a variable may not require patterns, but generating the expression it's being set to does. The pattern costs listed are the maximum amount that the code could cost, however there are some compile-time optimizations that may reduce that count.
+For the sake of allowing you to make more efficient spells, every feature of this language will tell you how many patterns it costs to use. A single spell cannot evaluate more than 100,000 patterns. Every program will generate 1 pattern as a base amount, with more being generated depending on what code you write. Some things may not use patterns, and so will not list how many they use, such as variable or function declaration. However, this is only for that bit of the code itself, for example declaring a variable may not require patterns, but generating the expression it's being set to does. The pattern costs listed are the maximum amount that the code could cost, however there are some compile-time optimizations that may reduce that count.
 
 One last thing to note is that in the case of functions or loops, the patterns within them will count towards the 100,000 for each time they are ran. A loop which has 30 patterns worth of code in it will cost 30 patterns per loop it does, however if a function containing 100 patterns is never ran, it won't hurt your pattern count at all.
