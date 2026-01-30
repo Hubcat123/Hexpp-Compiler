@@ -21,7 +21,11 @@ void main() {
 
 }
 ```
-Inside the curly braces, differnet statements can be made, all of which are detailed in statements.md. In addition to the main function, any number of void or non-void functions may be declared, like so:
+Inside the curly braces, differnet statements can be made, all of which are detailed in statements.md. In addition to the main function, one or more global declarations may be made. These are either functions declarations, or global variable declarations.
+
+## Global Declarations
+
+Function declarations are one kind of global declaration, they look like this:
 ```
 void foo(var1, var1) {
 
@@ -31,13 +35,17 @@ ret bar() {
     return null;
 }
 ```
-The details about functions are listed in functions.md, along with a description of inbuilt functions. These inbuilt functions are going to be how you get your program to actually do stuff (break blocks, make lights, etc.). Programs also may have global variables declared in them:
+The details about functions are listed in functions.md, along with a description of all inbuilt functions. These inbuilt functions are going to be how you get your program to actually do stuff (break blocks, make lights, etc.). Programs also may have global variables declared in them:
 ```
 let global1 = 0;
 let global2 = 3;
 let global3 = global1 + global2;
 ```
-Global variables can reference inbuilt functions and other global variables that were declared higher up than them, but NOT functions you defined or global variables declared lower than them! That's it for the basics, here's an example of what a program may look like all put together:
+Global variables hold a value and may be referenced as a term inside expressions, as explained in expressions.md. Global variable declarations can reference inbuilt functions and other global variables that were declared higher up than them, but NOT functions you defined or global variables declared lower than them!
+
+## Basic Example Program
+
+That's it for the basics, here's an example of what a program may look like all put together:
 ```
 let foo = 1;
 
@@ -85,6 +93,16 @@ Comments are a helpful tool for making your code easy for yourself and others to
 
 ## Pattern Usage
 
-For the sake of allowing you to make more efficient spells, every feature of this language will tell you how many patterns it costs to use. A single spell cannot evaluate more than 100,000 patterns. Every program will generate 1 pattern as a base amount, with more being generated depending on what code you write. Some things may not use patterns, and so will not list how many they use, such as variable or function declaration. However, this is only for that bit of the code itself, for example declaring a variable may not require patterns, but generating the expression it's being set to does. The pattern costs listed are the maximum amount that the code could cost, however there are some compile-time optimizations that may reduce that count.
+For the sake of allowing you to make more efficient spells, every feature of this language will tell you how many patterns it costs to use. A single spell cannot evaluate more than 100,000 patterns. Some things may not use patterns, and so will not list how many they use, such as variable or function declaration. However, this is only for that bit of the code itself, for example declaring a variable may not require patterns, but generating the expression it's being set to does. The pattern costs listed are the maximum amount that the code could cost, however there are some compile-time optimizations that may reduce that count.
 
 One last thing to note is that in the case of functions or loops, the patterns within them will count towards the 100,000 for each time they are ran. A loop which has 30 patterns worth of code in it will cost 30 patterns per loop it does, however if a function containing 100 patterns is never ran, it won't hurt your pattern count at all.
+
+### Base Pattern Cost
+
+Only main declared, no global vars: 1
+Only one function declared or global var total: 3
+More than one total functions declared and global vars: 4
+
+## Types
+
+Currently, Hex++ does not have types or type checking. Most functions will only return specific types of iotas, but some can return any type of iota. A variables or list element may hold any kind of iota, be it from base Hex Casting or any addons. As long as it can be stored as a single element on the stack, it can be stored in a list or in a variable.

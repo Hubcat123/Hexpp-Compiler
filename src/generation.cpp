@@ -917,7 +917,7 @@ bool Generator::gen_inbuilt_func(const NodeDefinedFunc* func, bool is_void, bool
     return false;
 }
 
-bool Generator::gen_defined_func(const NodeDefinedFunc* func)
+bool Generator::gen_call_func(const NodeDefinedFunc* func)
 {
     // Find function being called
     std::vector<Func>::iterator iter = std::find_if(m_funcs.begin(), m_funcs.end(), [&](const Func& _func){
@@ -1215,7 +1215,7 @@ void Generator::gen_term(const NodeTerm* term)
 
         void operator()(const NodeTermCallFunc* call_func)
         {
-            if (!gen.gen_inbuilt_func(call_func->func, false, false) && gen.gen_defined_func(call_func->func))
+            if (!gen.gen_inbuilt_func(call_func->func, false, false) && gen.gen_call_func(call_func->func))
             {
                 compilation_error("Calling void function as non-void function", call_func->line);
             }
@@ -1258,7 +1258,7 @@ void Generator::gen_stmt(const NodeStmt* stmt)
             // Try to gen void inbuilt func first, then non-void inbuilt func, then defined func
             if (!gen.gen_inbuilt_func(call_func->func, true, false))
             {
-                if (gen.gen_inbuilt_func(call_func->func, false, false) || !gen.gen_defined_func(call_func->func))
+                if (gen.gen_inbuilt_func(call_func->func, false, false) || !gen.gen_call_func(call_func->func))
                 {
                     gen.pop();
                 }
@@ -1331,7 +1331,7 @@ void Generator::gen_stmt(const NodeStmt* stmt)
             // Potentially generate else statement
             if (stmt_if->else_stmt == nullptr)
             {
-                gen.add_pattern(PatternType::vacant_reflection, 0);
+                gen.vacant_reflection();
             }
             else
             {
@@ -2178,6 +2178,9 @@ void Generator::uniqueness_purification()
 
 void Generator::vacant_reflection()
 {
+    // This uses no patterns but achieves the same effect as vacant reflection
+    add_pattern(PatternType::introspection, 0);
+    add_pattern(PatternType::retrospection, 0);
     add_pattern(PatternType::vacant_reflection, 1);
 }
 

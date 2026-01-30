@@ -204,7 +204,7 @@ public:
     void gen_assignment(const NodeTermVar* var, const std::variant<const NodeExpr*, const float> value, TokenType_ op, size_t line, bool is_post = false);
     bool gen_inbuilt_func(const NodeDefinedFunc* func, bool is_void, bool is_member);
     // Returns whether func is void func
-    bool gen_defined_func(const NodeDefinedFunc* func);
+    bool gen_call_func(const NodeDefinedFunc* func);
     void gen_bin_expr(const NodeExprBin* expr_bin);
     // Returns the var of the variable gen-ed
     Var gen_var_ident(const std::string ident_name, size_t line, bool dont_gen_if_global = false, bool leave_copy = true);
