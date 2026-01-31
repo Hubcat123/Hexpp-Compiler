@@ -79,7 +79,7 @@ std::vector<Pattern> Optimizer::optimize()
                 break;
             case PatternType::bookkeepers_gambit:
                 // Dud bookkeepers, do nothing
-                if (peek().value().value.value().find('v'))
+                if (peek().value().value.value().find('v') == std::string::npos)
                 {
                     consume();
                 }

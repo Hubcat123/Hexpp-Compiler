@@ -1083,7 +1083,7 @@ Generator::Var Generator::gen_var_ident(const std::string ident_name, size_t lin
     }
     else
     {
-        numerical_reflection(std::to_string(m_stack_size - 1 - var.stack_loc));
+        numerical_reflection(std::to_string((int)m_stack_size - 1 - (int)var.stack_loc));
 
         if (leave_copy)
         {
@@ -1322,16 +1322,17 @@ void Generator::gen_stmt(const NodeStmt* stmt)
             --gen.m_stack_size;
 
             // Generate statement
-            gen.begin_scope();
             gen.add_pattern(PatternType::introspection, 0);
+            gen.begin_scope();
             gen.gen_stmt(stmt_if->stmt);
-            gen.add_pattern(PatternType::retrospection, 0);
             gen.end_scope();
+            gen.add_pattern(PatternType::retrospection, 0);
 
             // Potentially generate else statement
             if (stmt_if->else_stmt == nullptr)
             {
                 gen.vacant_reflection();
+                --gen.m_stack_size;
             }
             else
             {
@@ -1596,7 +1597,13 @@ void Generator::end_scopes_return(bool has_ret_value)
     size_t pop_count = m_stack_size - m_scopes[m_function_start_scope].stack_size - (has_ret_value ? 1 : 0) - 1;
 
     // Bookkeepr's Gambit all stack elements except possible ret value and jump iota
-    add_pattern(PatternType::bookkeepers_gambit, 0, std::string(m_function_num_params, 'v') + '-' + std::string(pop_count - m_function_num_params, 'v') + (has_ret_value ? "-" : ""));
+    add_pattern(PatternType::bookkeepers_gambit, 0,
+        // Preserve parameters if they exist
+        (m_function_num_params != 0 ? (std::string(m_function_num_params, 'v') + '-') : std::string()) +
+        // Pop rest of scope
+        std::string(pop_count - m_function_num_params, 'v') +
+        // Preserve return value if it exists
+        (has_ret_value ? "-" : ""));
 }
 
 void Generator::dec_func(bool is_void, std::string name, int num_params, size_t line)
@@ -2180,8 +2187,8 @@ void Generator::vacant_reflection()
 {
     // This uses no patterns but achieves the same effect as vacant reflection
     add_pattern(PatternType::introspection, 0);
-    add_pattern(PatternType::retrospection, 0);
-    add_pattern(PatternType::vacant_reflection, 1);
+    add_pattern(PatternType::retrospection, 1);
+    //add_pattern(PatternType::vacant_reflection, 1);
 }
 
 void Generator::vector_disintegration()
