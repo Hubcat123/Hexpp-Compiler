@@ -4,8 +4,11 @@ The beginnings of this compiler were made by following the YouTuber Pixeled's se
 
 This compiler is made to work with Hexagon. If the hexagon.exe is placed in the same directory as the exe for the compiler, the command line output will include the /give command that will give a focus with the compiled spell. Hexagon installation page: https://master-bw3.github.io/Hexagon/
 
-How to Use
+# How to Use
 
+Installation Video: https://www.youtube.com/watch?v=W4kXdzz89-w
+
+Instructions:
 1. Download: Download Hex++Compiler.exe
 2. Open cmd: Open a Command Prompt and navigate to the directory containing the exe, or right-click in the folder containing the exe and click "Open in Terminal"
 3. Run Compiler: In the terminal, type "./Hex++Compiler.exe \<input> \<output>", where \<input> is the file path of the file containing your Hex++ code, and \<output> is the file path of the file you want to output to (It will create a new file if one does not exist). The file path of both is just the name of the file, with the extension, if the files are in the same folder as the exe.
@@ -13,7 +16,11 @@ How to Use
 
 Details on how to make a program are in the docs folder Hex++'s github. This includes grammer, syntax, functions, examples, etc. It is recommended you start with overview.md and continue from there if you're not already familiar with C-type languages. If you are, then examples.md may have enough information for you to learn the language quickly, and functions.md has a comprehensive list of the inbuilt functions provided.
 
-Hexagon
+# Hex++ How-To
+
+How to program in the Hex++ language is described in the docs directory in the github. It is suggested you start with overview.md.
+
+# Hexagon
 
 This compiler is made to work with Hexagon. Here's steps on how to use hexagon with this compiler:
 1. Download exe: Download hexagon.exe from https://master-bw3.github.io/Hexagon/
@@ -23,6 +30,8 @@ This compiler is made to work with Hexagon. Here's steps on how to use hexagon w
 The /give command Hexagon generates will give the player running it a focus containing the list of patterns/iotas the compiler generated. If you have cheats enabled, you can type this command into the chat line and use it to get the focus. However, usually (in my experience) the command is too long for chat. In this case, you'll need to put it in a command block and power the command block to get the focus. Sometimes, the command may be even too long for the command block, in which case your only options are to manually compile the patterns in parts with Hexagon using the command line, or make a datapack to specifically give you the focus. This is pretty rare though, as command blocks can hold very long commands. Since this method requires using commands, you may not want to or be able to use it direcly in the world you intend to use the spell. In this case, you'll need to either input the spell manually, or if you have Hexal you can use the everbook to transfer the spell from a creative world into your survival world.
 
 Note that when running with hexagon, the patterns may be compile differently. For example, instead of "Thanatos' Reflection" you will see "<WEST qqaed>." This is because some patterns are not supported by Hexagon by name, or use a different name than in-game. This is the compiler using custom patterns so that Hexagon can correctly generate the /give command. Removing hexagon.exe from the folder or temporarily renaming it will cause the compiler to generate like normal. Later there will likely be a flag you can pass into the compiler to manually disable Hexagon genreation, too.
+
+## Great Spells w/ Hexagon
 
 That's all you need to use hexagon normally, however if your compiled spell requires greater spells, then you'll need to follow additional steps. This is because greater spells change their pattern stroke orders from world-to-world, so for the compiled spell to work in a particular world, Hexagon needs to know what those patterns look like. Setting these can be somewhat compilcated, here's a step-by-step on how to do it:
 1. Open: Open the config file you downloaded above using some kind of text editor, such as notepad. You should see a list of entries which should look something like "'craft/battery' = 'aqqqaqwwaqqqqqeqaqqqawwqwqwqwqwqw'". The entries in there are Hexagon's default entries for the greater spells.
