@@ -42,3 +42,4 @@ FunctionsToAdd.txt
 *.fls
 *.log
 *.gz
+!Hex++Compiler.exe
