@@ -116,6 +116,17 @@ std::optional<NodeTerm*> Parser::parse_term()
             term->line = line;
             return term;
         }
+        // Check if term is pattern lit
+        else if (peek().value().type == TokenType_::pattern_lit)
+        {
+            NodeTermPatternLit* pattern_lit = m_allocator.alloc<NodeTermPatternLit>();
+            pattern_lit->pattern_lit = consume();
+            pattern_lit->line = line;
+            NodeTerm* node_term = m_allocator.alloc<NodeTerm>();
+            node_term->var = pattern_lit;
+            node_term->line = line;
+            return node_term;
+        }
         // Check if term is bool lit
         else if (peek().value().type == TokenType_::bool_lit)
         {

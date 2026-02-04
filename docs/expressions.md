@@ -17,10 +17,11 @@ Terms are the values that are used in expressions. This could be a number, a boo
 1. Number Literal
 2. Boolean Literal
 3. Null Literal
-4. List
-5. Variable
-6. Function Call
-7. Parenthesis
+4. Pattern Literal
+5. List
+6. Variable
+7. Function Call
+8. Parenthesis
 
 ### 1. Number Literal
 
@@ -49,7 +50,21 @@ Null literals are hard coded null values. In code that look like this:
 null
 ```
 
-### 4. List
+### 4. Pattern Literal
+
+Patterns Used: 1; 0 if in a list constructed using only pattern literals (the list pattern cost will be 0, too)
+
+Pattern literals are hard coded patterns. Usually used in lists, they let you get the escaped pattern specified. Here's the syntax:
+```
+p"Mind's Reflection"
+```
+The compiler does not check these for matching with any patterns it knows, so if you mispell the pattern, then the mispelled pattern is what will end up being generated in the output. However, Hexagon, if it's being used, will complain about any patterns it doesn't recognize. The upside to this is that any pattern may be input, even ones for addons with no specific support from Hex++. You can also input custom patterns, the syntax recognized by Hexagon (and that it is suggested you use) is:
+```
+p"<WEST qaq>"
+```
+The "WEST" is the start direction of the custom pattern, while the "qaq" defines the turns the pattern takes from start direction to draw the whole pattern. For more details, read the how-to for great spells with Hexagon on Hex++'s README from GitHub. If you need to use quotes in your pattern literal, they can be escaped with a '\'. No other characters can be escaped.
+
+### 5. List
 
 Patterns Used: 2, plus any used in exvaluating the given expressions; 0 if the list is empty
 
@@ -58,7 +73,7 @@ Lists are a list of values of any kind, as per Hex Casting. When used as a term,
 [expr1, expr2, ..., exprN]
 ```
 
-### 5. Variable
+### 6. Variable
 
 #### Pattern Cost
 
@@ -74,13 +89,13 @@ Variables are references to previously declared local variables or global variab
 var[expr]
 ```
 
-### 6. Function Call
+### 7. Function Call
 
 Patterns Used: Listed in statements.md
 
 Most of the description of function calls is done in statements.md, which explains both void and non-void functions, as they are similar. As a term, the value of the term is equal to the return value of the function, as explained in functions.md. This means that only non-void functions may be a term, the compiler will give an error message if a void function is used like a term.
 
-### 7. Parenthesis
+### 8. Parenthesis
 
 Patterns Used: 0
 

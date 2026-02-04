@@ -66,11 +66,41 @@ std::vector<Pattern> Optimizer::optimize()
                 }
                 break;
             case PatternType::introspection:
-                // Immediate scope closure
-                if (peek(1).has_value() && peek(1).value().type == PatternType::retrospection)
+                // List of pattern lits
+                if (peek(1).has_value() && peek(1).value().type == PatternType::pattern_lit &&
+                    peek(2).has_value() && peek(2).value().type == PatternType::retrospection &&
+                    peek(3).has_value() && peek(3).value().type == PatternType::flocks_disintegration)
                 {
-                    consume(2);
-                    add_pattern(PatternType::vacant_reflection);
+                    // Keep looking for more pattern lits
+                    int num_patterns = 1;
+                    while (peek(4 * num_patterns + 0).has_value() && peek(4 * num_patterns + 0).value().type == PatternType::introspection &&
+                           peek(4 * num_patterns + 1).has_value() && peek(4 * num_patterns + 1).value().type == PatternType::pattern_lit &&
+                           peek(4 * num_patterns + 2).has_value() && peek(4 * num_patterns + 2).value().type == PatternType::retrospection &&
+                           peek(4 * num_patterns + 3).has_value() && peek(4 * num_patterns + 3).value().type == PatternType::flocks_disintegration)
+                    {
+                        ++num_patterns;
+                    }
+
+                    // Check for flocks gambit with correct number of patterns
+                    if (peek(4 * num_patterns + 0).has_value() && peek(4 * num_patterns + 0).value().type == PatternType::numerical_reflection &&
+                        peek(4 * num_patterns + 0).value().value.value() == std::to_string(num_patterns) &&
+                        peek(4 * num_patterns + 1).has_value() && peek(4 * num_patterns + 1).value().type == PatternType::flocks_gambit)
+                    {
+                        // build combined pattern list
+                        add_pattern(PatternType::introspection);
+                        for (int i = 0; i < num_patterns; ++i)
+                        {
+                            add_pattern(PatternType::pattern_lit, peek(4 * i + 1).value().value);
+                        }
+                        add_pattern(PatternType::retrospection);
+
+                        // Consume patterns
+                        consume(4 * num_patterns + 2);
+                    }
+                    else
+                    {
+                        no_opt();
+                    }
                 }
                 else
                 {

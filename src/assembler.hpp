@@ -183,7 +183,8 @@ private:
         "Zone Distillation: Non-Living",
         "Zone Distillation: Non-Monster",
         "Zone Distillation: Non-Player",
-        "Zone Distillation: Player"
+        "Zone Distillation: Player",
+        "NaP"
     };
 
     const std::unordered_map<PatternType, std::string> m_hexagon_alternatives = {

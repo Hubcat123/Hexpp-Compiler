@@ -179,6 +179,7 @@ enum PatternType {
     zone_dstl_non_monster,
     zone_dstl_non_player,
     zone_dstl_player,
+    pattern_lit,
     num_patterns
 };
 

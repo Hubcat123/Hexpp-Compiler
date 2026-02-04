@@ -107,6 +107,36 @@ std::vector<Token> Tokenizer::tokenize()
                 consume();
             }
         }
+        // Check if pattern literal
+        else if (peek().value() == 'p' &&
+                 peek(1).has_value() && peek(1).value() == '"')
+        {
+            consume(2); // Consume p"
+
+            // Read until non-escaped ending "
+            while (peek().has_value() && (peek().value() != '"' || peek(-1).value() == '\\'))
+            {
+                // Don't add to buffer escaping backslash
+                if (!(peek().value() == '\\' && peek(1).has_value() && peek(1).value() == '"'))
+                {
+                    buf.push_back(consume());
+                }
+                else
+                {
+                    consume();
+                }
+            }
+
+            if (!peek().has_value())
+            {
+                compilation_error("Unterminated pattern literal", m_curr_line);
+            }
+
+            consume(); // Consume ending "
+
+            tokens.push_back({.type = TokenType_::pattern_lit, .value = buf, .line = m_curr_line});
+            buf.clear();
+        }
         // Check if identifier
         else if (std::isalpha(peek().value()) || peek().value() == '_')
         {

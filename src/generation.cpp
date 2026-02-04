@@ -1186,6 +1186,14 @@ void Generator::gen_term(const NodeTerm* term)
             }
         }
 
+        void operator()(const NodeTermPatternLit* term_pattern_lit)
+        {
+            gen.add_pattern(PatternType::introspection, 0);
+            gen.add_pattern(PatternType::pattern_lit, 0, term_pattern_lit->pattern_lit.value.value());
+            gen.add_pattern(PatternType::retrospection, 1);
+            gen.add_pattern(PatternType::flocks_disintegration, 0);
+        }
+
         void operator()(const NodeTermBoolLit* term_bool_lit)
         {
             if (term_bool_lit->bool_.value == "true")

@@ -18,8 +18,13 @@ std::string Assembler::assemble()
             --m_indent_level;
         }
 
+        // If pattern is a pattern literal, directly output value
+        if (p.type == PatternType::pattern_lit)
+        {
+            stream << std::string(m_indent_level, '\t') << p.value.value() << '\n';
+        }
         // If we're using hexagon alternatives and one exists, use it
-        if (m_using_hexagon && m_hexagon_alternatives.find(p.type) != m_hexagon_alternatives.end())
+        else if (m_using_hexagon && m_hexagon_alternatives.find(p.type) != m_hexagon_alternatives.end())
         {
             stream << std::string(m_indent_level, '\t') << m_hexagon_alternatives.at(p.type) << (p.value.has_value() ? (std::string(": ") + p.value.value()) : "") << '\n';
         }
