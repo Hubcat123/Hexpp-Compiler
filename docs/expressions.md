@@ -198,37 +198,37 @@ The division will evaluate first since it has higher precedence than the additio
 
 Patterns Used: As described above for operator pattern costs
 
-The plus assignment operator, '+=', takes the value of the expression on the right, adds it to the value of the variable on the left, and sets the variable on the left to that value. It returns the new value of the variable. The left term must be a variable.
+The plus assignment operator, '+=', takes the value of the expression on the right, adds it to the value of the variable on the left, and sets the variable on the left to that value. It returns the new value of the variable. The left term must be a variable or an element of a list variable (cannot change non-surface elements in nested lists with a single assignment currently).
 
 #### Minus Assignment
 
 Patterns Used: As described above for operator pattern costs
 
-The minus assignment operator, '*=', takes the value of the expression on the right, subtracts it from the value of the variable on the left, and sets the variable on the left to that value. It returns the new value of the variable. The left term must be a variable.
+The minus assignment operator, '*=', takes the value of the expression on the right, subtracts it from the value of the variable on the left, and sets the variable on the left to that value. It returns the new value of the variable. The left term must be a variable or an element of a list variable (cannot change non-surface elements in nested lists with a single assignment currently).
 
 #### Multiply Assignment
 
 Patterns Used: As described above for operator pattern costs
 
-The multiply assignment operator, '*=', takes the value of the expression on the right, multiplies it by the value of the variable on the left, and sets the variable on the left to that value. It returns the new value of the variable. The left term must be a variable.
+The multiply assignment operator, '*=', takes the value of the expression on the right, multiplies it by the value of the variable on the left, and sets the variable on the left to that value. It returns the new value of the variable. The left term must be a variable or an element of a list variable (cannot change non-surface elements in nested lists with a single assignment currently).
 
 #### Divide Assignment
 
 Patterns Used: As described above for operator pattern costs
 
-The divide assignment operator, '/=', takes the value of the expression on the right, divides it by the value of the variable on the left, and sets the variable on the left to that value. It returns the new value of the variable. The left term must be a variable.
+The divide assignment operator, '/=', takes the value of the expression on the right, divides it by the value of the variable on the left, and sets the variable on the left to that value. It returns the new value of the variable. The left term must be a variable or an element of a list variable (cannot change non-surface elements in nested lists with a single assignment currently).
 
 #### Modulus Assignment
 
 Patterns Used: As described above for operator pattern costs
 
-The modulus assignment operator, '%=', takes the value of the expression on the right, moduluses the value of the variable on the left by it, and sets the variable on the left to that value. It returns the new value of the variable. The left term must be a variable.
+The modulus assignment operator, '%=', takes the value of the expression on the right, moduluses the value of the variable on the left by it, and sets the variable on the left to that value. It returns the new value of the variable. The left term must be a variable or an element of a list variable (cannot change non-surface elements in nested lists with a single assignment currently).
 
 #### Assignment
 
 Patterns Used: As described above for operator pattern costs, -4 if assigning a list element, +1 if it's not assigning a list element and it is assigning a local variable
 
-The assignment operator, '=', sets the variable on the left to the value of the expression on the right. It returns the new value of the variable. The left term must be a variable.
+The assignment operator, '=', sets the variable on the left to the value of the expression on the right. It returns the new value of the variable. The left term must be a variable or an element of a list variable (cannot change non-surface elements in nested lists with a single assignment currently).
 
 #### OR
 
