@@ -56,11 +56,11 @@ Patterns Used: 1 (Often optimized to much less, especially when used in lists)
 
 Iota literals are hard coded iotas. Usually you will use these for patterns. They let you get the escaped iota specified. Here's the syntax:
 ```
-p"Mind's Reflection"
+i"Mind's Reflection"
 ```
 The compiler does not check these for matching with any patterns it knows if it's a pattern iota, so if you mispell the pattern, then the mispelled pattern is what will end up being generated in the output. However, Hexagon, if it's being used, will complain about any patterns it doesn't recognize. The upside to this is that any pattern may be input, even ones for addons with no specific support from Hex++. You can also input custom patterns, the syntax recognized by Hexagon (and that it is suggested you use) is:
 ```
-p"<WEST qaq>"
+i"<WEST qaq>"
 ```
 The "WEST" is the start direction of the custom pattern, while the "qaq" defines the turns the pattern takes from start direction to draw the whole pattern. For more details, read the how-to for great spells with Hexagon on Hex++'s README from GitHub. If you need to use quotes in your pattern literal, they can be escaped with a '\'. No other characters can be escaped.
 
