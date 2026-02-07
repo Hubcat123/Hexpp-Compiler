@@ -29,8 +29,6 @@ Patterns Used: 1
 
 Number literals are hard coded numbers. This can be an integer without any decimal places, or a non-integer with them. Examples include 3, 7, 24, 5.6, etc.
 
-An important note is that Hexagon (if you're using it) cannot handle decimal numbers, it will round them down whenever it is given them. For this reason, it is suggested you use operations to get any hard-coded decimal numbers you want to use, i.e. use 1/2 instead of 0.5, use 56/10 instead of 5.6, etc.
-
 ### 2. Boolean Literal
 
 Patterns Used: 1

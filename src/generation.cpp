@@ -2063,11 +2063,6 @@ void Generator::nullary_reflection()
 
 void Generator::numerical_reflection(std::string value)
 {
-    if (value.find('.') != std::string::npos)
-    {
-        has_non_integer_num = true;
-    }
-
     add_pattern(PatternType::numerical_reflection, 1, value);
 }
 

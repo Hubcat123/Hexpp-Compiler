@@ -401,8 +401,6 @@ public:
 
     void add_pattern(PatternType pattern_type, size_t stack_size_net, std::optional<std::string> value = std::nullopt);
 
-    bool has_non_integer_num = false;
-
     bool generating_void_function = false;
 private:
 
