@@ -1442,6 +1442,14 @@ void Generator::gen_func_def(const NodeFunctionDef* func_def)
     m_function_num_params = params.size();
 
     add_pattern(PatternType::introspection, 0);
+
+    // Get jump iota to function, and exit function
+    add_pattern(PatternType::introspection, 0);
+    add_pattern(PatternType::charons_gambit, 0);
+    add_pattern(PatternType::retrospection, 0);
+    add_pattern(PatternType::flocks_disintegration, 0);
+    add_pattern(PatternType::iris_gambit, 0);
+
     begin_scope();
 
     // Treat top of the stack as params
@@ -1463,20 +1471,28 @@ void Generator::gen_func_def(const NodeFunctionDef* func_def)
     // If function isn't void, then provide null return value by default
     if (is_void)
     {
-        end_scope();
+        // Pop scope items, but not jump iota since it will be used for return
+        end_scopes_return(false);
+        // Return
+        add_pattern(PatternType::hermes_gambit, -1);
+        // Pop scope
+        m_scopes.pop_back();
     }
     else
     {
         // Remove excess from stack
         end_scopes_return(false);
-        // Destroy jump iota
-        pop();
         // Add null to stack
         nullary_reflection();
-        // pop scope
+        // Swap jump iota forward
+        jesters_gambit();
+        // Return
+        add_pattern(PatternType::hermes_gambit, -1);
+        // Pop scope
         m_scopes.pop_back();
     }
     add_pattern(PatternType::retrospection, 1);
+    add_pattern(PatternType::hermes_gambit, 0);
 }
 
 void Generator::gen_prog()

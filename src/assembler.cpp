@@ -2,7 +2,7 @@
 
 Assembler::Assembler(std::vector<Pattern> patterns, bool use_hexagon_alternatives)
     :m_patterns(patterns), m_using_hexagon(use_hexagon_alternatives)
-{ }
+{ } 
 
 std::string Assembler::assemble()
 {

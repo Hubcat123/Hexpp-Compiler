@@ -20,11 +20,11 @@ Many statements reference expressions. These are detailed in expressions.md. The
 
 ### Patterns Used
 
-The patterns used by a function call vary based on the kind of function. For declared functions, the amounts listed are assuming that the end of the function is reached without a return. If a return is called, all declared functions are 4 patterns, plus the patterns executed in the function. This is in addition to the patterns used by the return statement, of course.
+The patterns used by a function call vary based on the kind of function. For declared functions, the amounts listed are assuming that the end of the function is reached without a return. If a return is called, all declared functions are 4 patterns, plus the patterns executed in the function. This is in counting the patterns used by the return statement, of course.
 
 * Inbuilt: Amount specific to each function  listed in functions.md
-* Void Declared: 5, plus the patterns executed in the function
-* Non-Void Declared: 6, plus the patterns executed in the function
+* Void Declared: 6, plus the patterns executed in the function
+* Non-Void Declared: 8, plus the patterns executed in the function
 
 ### Description
 

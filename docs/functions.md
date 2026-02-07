@@ -4,6 +4,8 @@ There are two kinds of functions in Hex++. These are functions declared by you, 
 
 ## Declared Functions
 
+Pattern(s) Used: 3
+
 Declared functions are what encapsulates code your program will be running. All Hex++ programs start with the main function, defined like so:
 ```
 void main() {
