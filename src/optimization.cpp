@@ -1,5 +1,7 @@
 #include "optimization.hpp"
 
+#include <iostream>
+
 #include "util.hpp"
 
 #define no_opt() no_optimization = true;add_pattern(consume());
@@ -66,45 +68,149 @@ std::vector<Pattern> Optimizer::optimize()
                 }
                 break;
             case PatternType::introspection:
-                // List of pattern lits
-                if (peek(1).has_value() && peek(1).value().type == PatternType::pattern_lit &&
-                    peek(2).has_value() && peek(2).value().type == PatternType::retrospection &&
-                    peek(3).has_value() && peek(3).value().type == PatternType::flocks_disintegration)
+                // If followed by retro then disintegration, then remove empty list disintegration
+                if (peek(1).has_value() && peek(1).value().type == PatternType::retrospection &&
+                    peek(2).has_value() && peek(2).value().type == PatternType::flocks_disintegration)
                 {
-                    // Keep looking for more pattern lits
-                    int num_patterns = 1;
-                    while (peek(4 * num_patterns + 0).has_value() && peek(4 * num_patterns + 0).value().type == PatternType::introspection &&
-                           peek(4 * num_patterns + 1).has_value() && peek(4 * num_patterns + 1).value().type == PatternType::pattern_lit &&
-                           peek(4 * num_patterns + 2).has_value() && peek(4 * num_patterns + 2).value().type == PatternType::retrospection &&
-                           peek(4 * num_patterns + 3).has_value() && peek(4 * num_patterns + 3).value().type == PatternType::flocks_disintegration)
+                    consume(3);
+                }
+                // Lists of embedded iotas
+                else
+                {
+                    // Find end of list and count embedded iotas
+                    int num_embedded = 0;
+                    int num_intro = 0;
+                    while (num_intro >= 0 && peek(1 + num_embedded).has_value())
                     {
-                        ++num_patterns;
+                        ++num_embedded;
+                        if (peek(num_embedded).value().type == PatternType::introspection)
+                        {
+                            ++num_intro;
+                        }
+                        else if (peek(num_embedded).value().type == PatternType::retrospection)
+                        {
+                            --num_intro;
+                        }
                     }
 
-                    // Check for flocks gambit with correct number of patterns
-                    if (peek(4 * num_patterns + 0).has_value() && peek(4 * num_patterns + 0).value().type == PatternType::numerical_reflection &&
-                        peek(4 * num_patterns + 0).value().value.value() == std::to_string(num_patterns) &&
-                        peek(4 * num_patterns + 1).has_value() && peek(4 * num_patterns + 1).value().type == PatternType::flocks_gambit)
+                    // Error out if introspection is un-terminated
+                    if (!peek(1 + num_embedded).has_value())
                     {
-                        // build combined pattern list
-                        add_pattern(PatternType::introspection);
-                        for (int i = 0; i < num_patterns; ++i)
-                        {
-                            add_pattern(PatternType::pattern_lit, peek(4 * i + 1).value().value);
-                        }
-                        add_pattern(PatternType::retrospection);
+                        std::cerr <<"Hex++ Compiler: Failed to optimize, un-terminated introspection found. Please report this bug." << std::endl;
+                        exit(EXIT_FAILURE);
+                    }
 
-                        // Consume patterns
-                        consume(4 * num_patterns + 2);
+                    // Remove final retro
+                    --num_embedded;
+
+                    // Check for operation on embedded iotas
+                    if (peek(2 + num_embedded).has_value())
+                    {
+                        // If disintegration, check if there's another list or if the list is disintegrated then re-assembled
+                        if (peek(2 + num_embedded).value().type == PatternType::flocks_disintegration)
+                        {
+                            if (peek(3 + num_embedded).has_value())
+                            {
+                                // List is disintegrated then partially or fully reformed, seperate lists and don't disintegrate
+                                if (peek(3 + num_embedded).value().type == PatternType::numerical_reflection &&
+                                    std::stof(peek(3 + num_embedded).value().value.value()) <= num_embedded && peek(4 + num_embedded).has_value() &&
+                                    peek(4 + num_embedded).value().type == PatternType::flocks_gambit)
+                                {
+                                    int num_in_gambit = (int)std::stof(peek(3 + num_embedded).value().value.value());
+
+                                    // Split off first list, consuming opening intro and iotas in the first list
+                                    for (int i = 0; i < 1 + num_embedded - num_in_gambit; ++i)
+                                    {
+                                        add_pattern(consume());
+                                    }
+
+                                    // End first list, disintegrate, then start second list
+                                    add_pattern(PatternType::retrospection);
+                                    add_pattern(PatternType::flocks_disintegration);
+                                    add_pattern(PatternType::introspection);
+
+                                    // Add iotas in second list and retro
+                                    for (int i = 0; i < num_in_gambit + 1; ++i)
+                                    {
+                                        add_pattern(consume());
+                                    }
+
+                                    // Consume un-needed disintegration + num + gambit
+                                    consume(3);
+
+                                }
+                                // Lists may be able to be combined
+                                else if (peek(3 + num_embedded).value().type == PatternType::introspection)
+                                {
+                                    // Search for second list ending with disintegration
+                                    int num_embedded_second = 0;
+                                    num_intro = 0;
+                                    while (num_intro >= 0 && peek(4 + num_embedded + num_embedded_second).has_value())
+                                    {
+                                        ++num_embedded_second;
+                                        if (peek(3 + num_embedded + num_embedded_second).value().type == PatternType::introspection)
+                                        {
+                                            ++num_intro;
+                                        }
+                                        else if (peek(3 + num_embedded + num_embedded_second).value().type == PatternType::retrospection)
+                                        {
+                                            --num_intro;
+                                        }
+                                    }
+
+                                    // Error out if introspection is un-terminated
+                                    if (!peek(4 + num_embedded + num_embedded_second).has_value())
+                                    {
+                                        std::cerr <<"Hex++ Compiler: Failed to optimize, un-terminated introspection found. Please report this bug." << std::endl;
+                                        exit(EXIT_FAILURE);
+                                    }
+
+                                    // Remove final retro
+                                    --num_embedded_second;
+
+                                    // If disintegrating second list too, combine
+                                    if (peek(5 + num_embedded + num_embedded_second).has_value() &&
+                                        peek(5 + num_embedded + num_embedded_second).value().type == PatternType::flocks_disintegration)
+                                    {
+                                        // Consume first list and intro
+                                        for (int i = 0; i < 1 + num_embedded; ++i)
+                                        {
+                                            add_pattern(consume());
+                                        }
+
+                                        // Consume un-needed list break
+                                        consume(3);
+                                        
+                                        // Consume second list and retro + disintegration
+                                        for (int i = 0; i < 2 + num_embedded_second; ++i)
+                                        {
+                                            add_pattern(consume());
+                                        }
+                                    }
+                                    else
+                                    {
+                                        no_opt();
+                                    }
+                                }
+                                else
+                                {
+                                    no_opt();
+                                }
+                            }
+                            else
+                            {
+                                no_opt();
+                            }
+                        }
+                        else
+                        {
+                            no_opt();
+                        }
                     }
                     else
                     {
                         no_opt();
                     }
-                }
-                else
-                {
-                    no_opt();
                 }
                 break;
             case PatternType::bookkeepers_gambit:

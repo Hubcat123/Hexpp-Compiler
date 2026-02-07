@@ -19,7 +19,7 @@ std::string Assembler::assemble()
         }
 
         // If pattern is a pattern literal, directly output value
-        if (p.type == PatternType::pattern_lit)
+        if (p.type == PatternType::embedded_iota)
         {
             stream << std::string(m_indent_level, '\t') << p.value.value() << '\n';
         }

@@ -179,7 +179,7 @@ enum PatternType {
     zone_dstl_non_monster,
     zone_dstl_non_player,
     zone_dstl_player,
-    pattern_lit,
+    embedded_iota,
     num_patterns
 };
 
@@ -396,6 +396,8 @@ public:
     void waystone_reflection();
     void white_suns_nadir();
     void white_suns_zenith();
+
+    void add_embedded_iota(std::string val);
 
     void add_pattern(PatternType pattern_type, size_t stack_size_net, std::optional<std::string> value = std::nullopt);
 

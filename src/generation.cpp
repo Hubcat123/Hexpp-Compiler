@@ -1163,9 +1163,9 @@ void Generator::gen_term(const NodeTerm* term)
             gen.gen_assignment(term_un_post->vari, (float)((term_un_post->op_type == TokenType_::double_plus) ? 1 : -1), TokenType_::plus_eq, term_un_post->line, true);
         }
 
-        void operator()(const NodeTermNumLit* term_int_lit)
+        void operator()(const NodeTermNumLit* term_num_lit)
         {
-            gen.numerical_reflection(term_int_lit->num_lit.value.value());
+            gen.add_embedded_iota(term_num_lit->num_lit.value.value());
         }
 
         void operator()(const NodeTermListLit* term_list_lit)
@@ -1188,27 +1188,24 @@ void Generator::gen_term(const NodeTerm* term)
 
         void operator()(const NodeTermPatternLit* term_pattern_lit)
         {
-            gen.add_pattern(PatternType::introspection, 0);
-            gen.add_pattern(PatternType::pattern_lit, 0, term_pattern_lit->pattern_lit.value.value());
-            gen.add_pattern(PatternType::retrospection, 1);
-            gen.add_pattern(PatternType::flocks_disintegration, 0);
+            gen.add_embedded_iota(term_pattern_lit->pattern_lit.value.value());
         }
 
         void operator()(const NodeTermBoolLit* term_bool_lit)
         {
             if (term_bool_lit->bool_.value == "true")
             {
-                gen.true_reflection();
+                gen.add_embedded_iota("True");
             }
             else
             {
-                gen.false_reflection();
+                gen.add_embedded_iota("False");
             }
         }
 
         void operator()(const NodeTermNullLit* term_null_lit)
         {
-            gen.nullary_reflection();
+            gen.add_embedded_iota("Null");
         }
 
         void operator()(const NodeTermVar* term_var)
@@ -2480,6 +2477,14 @@ void Generator::white_suns_nadir()
 void Generator::white_suns_zenith()
 {
     add_pattern(PatternType::white_suns_zenith, -3);
+}
+
+void Generator::add_embedded_iota(std::string val)
+{
+    add_pattern(PatternType::introspection, 0);
+    add_pattern(PatternType::embedded_iota, 0, std::string("<") + val + '>');
+    add_pattern(PatternType::retrospection, 1);
+    add_pattern(PatternType::flocks_disintegration, 0);
 }
 
 void Generator::add_pattern(PatternType pattern_type, size_t stack_size_net, std::optional<std::string> value)
