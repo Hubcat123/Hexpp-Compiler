@@ -1473,6 +1473,8 @@ void Generator::gen_func_def(const NodeFunctionDef* func_def)
         pop();
         // Add null to stack
         nullary_reflection();
+        // pop scope
+        m_scopes.pop_back();
     }
     add_pattern(PatternType::retrospection, 1);
 }
