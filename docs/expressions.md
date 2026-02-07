@@ -17,7 +17,7 @@ Terms are the values that are used in expressions. This could be a number, a boo
 1. Number Literal
 2. Boolean Literal
 3. Null Literal
-4. Pattern Literal
+4. Iota Literal
 5. List
 6. Variable
 7. Function Call
@@ -50,19 +50,31 @@ Null literals are hard coded null values. In code that look like this:
 null
 ```
 
-### 4. Pattern Literal
+### 4. Iota Literal
 
-Patterns Used: 1; 0 if in a list constructed using only pattern literals (the list pattern cost will be 0, too)
+Patterns Used: 1 (Often optimized to much less, especially when used in lists)
 
-Pattern literals are hard coded patterns. Usually used in lists, they let you get the escaped pattern specified. Here's the syntax:
+Iota literals are hard coded iotas. Usually you will use these for patterns. They let you get the escaped iota specified. Here's the syntax:
 ```
 p"Mind's Reflection"
 ```
-The compiler does not check these for matching with any patterns it knows, so if you mispell the pattern, then the mispelled pattern is what will end up being generated in the output. However, Hexagon, if it's being used, will complain about any patterns it doesn't recognize. The upside to this is that any pattern may be input, even ones for addons with no specific support from Hex++. You can also input custom patterns, the syntax recognized by Hexagon (and that it is suggested you use) is:
+The compiler does not check these for matching with any patterns it knows if it's a pattern iota, so if you mispell the pattern, then the mispelled pattern is what will end up being generated in the output. However, Hexagon, if it's being used, will complain about any patterns it doesn't recognize. The upside to this is that any pattern may be input, even ones for addons with no specific support from Hex++. You can also input custom patterns, the syntax recognized by Hexagon (and that it is suggested you use) is:
 ```
 p"<WEST qaq>"
 ```
 The "WEST" is the start direction of the custom pattern, while the "qaq" defines the turns the pattern takes from start direction to draw the whole pattern. For more details, read the how-to for great spells with Hexagon on Hex++'s README from GitHub. If you need to use quotes in your pattern literal, they can be escaped with a '\'. No other characters can be escaped.
+
+For other iotas, it is suggested you use the following syntax, but for the same reasons as above the specific notation only really matters if you're using Hexagon:
+```
+<2> // Number
+<(1, 0, 3)> // Vector
+<[3, (0, 5, -2), 7]> // List
+<Null> // Null
+<True> // Bool
+<Garbage> // Garbage
+```
+
+Note: If using Hexagon, note that it may not properly generate the /give command if you use a numerical reflection with a non-whole number. Hexagon's output will treat the number as having been rounded down. To avoid this, you can 1. insert your own custom numerical reflection pattern with your intended number, 2. manually transcribe the generated spell, or 3. use embedded number iotas instead of numerical reflection.
 
 ### 5. List
 

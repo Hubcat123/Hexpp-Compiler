@@ -108,10 +108,10 @@ std::vector<Token> Tokenizer::tokenize()
             }
         }
         // Check if pattern literal
-        else if (peek().value() == 'p' &&
+        else if (peek().value() == 'i' &&
                  peek(1).has_value() && peek(1).value() == '"')
         {
-            consume(2); // Consume p"
+            consume(2); // Consume i"
 
             // Read until non-escaped ending "
             while (peek().has_value() && (peek().value() != '"' || peek(-1).value() == '\\'))
