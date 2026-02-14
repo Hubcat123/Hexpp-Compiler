@@ -898,13 +898,10 @@ bool Generator::gen_inbuilt_func(const NodeDefinedFunc* func, bool is_void, bool
                 try_gen_x_exprs(func->exprs, 0, func->line);
                 add_pattern(PatternType::introspection, 0);
                 pop();
-                flocks_reflection();
-                add_pattern(PatternType::flocks_gambit, 0);
                 add_pattern(PatternType::retrospection, 0);
-                numerical_reflection("0");
+                nullary_reflection();
                 singles_purification();
                 add_pattern(PatternType::thoths_gambit, 0);
-                add_pattern(PatternType::flocks_disintegration, 0);
                 return true;
             } else if (func_name == "dump_ravens_mind") {
                 try_gen_x_exprs(func->exprs, 0, func->line);
@@ -1351,6 +1348,7 @@ void Generator::gen_stmt(const NodeStmt* stmt)
             // Perform bool comparison and execute
             gen.add_pattern(PatternType::augurs_exaltation, 0);
             gen.add_pattern(PatternType::hermes_gambit, 0);
+            int (*test)(int) = [](int a) {return a;};
         }
 
         void operator()(const NodeStmtWhile* stmt_while)
@@ -2477,7 +2475,7 @@ void Generator::white_suns_zenith()
 void Generator::add_embedded_iota(std::string val)
 {
     add_pattern(PatternType::introspection, 0);
-    add_pattern(PatternType::embedded_iota, 0, std::string("<") + val + '>');
+    add_pattern(PatternType::embedded_iota, 0, val);
     add_pattern(PatternType::retrospection, 1);
     add_pattern(PatternType::flocks_disintegration, 0);
 }

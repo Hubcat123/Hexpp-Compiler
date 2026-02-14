@@ -21,7 +21,7 @@ std::string Assembler::assemble()
         // If pattern is a pattern literal, directly output value
         if (p.type == PatternType::embedded_iota)
         {
-            stream << std::string(m_indent_level, '\t') << p.value.value() << '\n';
+            stream << std::string(m_indent_level, '\t') << '<' << p.value.value() << ">\n";
         }
         // If we're using hexagon alternatives and one exists, use it
         else if (m_using_hexagon && m_hexagon_alternatives.find(p.type) != m_hexagon_alternatives.end())

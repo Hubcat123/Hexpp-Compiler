@@ -50,7 +50,7 @@ null
 
 ### 4. Iota Literal
 
-Patterns Used: 1 (Often optimized to much less, especially when used in lists)
+Patterns Used: 1 (Often optimized to much less, especially when used in a row)
 
 Iota literals are hard coded iotas. Usually you will use these for patterns. They let you get the escaped iota specified. Here's the syntax:
 ```
@@ -64,15 +64,15 @@ The "WEST" is the start direction of the custom pattern, while the "qaq" defines
 
 For other iotas, it is suggested you use the following syntax, but for the same reasons as above the specific notation only really matters if you're using Hexagon:
 ```
-2 // Number
-(1, 0, 3) // Vector
-[3, (0, 5, -2), 7] // List
-Null // Null
-True // Bool
-Garbage // Garbage
+i"2" // Number
+i"(1, 0, 3)" // Vector
+i"[3, (0, 5, -2), 7]" // List
+i"Null" // Null
+i"True" // Bool
+i"Garbage" // Garbage
 ```
 
-Note: If using Hexagon, note that it may not properly generate the /give command if you use a numerical reflection with a non-whole number. Hexagon's output will treat the number as having been rounded down. To avoid this, you can 1. insert your own custom numerical reflection pattern with your intended number, 2. manually transcribe the generated spell, or 3. use embedded number iotas instead of numerical reflection.
+Note: If using Hexagon, it may not properly generate the /give command if you use a numerical reflection with a non-whole number. Hexagon's output will treat the number as having been rounded down. To avoid this, you can 1. insert your own custom numerical reflection pattern with your intended number, 2. manually transcribe the generated spell, or 3. use embedded number iotas instead of numerical reflection.
 
 ### 5. List
 
