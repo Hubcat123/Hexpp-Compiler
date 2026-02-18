@@ -76,6 +76,17 @@ struct Iota {
     }
 };
 
+// Iota comparison operator
+bool operator==(const Iota& lhs, const Iota& rhs)
+{
+    if (!lhs.has_value && !rhs.has_value)
+    {
+        return true;
+    }
+
+    return lhs.value == rhs.value;
+}
+
 struct InbuiltFunc {
     // The name of the function
     std::vector<std::string> names;
@@ -131,7 +142,7 @@ struct InbuiltFunc {
     }
 };
 
-std::vector<InbuiltFunc> funcs = {
+std::vector<InbuiltFunc> inbuilt_funcs = {
     // Void Non-Member
     InbuiltFunc {.names = {"write"}, .is_void = true, .is_member = false, .num_params = 1,
         .func_patterns = {scribes_gambit},
@@ -461,14 +472,14 @@ std::vector<InbuiltFunc> funcs = {
             }
 
             std::vector<Iota> list = std::get<std::vector<Iota>>(iotas[0].value);
-            std::unordered_set<Iota> seen;
+            std::vector<Iota> seen;
             std::vector<Iota> retVal;
             for (Iota i : list)
             {
-                if (!seen.contains(i))
+                if (std::find(seen.begin(), seen.end(), i) == seen.end())
                 {
                     retVal.push_back(i);
-                    seen.insert(i);
+                    seen.push_back(i);
                 }
             }
 
