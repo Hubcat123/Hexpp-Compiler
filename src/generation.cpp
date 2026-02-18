@@ -1475,6 +1475,8 @@ void Generator::gen_func_def(const NodeFunctionDef* func_def)
         end_scopes_return(false);
         // Return
         add_pattern(PatternType::hermes_gambit, -1);
+        // Remove local vars from scope
+        m_vars.resize(m_scopes.back().var_num);
         // Pop scope
         m_scopes.pop_back();
     }
@@ -1488,6 +1490,8 @@ void Generator::gen_func_def(const NodeFunctionDef* func_def)
         jesters_gambit();
         // Return
         add_pattern(PatternType::hermes_gambit, -1);
+        // Remove local vars from scope
+        m_vars.resize(m_scopes.back().var_num);
         // Pop scope
         m_scopes.pop_back();
     }
