@@ -473,7 +473,7 @@ void Generator::gen_term(const NodeTerm* term)
             }
         }
 
-        void operator()(const NodeTermPatternLit* term_pattern_lit)
+        void operator()(const NodeTermIotaLit* term_pattern_lit)
         {
             gen.add_embedded_iota(term_pattern_lit->pattern_lit.value.value());
         }
@@ -520,6 +520,17 @@ void Generator::gen_term(const NodeTerm* term)
 
 void Generator::gen_expr(const NodeExpr* expr)
 {
+    // Check if we can gen during compile-time
+    Iota compile_time_result = gen_comp_time_expr(expr);
+    if (compile_time_result.has_value)
+    {
+        add_pattern(PatternType::introspection, 0);
+        m_output.push_back(compile_time_result.get_iota_pattern());
+        add_pattern(PatternType::retrospection, 1);
+        add_pattern(PatternType::flocks_disintegration, 0);
+        return;
+    }
+
     struct ExprVisitor {
         Generator& gen;
         ExprVisitor (Generator& _gen) :gen(_gen) {}
@@ -868,6 +879,749 @@ void Generator::gen_prog()
 }
 
 
+
+Iota Generator::gen_comp_time_expr(const NodeExpr* expr)
+{
+    // Visitor to generate compile time expression
+    struct CompileTimeExprVisitor {
+        Generator& gen;
+        Iota result;
+        CompileTimeExprVisitor (Generator& _gen) :gen(_gen) {}
+        
+        void operator()(const NodeTerm* term)
+        {
+            result = gen.gen_comp_time_term(term);
+        }
+
+        void operator()(const NodeExprBin* expr_bin)
+        {
+            result = gen.gen_comp_time_bin_expr(expr_bin);
+        }
+    };
+
+    CompileTimeExprVisitor visitor(*this);
+    std::visit(visitor, expr->var);
+    return visitor.result;
+}
+
+Iota Generator::gen_comp_time_term(const NodeTerm* term)
+{
+    // Visitor to generate compile time term
+    struct CompileTimeTermVisitor {
+        Generator& gen;
+        Iota result;
+        CompileTimeTermVisitor (Generator& _gen) :gen(_gen) {}
+        
+        void operator()(const NodeTermUn* term_un)
+        {
+            // If unary expression is a type of assignment, can't be generated at compile time
+            if (term_un->op_type == TokenType_::double_plus || term_un->op_type == TokenType_::double_dash)
+            {
+                result = Iota();
+                return;
+            }
+
+            Iota term_result = gen.gen_comp_time_term(term_un->term);
+
+            // If term can't be generated at compile time, then the whole expression can't be generated at compile time
+            if (!term_result.has_value)
+            {
+                result = Iota();
+                return;
+            }
+
+            switch (term_un->op_type)
+            {
+            case TokenType_::dash:
+                if (std::holds_alternative<double>(term_result.value))
+                {
+                    result = Iota(-std::get<double>(term_result.value));
+                }
+                else if (std::holds_alternative<std::vector<double>>(term_result.value))
+                {
+                    std::vector<double> negated_vec;
+                    for (double num : std::get<std::vector<double>>(term_result.value))
+                    {
+                        negated_vec.push_back(-num);
+                    }
+                    result = Iota(negated_vec);
+                }
+                else
+                {
+                    result = Iota();
+                }
+                break;
+            case TokenType_::tilde:
+            case TokenType_::not_:
+                if (std::holds_alternative<bool>(term_result.value))
+                {
+                    result = Iota(!std::get<bool>(term_result.value));
+                }
+                else if (std::holds_alternative<double>(term_result.value))
+                {
+                    double num = std::get<double>(term_result.value);
+
+                    // Round num to nearest integer, up in halfway cases, since bitwise operations only work on integers
+                    num = std::floor(num + 0.5);
+
+                    // Negate number
+                    num = -num;
+
+                    // Subsctract 1 since ~n is equal to -n-1
+                    num -= 1;
+
+                    result = Iota(num);
+                }
+                else
+                {
+                    result = Iota();
+                }
+                break;
+            }
+        }
+
+        void operator()(const NodeTermUnPost* term_un_post)
+        {
+            // Currently, all post-unary expressions are not compile-time evaluatable
+            result = Iota();
+        }
+
+        void operator()(const NodeTermNumLit* term_num_lit)
+        {
+            result = Iota(std::stod(term_num_lit->num_lit.value.value()));
+        }
+
+        void operator()(const NodeTermListLit* term_list_lit)
+        {
+            std::vector<Iota> expr_results;
+            for (NodeExpr* expr : term_list_lit->exprs)
+            {
+                Iota result = gen.gen_comp_time_expr(expr);
+
+                if (result.has_value)
+                {
+                    expr_results.push_back(result);
+                }
+                // If iota can't be generated at compile time, then the whole list can't be generated at compile time
+                else
+                {
+                    result = Iota();
+                    return;
+                }
+            }
+
+            result = Iota(expr_results);
+        }
+
+        void operator()(const NodeTermIotaLit* term_iota_lit)
+        {
+            result = Iota(term_iota_lit->pattern_lit.value.value());
+        }
+
+        void operator()(const NodeTermBoolLit* term_bool_lit)
+        {
+            result = Iota(term_bool_lit->bool_.value == "true");
+        }
+
+        void operator()(const NodeTermNullLit* term_null_lit)
+        {
+            result = Iota(std::monostate{});
+        }
+
+        void operator()(const NodeTermVar* term_var)
+        {
+            // For now, count as not compile-time evaluatable. May change in the future
+            result = Iota();
+        }
+
+        void operator()(const NodeTermParen* term_paren)
+        {
+            result = gen.gen_comp_time_expr(term_paren->expr);
+        }
+
+        void operator()(const NodeTermCallFunc* call_func)
+        {
+            // Try to find inbuilt function being called
+            std::vector<InbuiltFunc>::iterator func_it = std::find_if(inbuilt_funcs.begin(), inbuilt_funcs.end(), [&](const InbuiltFunc& curr){
+                // Check if the current function matches the inbuilt function we're looking for (matches ret type, membership, number of params, and name)
+                return curr.is_void == false && curr.is_member == false && curr.num_params == call_func->func->exprs.size() &&
+                        std::find(curr.names.cbegin(), curr.names.cend(), call_func->func->ident.value.value()) != curr.names.cend();
+            });
+
+            // If it doesn't exist, then there is no inbuilt function matching the description, so count as not compile-time evaluatable
+            if (func_it == inbuilt_funcs.end())
+            {
+                result = Iota();
+                return;
+            }
+
+            // If function isn't compile-time evaluatable, then count as not compile-time evaluatable
+            if (func_it->eval == nullptr)
+            {
+                result = Iota();
+                return;
+            }
+
+            // Generate compile-time results for expressions
+            std::vector<Iota> expr_results;
+            for (NodeExpr* expr : call_func->func->exprs)
+            {
+                Iota expr_result = gen.gen_comp_time_expr(expr);
+
+                if (expr_result.has_value)
+                {
+                    expr_results.push_back(expr_result);
+                }
+                // If any expression can't be generated at compile time, then the whole function call can't be generated at compile time
+                else
+                {
+                    result = Iota();
+                    return;
+                }
+            }
+
+            // Get result from inbuilt function
+            result = func_it->eval(expr_results);
+        }
+    };
+
+    CompileTimeTermVisitor visitor(*this);
+    std::visit(visitor, term->var);
+    return visitor.result;
+}
+
+Iota Generator::gen_comp_time_bin_expr(const NodeExprBin* expr_bin)
+{
+    // If binary expression is a type of assignment, can't be generated at compile time
+    if (expr_bin->op_type == TokenType_::eq || expr_bin->op_type == TokenType_::plus_eq || expr_bin->op_type == TokenType_::dash_eq || expr_bin->op_type == TokenType_::star_eq
+         || expr_bin->op_type == TokenType_::fslash_eq || expr_bin->op_type == TokenType_::mod_eq)
+    {
+        return Iota();
+    }
+
+    Iota lhs_result = gen_comp_time_expr(expr_bin->lhs);
+
+    // If left-hand side can't be generated at compile time, then the whole expression can't be generated at compile time
+    if (!lhs_result.has_value)
+    {
+        return Iota();
+    }
+
+    // If binary expression is calling a member function
+    if (expr_bin->op_type == TokenType_::dot)
+    {
+        // If rhs is a term
+        if (std::holds_alternative<NodeTerm*>(expr_bin->rhs->var))
+        {
+            NodeTerm* term = std::get<NodeTerm*>(expr_bin->rhs->var);
+            // If term is a function
+            if (std::holds_alternative<NodeTermCallFunc*>(term->var))
+            {
+                NodeTermCallFunc* term_func = std::get<NodeTermCallFunc*>(term->var);
+
+                // Try to find inbuilt member function being called
+                std::vector<InbuiltFunc>::iterator func_it = std::find_if(inbuilt_funcs.begin(), inbuilt_funcs.end(), [&](const InbuiltFunc& curr){
+                    // Check if the current function matches the inbuilt member function we're looking for (matches ret type, membership, number of params, and name)
+                    return curr.is_void == false && curr.is_member == true && curr.num_params == term_func->func->exprs.size() + 1 &&
+                            std::find(curr.names.cbegin(), curr.names.cend(), term_func->func->ident.value.value()) != curr.names.cend();
+                });
+
+                // If it doesn't exist, then there is no inbuilt member function matching the description, so count as not compile-time evaluatable
+                if (func_it == inbuilt_funcs.end())
+                {
+                    return Iota();
+                }
+
+                // If function isn't compile-time evaluatable, then count as not compile-time evaluatable
+                if (func_it->eval == nullptr)
+                {
+                    return Iota();
+                }
+
+                // Generate compile-time results for expressions, starting with left-hand side as the first expression since it's a member function
+                std::vector<Iota> expr_results = {lhs_result};
+                for (NodeExpr* expr : term_func->func->exprs)
+                {
+                    Iota expr_result = gen_comp_time_expr(expr);
+
+                    if (expr_result.has_value)
+                    {
+                        expr_results.push_back(expr_result);
+                    }
+                    // If any expression can't be generated at compile time, then the whole function call can't be generated at compile time
+                    else
+                    {
+                        return Iota();
+                    }
+                }
+
+                // Get result from inbuilt function
+                return func_it->eval(expr_results);
+            }
+            else
+            {
+                return Iota();
+            }
+        }
+        else
+        {
+            return Iota();
+        }
+    }
+
+    Iota rhs_result = gen_comp_time_expr(expr_bin->rhs);
+
+    // If right-hand side can't be generated at compile time, then the whole expression can't be generated at compile time
+    if (!rhs_result.has_value)
+    {
+        return Iota();
+    }
+
+    switch(expr_bin->op_type)
+    {
+    case TokenType_::double_eq:
+        return Iota(lhs_result == rhs_result);
+        break;
+    case TokenType_::not_eq_:
+        return Iota(lhs_result != rhs_result);
+        break;
+    case TokenType_::angle_open:
+        if (std::holds_alternative<double>(lhs_result.value) && std::holds_alternative<double>(rhs_result.value))
+        {
+            return Iota(std::get<double>(lhs_result.value) < std::get<double>(rhs_result.value));
+        }
+        else
+        {
+            return Iota();
+        }
+        break;
+    case TokenType_::oangle_eq:
+        if (std::holds_alternative<double>(lhs_result.value) && std::holds_alternative<double>(rhs_result.value))
+        {
+            return Iota(std::get<double>(lhs_result.value) <= std::get<double>(rhs_result.value));
+        }
+        else
+        {
+            return Iota();
+        }
+        break;
+    case TokenType_::angle_close:
+        if (std::holds_alternative<double>(lhs_result.value) && std::holds_alternative<double>(rhs_result.value))
+        {
+            return Iota(std::get<double>(lhs_result.value) > std::get<double>(rhs_result.value));
+        }
+        else
+        {
+            return Iota();
+        }
+        break;
+    case TokenType_::cangle_eq:
+        if (std::holds_alternative<double>(lhs_result.value) && std::holds_alternative<double>(rhs_result.value))
+        {
+            return Iota(std::get<double>(lhs_result.value) >= std::get<double>(rhs_result.value));
+        }
+        else
+        {
+            return Iota();
+        }
+        break;
+    case TokenType_::plus:
+        // Add two numbers
+        if (std::holds_alternative<double>(lhs_result.value) && std::holds_alternative<double>(rhs_result.value))
+        {
+            return Iota(std::get<double>(lhs_result.value) + std::get<double>(rhs_result.value));
+        }
+        // Add two vectors element-wise
+        else if (std::holds_alternative<std::vector<double>>(lhs_result.value) && std::holds_alternative<std::vector<double>>(rhs_result.value))
+        {
+            const std::vector<double>& lhs_vec = std::get<std::vector<double>>(lhs_result.value);
+            const std::vector<double>& rhs_vec = std::get<std::vector<double>>(rhs_result.value);
+
+            std::vector<double> sum_vec;
+            for (size_t i = 0; i < lhs_vec.size(); ++i)
+            {
+                sum_vec.push_back(lhs_vec[i] + rhs_vec[i]);
+            }
+            return Iota(sum_vec);
+        }
+        // Add number to each element of vector (lhs vec + rhs num)
+        else if (std::holds_alternative<std::vector<double>>(lhs_result.value) && std::holds_alternative<double>(rhs_result.value))
+        {
+            const std::vector<double>& lhs_vec = std::get<std::vector<double>>(lhs_result.value);
+            double rhs_num = std::get<double>(rhs_result.value);
+
+            std::vector<double> sum_vec;
+            for (size_t i = 0; i < lhs_vec.size(); ++i)
+            {
+                sum_vec.push_back(lhs_vec[i] + rhs_num);
+            }
+            return Iota(sum_vec);
+        }
+        // Add number to each element of vector (lhs num + rhs vec)
+        else if (std::holds_alternative<double>(lhs_result.value) && std::holds_alternative<std::vector<double>>(rhs_result.value))
+        {
+            double lhs_num = std::get<double>(lhs_result.value);
+            const std::vector<double>& rhs_vec = std::get<std::vector<double>>(rhs_result.value);
+
+            std::vector<double> sum_vec;
+            for (size_t i = 0; i < rhs_vec.size(); ++i)
+            {
+                sum_vec.push_back(lhs_num + rhs_vec[i]);
+            }
+            return Iota(sum_vec);
+        }
+        else if (std::holds_alternative<std::vector<Iota>>(lhs_result.value) && std::holds_alternative<std::vector<Iota>>(rhs_result.value))
+        {
+            const std::vector<Iota>& lhs_list = std::get<std::vector<Iota>>(lhs_result.value);
+            const std::vector<Iota>& rhs_list = std::get<std::vector<Iota>>(rhs_result.value);
+
+            std::vector<Iota> concat_list = lhs_list;
+            concat_list.insert(concat_list.end(), rhs_list.begin(), rhs_list.end());
+
+            return Iota(concat_list);
+        }
+        else
+        {
+            return Iota();
+        }
+        break;
+    case TokenType_::dash:
+        // If both sides are numbers, subtract them
+        if (std::holds_alternative<double>(lhs_result.value) && std::holds_alternative<double>(rhs_result.value))
+        {
+            return Iota(std::get<double>(lhs_result.value) - std::get<double>(rhs_result.value));
+        }
+        // If both sides are vectors, subtract them element-wise
+        else if (std::holds_alternative<std::vector<double>>(lhs_result.value) && std::holds_alternative<std::vector<double>>(rhs_result.value))
+        {
+            const std::vector<double>& lhs_vec = std::get<std::vector<double>>(lhs_result.value);
+            const std::vector<double>& rhs_vec = std::get<std::vector<double>>(rhs_result.value);
+
+            std::vector<double> diff_vec;
+            for (size_t i = 0; i < lhs_vec.size(); ++i)
+            {
+                diff_vec.push_back(lhs_vec[i] - rhs_vec[i]);
+            }
+            return Iota(diff_vec);
+        }
+        // If one side is a vector and the other side is a number, subtract the number from each element of the vector (lhs vec - rhs num)
+        else if (std::holds_alternative<std::vector<double>>(lhs_result.value) && std::holds_alternative<double>(rhs_result.value))
+        {
+            const std::vector<double>& lhs_vec = std::get<std::vector<double>>(lhs_result.value);
+            double rhs_num = std::get<double>(rhs_result.value);
+
+            std::vector<double> diff_vec;
+            for (size_t i = 0; i < lhs_vec.size(); ++i)
+            {
+                diff_vec.push_back(lhs_vec[i] - rhs_num);
+            }
+            return Iota(diff_vec);
+        }
+        // If one side is a vector and the other side is a number, subtract each element of the vector from the number (lhs num - rhs vec)
+        else if (std::holds_alternative<double>(lhs_result.value) && std::holds_alternative<std::vector<double>>(rhs_result.value))
+        {
+            double lhs_num = std::get<double>(lhs_result.value);
+            const std::vector<double>& rhs_vec = std::get<std::vector<double>>(rhs_result.value);
+
+            std::vector<double> diff_vec;
+            for (size_t i = 0; i < rhs_vec.size(); ++i)
+            {
+                diff_vec.push_back(lhs_num - rhs_vec[i]);
+            }
+            return Iota(diff_vec);
+        }
+        else
+        {
+            return Iota();
+        }
+        break;
+    case TokenType_::star:
+        // If both sides are numbers, multiply them
+        if (std::holds_alternative<double>(lhs_result.value) && std::holds_alternative<double>(rhs_result.value))
+        {
+            return Iota(std::get<double>(lhs_result.value) * std::get<double>(rhs_result.value));
+        }
+        // If one side is a vector and the other side is a number, multiply each element of the vector by the number (lhs vec * rhs num)
+        else if (std::holds_alternative<std::vector<double>>(lhs_result.value) && std::holds_alternative<double>(rhs_result.value))
+        {
+            const std::vector<double>& lhs_vec = std::get<std::vector<double>>(lhs_result.value);
+            double rhs_num = std::get<double>(rhs_result.value);
+
+            std::vector<double> prod_vec;
+            for (size_t i = 0; i < lhs_vec.size(); ++i)
+            {
+                prod_vec.push_back(lhs_vec[i] * rhs_num);
+            }
+            return Iota(prod_vec);
+        }
+        // If one side is a vector and the other side is a number, multiply each element of the vector by the number (lhs num * rhs vec)
+        else if (std::holds_alternative<double>(lhs_result.value) && std::holds_alternative<std::vector<double>>(rhs_result.value))
+        {
+            double lhs_num = std::get<double>(lhs_result.value);
+            const std::vector<double>& rhs_vec = std::get<std::vector<double>>(rhs_result.value);
+
+            std::vector<double> prod_vec;
+            for (size_t i = 0; i < rhs_vec.size(); ++i)
+            {
+                prod_vec.push_back(lhs_num * rhs_vec[i]);
+            }
+            return Iota(prod_vec);
+        }
+        // If both sides are vectors, take their dot product
+        else if (std::holds_alternative<std::vector<double>>(lhs_result.value) && std::holds_alternative<std::vector<double>>(rhs_result.value))
+        {
+            const std::vector<double>& lhs_vec = std::get<std::vector<double>>(lhs_result.value);
+            const std::vector<double>& rhs_vec = std::get<std::vector<double>>(rhs_result.value);
+
+            return Iota(std::inner_product(lhs_vec.begin(), lhs_vec.end(), rhs_vec.begin(), 0.0));
+        }
+        else
+        {
+            return Iota();
+        }
+        break;
+    case TokenType_::slash_forward:
+        // If both sides are numbers, divide them
+        if (std::holds_alternative<double>(lhs_result.value) && std::holds_alternative<double>(rhs_result.value))
+        {
+            double rhs_num = std::get<double>(rhs_result.value);
+            if (rhs_num == 0)
+            {
+                return Iota();
+            }
+            return Iota(std::get<double>(lhs_result.value) / rhs_num);
+        }
+        // If one side is a vector and the other side is a number, divide each element of the vector by the number (lhs vec / rhs num)
+        else if (std::holds_alternative<std::vector<double>>(lhs_result.value) && std::holds_alternative<double>(rhs_result.value))
+        {
+            const std::vector<double>& lhs_vec = std::get<std::vector<double>>(lhs_result.value);
+            double rhs_num = std::get<double>(rhs_result.value);
+            if (rhs_num == 0)
+            {
+                return Iota();
+            }
+
+            std::vector<double> quot_vec;
+            for (size_t i = 0; i < lhs_vec.size(); ++i)
+            {
+                quot_vec.push_back(lhs_vec[i] / rhs_num);
+            }
+            return Iota(quot_vec);
+        }
+        // If one side is a vector and the other side is a number, divide each element of the vector by the number (lhs num / rhs vec)
+        else if (std::holds_alternative<double>(lhs_result.value) && std::holds_alternative<std::vector<double>>(rhs_result.value))
+        {
+            double lhs_num = std::get<double>(lhs_result.value);
+            const std::vector<double>& rhs_vec = std::get<std::vector<double>>(rhs_result.value);
+
+            std::vector<double> quot_vec;
+            for (size_t i = 0; i < rhs_vec.size(); ++i)
+            {
+                double rhs_elem = rhs_vec[i];
+                if (rhs_elem == 0)
+                {
+                    return Iota();
+                }
+                quot_vec.push_back(lhs_num / rhs_elem);
+            }
+            return Iota(quot_vec);
+        }
+        // If both sides are vectors, take their cross product
+        else if (std::holds_alternative<std::vector<double>>(lhs_result.value) && std::holds_alternative<std::vector<double>>(rhs_result.value))
+        {
+            const std::vector<double>& lhs_vec = std::get<std::vector<double>>(lhs_result.value);
+            const std::vector<double>& rhs_vec = std::get<std::vector<double>>(rhs_result.value);
+
+            std::vector<double> cross_prod_vec = {
+                lhs_vec[1] * rhs_vec[2] - lhs_vec[2] * rhs_vec[1],
+                lhs_vec[2] * rhs_vec[0] - lhs_vec[0] * rhs_vec[2],
+                lhs_vec[0] * rhs_vec[1] - lhs_vec[1] * rhs_vec[0]
+            };
+
+            return Iota(cross_prod_vec);
+        }
+        else
+        {
+            return Iota();
+        }
+        break;
+    case TokenType_::modulus:
+        // If both sides are numbers, take modulus
+        if (std::holds_alternative<double>(lhs_result.value) && std::holds_alternative<double>(rhs_result.value))
+        {
+            double rhs_num = std::get<double>(rhs_result.value);
+
+            if (rhs_num == 0)
+            {
+                return Iota();
+            }
+
+            double lhs_num = std::get<double>(lhs_result.value);
+
+            float sign = lhs_num >= 0 ? 1 : -1;
+
+            return Iota(sign * std::fmod(std::abs(lhs_num), std::abs(rhs_num)));
+        }
+        // If both sides are vectors, take modulus element-wise
+        else if (std::holds_alternative<std::vector<double>>(lhs_result.value) && std::holds_alternative<std::vector<double>>(rhs_result.value))
+        {
+            const std::vector<double>& lhs_vec = std::get<std::vector<double>>(lhs_result.value);
+            const std::vector<double>& rhs_vec = std::get<std::vector<double>>(rhs_result.value);
+
+            std::vector<double> mod_vec;
+            for (size_t i = 0; i < lhs_vec.size(); ++i)
+            {
+                double rhs_elem = rhs_vec[i];
+
+                if (rhs_elem == 0)
+                {
+                    return Iota();
+                }
+
+                double lhs_elem = lhs_vec[i];
+                float sign = lhs_elem >= 0 ? 1 : -1;
+
+                mod_vec.push_back(sign * std::fmod(std::abs(lhs_elem), std::abs(rhs_elem)));
+            }
+
+            return Iota(mod_vec);
+        }
+        else
+        {
+            return Iota();
+        }
+        break;
+    case TokenType_::double_amp:
+        // If both sides are booleans, take logical AND
+        if (std::holds_alternative<bool>(lhs_result.value) && std::holds_alternative<bool>(rhs_result.value))
+        {
+            return Iota(std::get<bool>(lhs_result.value) && std::get<bool>(rhs_result.value));
+        }
+        // If both sides are lists, take their intersection
+        else if (std::holds_alternative<std::vector<Iota>>(lhs_result.value) && std::holds_alternative<std::vector<Iota>>(rhs_result.value))
+        {
+            const std::vector<Iota>& lhs_list = std::get<std::vector<Iota>>(lhs_result.value);
+            const std::vector<Iota>& rhs_list = std::get<std::vector<Iota>>(rhs_result.value);
+
+            std::vector<Iota> intersection_list;
+            for (const Iota& lhs_elem : lhs_list)
+            {
+                if (std::find(rhs_list.begin(), rhs_list.end(), lhs_elem) != rhs_list.end())
+                {
+                    intersection_list.push_back(lhs_elem);
+                }
+            }
+
+            return Iota(intersection_list);
+        }
+        // If both sides are numbers, take bitwise AND
+        else if (std::holds_alternative<double>(lhs_result.value) && std::holds_alternative<double>(rhs_result.value))
+        {
+            double lhs_num = std::get<double>(lhs_result.value);
+            double rhs_num = std::get<double>(rhs_result.value);
+
+            // Round numbers to nearest integer, up in halfway cases, since bitwise operations only work on integers
+            lhs_num = std::floor(lhs_num + 0.5);
+            rhs_num = std::floor(rhs_num + 0.5);
+
+            return Iota(static_cast<double>(static_cast<long long>(lhs_num) & static_cast<long long>(rhs_num)));
+        }
+        else
+        {
+            return Iota();
+        }
+        break;
+    case TokenType_::double_bar:
+        // If both sides are booleans, take logical OR
+        if (std::holds_alternative<bool>(lhs_result.value) && std::holds_alternative<bool>(rhs_result.value))
+        {
+            return Iota(std::get<bool>(lhs_result.value) || std::get<bool>(rhs_result.value));
+        }
+        // If both sides are lists, take their union
+        else if (std::holds_alternative<std::vector<Iota>>(lhs_result.value) && std::holds_alternative<std::vector<Iota>>(rhs_result.value))
+        {
+            const std::vector<Iota>& lhs_list = std::get<std::vector<Iota>>(lhs_result.value);
+            const std::vector<Iota>& rhs_list = std::get<std::vector<Iota>>(rhs_result.value);
+
+            std::vector<Iota> union_list = lhs_list;
+
+            for (const Iota& rhs_elem : rhs_list)
+            {
+                if (std::find(lhs_list.begin(), lhs_list.end(), rhs_elem) == lhs_list.end())
+                {
+                    union_list.push_back(rhs_elem);
+                }
+            }
+
+            return Iota(union_list);
+        }
+        // If both sides are numbers, take bitwise OR
+        else if (std::holds_alternative<double>(lhs_result.value) && std::holds_alternative<double>(rhs_result.value))
+        {
+            double lhs_num = std::get<double>(lhs_result.value);
+            double rhs_num = std::get<double>(rhs_result.value);
+
+            // Round numbers to nearest integer, up in halfway cases, since bitwise operations only work on integers
+            lhs_num = std::floor(lhs_num + 0.5);
+            rhs_num = std::floor(rhs_num + 0.5);
+
+            return Iota(static_cast<double>(static_cast<long long>(lhs_num) | static_cast<long long>(rhs_num)));
+        }
+        else
+        {
+            return Iota();
+        }
+        break;
+    case TokenType_::caret:
+        if (std::holds_alternative<bool>(lhs_result.value) && std::holds_alternative<bool>(rhs_result.value))
+        {
+            return Iota(std::get<bool>(lhs_result.value) != std::get<bool>(rhs_result.value));
+        }
+        else if (std::holds_alternative<std::vector<Iota>>(lhs_result.value) && std::holds_alternative<std::vector<Iota>>(rhs_result.value))
+        {
+            const std::vector<Iota>& lhs_list = std::get<std::vector<Iota>>(lhs_result.value);
+            const std::vector<Iota>& rhs_list = std::get<std::vector<Iota>>(rhs_result.value);
+
+            std::vector<Iota> sym_diff_list;
+
+            for (const Iota& lhs_elem : lhs_list)
+            {
+                if (std::find(rhs_list.begin(), rhs_list.end(), lhs_elem) == rhs_list.end())
+                {
+                    sym_diff_list.push_back(lhs_elem);
+                }
+            }
+
+            for (const Iota& rhs_elem : rhs_list)
+            {
+                if (std::find(lhs_list.begin(), lhs_list.end(), rhs_elem) == lhs_list.end())
+                {
+                    sym_diff_list.push_back(rhs_elem);
+                }
+            }
+
+            return Iota(sym_diff_list);
+        }
+        else if (std::holds_alternative<double>(lhs_result.value) && std::holds_alternative<double>(rhs_result.value))
+        {
+            double lhs_num = std::get<double>(lhs_result.value);
+            double rhs_num = std::get<double>(rhs_result.value);
+
+            // Round numbers to nearest integer, up in halfway cases, since bitwise operations only work on integers
+            lhs_num = std::floor(lhs_num + 0.5);
+            rhs_num = std::floor(rhs_num + 0.5);
+
+            return Iota(static_cast<double>(static_cast<long long>(lhs_num) ^ static_cast<long long>(rhs_num)));
+        }
+        else
+        {
+            return Iota();
+        }
+        break;
+    default:
+        return Iota();
+    }
+}
 
 void Generator::try_gen_x_exprs(std::vector<NodeExpr*> exprs, int correct_amount, size_t line)
 {

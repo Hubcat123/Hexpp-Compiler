@@ -119,7 +119,7 @@ std::optional<NodeTerm*> Parser::parse_term()
         // Check if term is pattern lit
         else if (peek().value().type == TokenType_::pattern_lit)
         {
-            NodeTermPatternLit* pattern_lit = m_allocator.alloc<NodeTermPatternLit>();
+            NodeTermIotaLit* pattern_lit = m_allocator.alloc<NodeTermIotaLit>();
             pattern_lit->pattern_lit = consume();
             pattern_lit->line = line;
             NodeTerm* node_term = m_allocator.alloc<NodeTerm>();

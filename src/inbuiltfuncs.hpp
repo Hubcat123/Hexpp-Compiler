@@ -1,3 +1,5 @@
+#pragma once
+
 #define _USE_MATH_DEFINES
 
 #include <vector>
@@ -5,87 +7,7 @@
 #include <numeric>
 #include <math.h>
 
-#include "generation.hpp"
-
-struct Iota {
-    std::variant<double, bool, void*, std::vector<double>, std::vector<Iota>, std::string> value;
-    bool has_value = true;
-
-    Pattern get_iota_pattern() const {
-        struct IotaVisitor {
-            Pattern& output;
-
-            IotaVisitor(Pattern& output_)
-                :output(output_) {}
-
-            void operator()(const double d)
-            {
-                output = Pattern {.type = embedded_iota, .value = std::to_string(d)};
-            }
-
-            void operator()(const bool b)
-            {
-                output = Pattern {.type = embedded_iota, .value = b ? "True" : "False"};
-            }
-
-            void operator()(const void* n)
-            {
-                output = Pattern {.type = embedded_iota, .value = "Null"};
-            }
-
-            void operator()(const std::vector<double> v)
-            {
-                output = Pattern {.type = embedded_iota,
-                    .value = std::string("(") + std::to_string(v[0]) + ", " + std::to_string(v[1]) + ", " + std::to_string(v[2]) + ')'};
-            }
-
-            void operator()(const std::vector<Iota> l)
-            {
-                // Start list
-                std::string val = "[";
-
-                // Generate value of each iota in list
-                for (int i = 0; i < l.size(); ++i)
-                {
-                    val += l[i].get_iota_pattern().value.value();
-
-                    // Add commas between iotas in list
-                    if (i < l.size() - 1)
-                    {
-                        val += ", ";
-                    }
-                }
-
-                // End list
-                val += "]";
-
-                output = Pattern{.type = embedded_iota, .value = val};
-            }
-
-            void operator()(const std::string i)
-            {
-                output = Pattern{.type = embedded_iota, .value = i};
-            }
-        };
-
-        Pattern output;
-        IotaVisitor visitor = IotaVisitor(output);
-        std::visit(visitor, value);
-
-        return output;
-    }
-};
-
-// Iota comparison operator
-bool operator==(const Iota& lhs, const Iota& rhs)
-{
-    if (!lhs.has_value && !rhs.has_value)
-    {
-        return true;
-    }
-
-    return lhs.value == rhs.value;
-}
+#include "hexcastingtypes.hpp"
 
 struct InbuiltFunc {
     // The name of the function
@@ -142,7 +64,7 @@ struct InbuiltFunc {
     }
 };
 
-std::vector<InbuiltFunc> inbuilt_funcs = {
+inline std::vector<InbuiltFunc> inbuilt_funcs = {
     // Void Non-Member
     InbuiltFunc {.names = {"write"}, .is_void = true, .is_member = false, .num_params = 1,
         .func_patterns = {scribes_gambit},
@@ -378,12 +300,12 @@ std::vector<InbuiltFunc> inbuilt_funcs = {
         .eval = [](std::vector<Iota> iotas) {
             if (!std::holds_alternative<std::vector<Iota>>(iotas[0].value))
             {
-                return Iota{.has_value = false};
+                return Iota();
             }
 
             std::vector<Iota> list = std::get<std::vector<Iota>>(iotas[0].value);
             list.push_back(iotas[1]);
-            return Iota{list};
+            return Iota(list);
         }
         },
     InbuiltFunc {.names = {"sublist"}, .is_void = false, .is_member = true, .num_params = 2,
@@ -391,7 +313,7 @@ std::vector<InbuiltFunc> inbuilt_funcs = {
         .eval = [](std::vector<Iota> iotas) {
             if (!std::holds_alternative<std::vector<Iota>>(iotas[0].value) || !std::holds_alternative<double>(iotas[1].value) || !std::holds_alternative<double>(iotas[2].value))
             {
-                return Iota{.has_value = false};
+                return Iota();
             }
 
             std::vector<Iota> list = std::get<std::vector<Iota>>(iotas[0].value);
@@ -400,7 +322,7 @@ std::vector<InbuiltFunc> inbuilt_funcs = {
 
             if (ind1 != (int)ind1 || ind2 != (int)ind2)
             {
-                return Iota{.has_value = false};
+                return Iota();
             }
 
             return Iota{std::vector<Iota>(&list[(int)ind1], &list[(int)ind2])};
@@ -411,7 +333,7 @@ std::vector<InbuiltFunc> inbuilt_funcs = {
         .eval = [](std::vector<Iota> iotas) {
             if (!std::holds_alternative<std::vector<Iota>>(iotas[0].value))
             {
-                return Iota{.has_value = false};
+                return Iota();
             }
 
             std::vector<Iota> list = std::get<std::vector<Iota>>(iotas[0].value);
@@ -423,7 +345,7 @@ std::vector<InbuiltFunc> inbuilt_funcs = {
         .eval = [](std::vector<Iota> iotas) {
             if (!std::holds_alternative<std::vector<Iota>>(iotas[0].value))
             {
-                return Iota{.has_value = false};
+                return Iota();
             }
 
             std::vector<Iota> list = std::get<std::vector<Iota>>(iotas[0].value);
@@ -435,7 +357,7 @@ std::vector<InbuiltFunc> inbuilt_funcs = {
         .eval = [](std::vector<Iota> iotas) {
             if (!std::holds_alternative<std::vector<Iota>>(iotas[0].value) || !std::holds_alternative<double>(iotas[1].value))
             {
-                return Iota{.has_value = false};
+                return Iota();
             }
 
             std::vector<Iota> list = std::get<std::vector<Iota>>(iotas[0].value);
@@ -443,7 +365,7 @@ std::vector<InbuiltFunc> inbuilt_funcs = {
 
             if (ind != (int)ind)
             {
-                return Iota{.has_value = false};
+                return Iota();
             }
 
             list.erase(list.begin() + (int)ind);
@@ -455,7 +377,7 @@ std::vector<InbuiltFunc> inbuilt_funcs = {
         .eval = [](std::vector<Iota> iotas) {
             if (!std::holds_alternative<std::vector<Iota>>(iotas[0].value))
             {
-                return Iota{.has_value = false};
+                return Iota();
             }
 
             std::vector<Iota> list = std::get<std::vector<Iota>>(iotas[0].value);
@@ -468,7 +390,7 @@ std::vector<InbuiltFunc> inbuilt_funcs = {
         .eval = [](std::vector<Iota> iotas) {
             if (!std::holds_alternative<std::vector<Iota>>(iotas[0].value))
             {
-                return Iota{.has_value = false};
+                return Iota();
             }
 
             std::vector<Iota> list = std::get<std::vector<Iota>>(iotas[0].value);
@@ -491,14 +413,14 @@ std::vector<InbuiltFunc> inbuilt_funcs = {
         .eval = [](std::vector<Iota> iotas) {
             if (!std::holds_alternative<std::vector<Iota>>(iotas[0].value))
             {
-                return Iota{.has_value = false};
+                return Iota();
             }
 
             std::vector<Iota> list = std::get<std::vector<Iota>>(iotas[0].value);
 
             if (list.size() < 1)
             {
-                return Iota{.has_value = false};
+                return Iota();
             }
 
             return list[0];
@@ -509,7 +431,7 @@ std::vector<InbuiltFunc> inbuilt_funcs = {
         .eval = [](std::vector<Iota> iotas) {
             if (!std::holds_alternative<std::vector<double>>(iotas[0].value))
             {
-                return Iota{.has_value = false};
+                return Iota();
             }
 
             std::vector<double> vec = std::get<std::vector<double>>(iotas[0].value);
@@ -521,7 +443,7 @@ std::vector<InbuiltFunc> inbuilt_funcs = {
         .eval = [](std::vector<Iota> iotas) {
             if (!std::holds_alternative<std::vector<double>>(iotas[0].value))
             {
-                return Iota{.has_value = false};
+                return Iota();
             }
 
             std::vector<double> vec = std::get<std::vector<double>>(iotas[0].value);
@@ -533,7 +455,7 @@ std::vector<InbuiltFunc> inbuilt_funcs = {
         .eval = [](std::vector<Iota> iotas) {
             if (!std::holds_alternative<std::vector<double>>(iotas[0].value))
             {
-                return Iota{.has_value = false};
+                return Iota();
             }
 
             std::vector<double> vec = std::get<std::vector<double>>(iotas[0].value);
@@ -580,7 +502,7 @@ std::vector<InbuiltFunc> inbuilt_funcs = {
             }
             else
             {
-                return Iota{.has_value = false};
+                return Iota();
             }
         }
         },
@@ -613,7 +535,7 @@ std::vector<InbuiltFunc> inbuilt_funcs = {
             }
             else
             {
-                return Iota{.has_value = false};
+                return Iota();
             }
         }
         },
@@ -622,7 +544,7 @@ std::vector<InbuiltFunc> inbuilt_funcs = {
         .eval = [](std::vector<Iota> iotas) {
             if (!std::holds_alternative<std::vector<Iota>>(iotas[0].value))
             {
-                return Iota{.has_value = false};
+                return Iota();
             }
 
             std::vector<Iota> list = std::get<std::vector<Iota>>(iotas[0].value);
@@ -684,7 +606,7 @@ std::vector<InbuiltFunc> inbuilt_funcs = {
             }
             else
             {
-                return Iota{.has_value = false};
+                return Iota();
             }
         }
         },
@@ -707,7 +629,7 @@ std::vector<InbuiltFunc> inbuilt_funcs = {
             }
             else
             {
-                return Iota{.has_value = false};
+                return Iota();
             }
         }
         },
@@ -730,7 +652,7 @@ std::vector<InbuiltFunc> inbuilt_funcs = {
             }
             else
             {
-                return Iota{.has_value = false};
+                return Iota();
             }
         }
         },
@@ -739,13 +661,13 @@ std::vector<InbuiltFunc> inbuilt_funcs = {
         .eval = [](std::vector<Iota> iotas) {
             if (!std::holds_alternative<double>(iotas[0].value) || !std::holds_alternative<double>(iotas[1].value))
             {
-                return Iota{.has_value = false};
+                return Iota();
             }
 
             double d1 = std::get<double>(iotas[0].value);
             double d2 = std::get<double>(iotas[1].value);
 
-            return Iota(std::min(d1, d2));
+            return Iota((std::min)(d1, d2));
         }
         },
     InbuiltFunc {.names = {"max"}, .is_void = false, .is_member = false, .num_params = 2,
@@ -753,13 +675,13 @@ std::vector<InbuiltFunc> inbuilt_funcs = {
         .eval = [](std::vector<Iota> iotas) {
             if (!std::holds_alternative<double>(iotas[0].value) || !std::holds_alternative<double>(iotas[1].value))
             {
-                return Iota{.has_value = false};
+                return Iota();
             }
 
             double d1 = std::get<double>(iotas[0].value);
             double d2 = std::get<double>(iotas[1].value);
 
-            return Iota(std::max(d1, d2));
+            return Iota((std::max)(d1, d2));
         }
         },
     InbuiltFunc {.names = {"as_bool"}, .is_void = false, .is_member = false, .num_params = 1,
@@ -777,7 +699,7 @@ std::vector<InbuiltFunc> inbuilt_funcs = {
 
                 return Iota(d != 0);
             }
-            else if (std::holds_alternative<void*>(iotas[0].value))
+            else if (std::holds_alternative<std::monostate>(iotas[0].value))
             {
                 return Iota(false);
             }
@@ -785,7 +707,7 @@ std::vector<InbuiltFunc> inbuilt_funcs = {
             {
                 return iotas[0];
             }
-            if (std::holds_alternative<std::vector<Iota>>(iotas[0].value))
+            else if (std::holds_alternative<std::vector<Iota>>(iotas[0].value))
             {
                 std::vector<Iota> l = std::get<std::vector<Iota>>(iotas[0].value);
 
@@ -828,7 +750,7 @@ std::vector<InbuiltFunc> inbuilt_funcs = {
         .eval = [](std::vector<Iota> iotas) {
             if (!std::holds_alternative<double>(iotas[0].value))
             {
-                return Iota{.has_value = false};
+                return Iota();
             }
 
             double d1 = std::get<double>(iotas[0].value);
@@ -841,7 +763,7 @@ std::vector<InbuiltFunc> inbuilt_funcs = {
         .eval = [](std::vector<Iota> iotas) {
             if (!std::holds_alternative<double>(iotas[0].value))
             {
-                return Iota{.has_value = false};
+                return Iota();
             }
 
             double d1 = std::get<double>(iotas[0].value);
@@ -854,7 +776,7 @@ std::vector<InbuiltFunc> inbuilt_funcs = {
         .eval = [](std::vector<Iota> iotas) {
             if (!std::holds_alternative<double>(iotas[0].value))
             {
-                return Iota{.has_value = false};
+                return Iota();
             }
 
             double d1 = std::get<double>(iotas[0].value);
@@ -867,7 +789,7 @@ std::vector<InbuiltFunc> inbuilt_funcs = {
         .eval = [](std::vector<Iota> iotas) {
             if (!std::holds_alternative<double>(iotas[0].value))
             {
-                return Iota{.has_value = false};
+                return Iota();
             }
 
             double d1 = std::get<double>(iotas[0].value);
@@ -880,7 +802,7 @@ std::vector<InbuiltFunc> inbuilt_funcs = {
         .eval = [](std::vector<Iota> iotas) {
             if (!std::holds_alternative<double>(iotas[0].value))
             {
-                return Iota{.has_value = false};
+                return Iota();
             }
 
             double d1 = std::get<double>(iotas[0].value);
@@ -893,7 +815,7 @@ std::vector<InbuiltFunc> inbuilt_funcs = {
         .eval = [](std::vector<Iota> iotas) {
             if (!std::holds_alternative<double>(iotas[0].value))
             {
-                return Iota{.has_value = false};
+                return Iota();
             }
 
             double d1 = std::get<double>(iotas[0].value);
@@ -906,7 +828,7 @@ std::vector<InbuiltFunc> inbuilt_funcs = {
         .eval = [](std::vector<Iota> iotas) {
             if (!std::holds_alternative<double>(iotas[0].value) || !std::holds_alternative<double>(iotas[1].value))
             {
-                return Iota{.has_value = false};
+                return Iota();
             }
 
             double d1 = std::get<double>(iotas[0].value);
@@ -920,7 +842,7 @@ std::vector<InbuiltFunc> inbuilt_funcs = {
         .eval = [](std::vector<Iota> iotas) {
             if (!std::holds_alternative<double>(iotas[0].value) || !std::holds_alternative<double>(iotas[1].value))
             {
-                return Iota{.has_value = false};
+                return Iota();
             }
 
             double d1 = std::get<double>(iotas[0].value);
@@ -934,7 +856,7 @@ std::vector<InbuiltFunc> inbuilt_funcs = {
         .eval = [](std::vector<Iota> iotas) {
             if (!std::holds_alternative<double>(iotas[0].value))
             {
-                return Iota{.has_value = false};
+                return Iota();
             }
 
             double d1 = std::get<double>(iotas[0].value);
@@ -947,7 +869,7 @@ std::vector<InbuiltFunc> inbuilt_funcs = {
         .eval = [](std::vector<Iota> iotas) {
             if (!std::holds_alternative<double>(iotas[0].value) || !std::holds_alternative<double>(iotas[1].value) || !std::holds_alternative<double>(iotas[2].value))
             {
-                return Iota{.has_value = false};
+                return Iota();
             }
 
             double d1 = std::get<double>(iotas[0].value);

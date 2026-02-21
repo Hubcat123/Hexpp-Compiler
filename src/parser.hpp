@@ -40,7 +40,7 @@ struct NodeTermListLit : Node {
     std::vector<NodeExpr*> exprs;
 };
 
-struct NodeTermPatternLit : Node {
+struct NodeTermIotaLit : Node {
     Token pattern_lit;
 };
 
@@ -70,7 +70,7 @@ struct NodeTermNullLit : Node {
 };
 
 struct NodeTerm : Node {
-    std::variant<NodeTermUn*, NodeTermUnPost*, NodeTermNumLit*, NodeTermListLit*, NodeTermPatternLit*, NodeTermBoolLit*, NodeTermNullLit*, NodeTermVar*, NodeTermParen*, NodeTermCallFunc*> var;
+    std::variant<NodeTermUn*, NodeTermUnPost*, NodeTermNumLit*, NodeTermListLit*, NodeTermIotaLit*, NodeTermBoolLit*, NodeTermNullLit*, NodeTermVar*, NodeTermParen*, NodeTermCallFunc*> var;
 };
 
 struct NodeExprBin : Node {
