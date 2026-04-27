@@ -6,14 +6,14 @@
 #include <vector>
 #include <map>
 
-#include <windows.h>
-
 #include "util.hpp"
 #include "tokenization.hpp"
 #include "parser.hpp"
 #include "generation.hpp"
 #include "optimization.hpp"
 #include "assembler.hpp"
+#include "hexagonCompat.hpp"
+
 
 int main(int argc, char** argv)
 {
@@ -28,12 +28,8 @@ int main(int argc, char** argv)
     // Print name of file being compiled
     compilation_message(std::string("Compiling \"") + argv[1] + "\"...");
 
-    // Check if hexagon.exe exists in the same folder
-    bool hexagon_exists;
-    {
-        std::ifstream hexagon_check(".\\hexagon.exe");
-        hexagon_exists = hexagon_check.good();
-    }
+    // Check if hexagon exists in the same folder
+    bool hexagon_exists=hexagonExist();
 
     if (hexagon_exists)
     {
@@ -102,45 +98,7 @@ int main(int argc, char** argv)
     if (hexagon_exists)
     {
         compilation_message("Compilation successful. Building with Hexagon...");
-
-        // Prepare for hexagon building
-        STARTUPINFOW si = {0};
-        si.cb = sizeof(si);
-        PROCESS_INFORMATION pi = {0};
-
-        // Prepare command
-        char args[256];
-        strcpy(args, ".\\hexagon.exe build \"");
-        strcat(args, argv[2]);
-        strcat(args, "\" hexagon_config.toml");
-
-        // Process output with hexagon
-        if (CreateProcessA(
-            NULL,
-            args,
-            NULL, NULL, FALSE, 0, NULL, NULL,
-            (LPSTARTUPINFOA)&si, (LPPROCESS_INFORMATION)&pi))
-        {
-            // Wait for hexagon to finish
-            WaitForSingleObject(pi.hProcess, INFINITE);
-
-            // Close process
-            CloseHandle(pi.hProcess);
-            CloseHandle(pi.hThread);
-
-            // Add spacing after hexagon output
-            std::cout << std::endl;
-        }
-        else
-        {
-            DWORD errCode = GetLastError();
-            wchar_t err[256];
-            memset(err, 0, 256);
-            FormatMessageW(FORMAT_MESSAGE_FROM_SYSTEM, NULL, errCode,
-                    MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), err, 255, NULL);
-            std::wcout << "Hex++ Compiler: Failed to build output with Hexagon. CreateProcessA error: "
-                << err << "Hex++ Compiler: Error code: " << errCode << std::endl;
-        }
+        hexagonBuild(argv);
     }
     else
     {

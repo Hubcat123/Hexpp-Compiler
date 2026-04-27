@@ -1,5 +1,5 @@
 #include "parser.hpp"
-
+#include <algorithm>
 #include "util.hpp"
 
 Parser::Parser(const std::vector<Token>& tokens)

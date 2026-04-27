@@ -1,12 +1,11 @@
 #pragma once
 
 #define _USE_MATH_DEFINES
-
 #include <vector>
 #include <unordered_set>
 #include <numeric>
 #include <math.h>
-
+#include <algorithm>
 #include "hexcastingtypes.hpp"
 
 struct InbuiltFunc {

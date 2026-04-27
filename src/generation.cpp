@@ -1,7 +1,7 @@
 #include "generation.hpp"
 
 #include <sstream>
-
+#include <algorithm>
 #include "util.hpp"
 #include "inbuiltfuncs.hpp"
 

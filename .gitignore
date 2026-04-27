@@ -1,45 +1,7 @@
-# Prerequisites
-*.d
+build/
 
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
+test.hexpattern
+test.hxpp
 
-# Precompiled Headers
-*.gch
-*.pch
-
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
-
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
-
-# Executables
-*.exe
-*.out
-*.app
-*.hxpp
-text.txt
-*.hexagon
-*.hexpattern
-FunctionsToAdd.txt
-*.ilk
-*.pdb
-*.aux
-*.fdb_latexmk
-*.fls
-*.log
-*.gz
-!Hex++Compiler.exe
+hexagon.exe
+hexagon

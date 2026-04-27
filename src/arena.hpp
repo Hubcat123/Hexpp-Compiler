@@ -7,11 +7,12 @@ public:
     ArenaAllocator(size_t bytes);
     ~ArenaAllocator();
 
-    template<typename T> T* alloc()
+    template<typename T> 
+    T* alloc()
     {
         void* offset = m_offset;
         m_offset += sizeof(T);
-        return static_cast<T*>(offset);
+        return new (offset) T();
     }
 private:
 

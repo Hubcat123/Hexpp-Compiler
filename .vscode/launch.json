@@ -1,17 +1,72 @@
 {
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
     "configurations": [
         {
-            "name": "(Windows) Launch",
-            "type": "cppvsdbg",
-            "request": "launch",
-            "program": "${fileDirname}/Hex++Compiler",
+            "name":"Windows-Debug(GCC)",
+            "type":"cppdbg",
+            "request":"launch",
+            "program":"${workspaceFolder}/build/windows-gcc-debug/Hex++Compiler.exe",
             "args": ["test.hxpp", "test.hexpattern"],
-            "stopAtEntry": false,
-            "cwd": "${fileDirname}/..",
-            "environment": [],
-            "console": "externalTerminal",
-            "preLaunchTask": "C/C++: cl.exe build active file"
+            "cwd":"${workspaceFolder}",
+            "MIMode":"gdb",
+            "miDebuggerPath": "C:/msys64/mingw64/bin/gdb.exe",
+            "preLaunchTask": "windows-gcc-debug"
+        },
+        {
+            "name":"Windows-Debug(MSVC)",
+            "type":"cppvsdbg",
+            "request":"launch",
+            "program":"${workspaceFolder}/build/windows-msvc-debug/Debug/Hex++Compiler.exe",
+            "args": ["test.hxpp", "test.hexpattern"],
+            "cwd":"${workspaceFolder}",
+            "preLaunchTask": "windows-msvc-debug"
+        },
+        {
+            "name":"Linux-Debug(GCC)",
+            "type":"cppdbg",
+            "request":"launch",
+            "program":"${workspaceFolder}/build/linux-gcc-debug/Hex++Compiler",
+            "args": ["test.hxpp", "test.hexpattern"],
+            "cwd":"${workspaceFolder}",
+            "MIMode":"gdb",
+            "miDebuggerPath": "/usr/bin/gdb",
+            "preLaunchTask": "linux-gcc-debug"
+        },
+        {
+            "name":"Windows-Release(GCC)",
+            "type":"cppdbg",
+            "request":"launch",
+            "program":"${workspaceFolder}/build/windows-gcc-release/Hex++Compiler.exe",
+            "args": ["test.hxpp", "test.hexpattern"],
+            "cwd":"${workspaceFolder}",
+            "MIMode":"gdb",
+            "miDebuggerPath": "C:/msys64/mingw64/bin/gdb.exe",
+            "preLaunchTask": "windows-gcc-release"
+        },
+        {
+            "name":"Windows-Release(MSVC)",
+            "type":"cppvsdbg",
+            "request":"launch",
+            "program":"${workspaceFolder}/build/windows-msvc-release/Release/Hex++Compiler.exe",
+            "args": ["test.hxpp", "test.hexpattern"],
+            "cwd":"${workspaceFolder}",
+            "preLaunchTask": "windows-msvc-release"
+        },
+        {
+            "name":"Linux-Release(GCC)",
+            "type":"cppdbg",
+            "request":"launch",
+            "program":"${workspaceFolder}/build/linux-gcc-release/Hex++Compiler",
+            "args": ["test.hxpp", "test.hexpattern"],
+            "cwd":"${workspaceFolder}",
+            "MIMode":"gdb",
+            "miDebuggerPath": "/usr/bin/gdb",
+            "preLaunchTask": "linux-gcc-release"
         }
-    ],
-    "version": "2.0.0"
+        
+
+    ]
 }
